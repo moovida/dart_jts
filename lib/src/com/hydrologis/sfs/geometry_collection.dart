@@ -71,7 +71,7 @@ class GeometryCollection extends Geometry
   /// the iterator to access the geometry objects
   Iterator<Geometry> get iterator {
     if (_geometries == null) {
-      return [].iterator;
+      return <Geometry>[].iterator;
     } else {
       return _geometries.iterator;
     }

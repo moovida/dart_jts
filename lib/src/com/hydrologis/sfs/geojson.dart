@@ -13,47 +13,66 @@ parseGeoJson(String geoJson) {
 
   Point pos(coord) => Point(coord[0], coord[1]);
 
-  List<Coordinate> poslist(l) => l.map(pos).toList();
+  List<Point> poslist(l) {
+    var map = l.map(pos);
+    List<dynamic> list2 = map.toList();
+    List<Point> list = [];
+    list2.forEach((dyn) {
+      list.add(dyn as Point);
+    });
+    return list;
+  }
 
-  deserializePoint(Map gj) => pos(gj["coordinates"]);
+  Point deserializePoint(Map gj) => pos(gj["coordinates"]);
 
-  deserializeMultiPoint(Map gj) =>
-      MultiPoint(poslist(gj["coordinates"]).map((dp) => Point(dp.x, dp.y)));
+  MultiPoint deserializeMultiPoint(Map gj) =>
+      MultiPoint(poslist(gj["coordinates"]));
 
-  deserializeLineString(Map gj) =>
-      LineString(poslist(gj["coordinates"]).map((dp) => Point(dp.x, dp.y)));
+  LineString deserializeLineString(Map gj) =>
+      LineString(poslist(gj["coordinates"]));
 
-  deserializeMultiLineString(Map gj) => MultiLineString(gj["coordinates"]
-      .map((ls) => LineString(poslist(ls).map((dp) => Point(dp.x, dp.y))))
-      .toList());
+  MultiLineString deserializeMultiLineString(Map gj) => MultiLineString(
+      gj["coordinates"].map((ls) => LineString(poslist(ls))).toList());
 
-  polygonFromCoordinates(coords) {
+  Polygon polygonFromCoordinates(coords) {
     var rings = coords
         .map((l) => poslist(l))
         .map((poslist) => LineString(poslist))
         .toList();
-    return new Polygon(rings.first, rings.skip(1));
+    return Polygon(rings.first, rings.skip(1));
   }
 
-  deserializePolygon(Map gj) => polygonFromCoordinates(gj["coordinates"]);
+  Polygon deserializePolygon(Map gj) =>
+      polygonFromCoordinates(gj["coordinates"]);
 
-  deserializeMultipolygon(Map gj) => MultiPolygon(gj["coordinates"]
+  MultiPolygon deserializeMultipolygon(Map gj) => MultiPolygon(gj["coordinates"]
       .map((coords) => polygonFromCoordinates(coords))
       .toList());
 
   var deserialize;
 
-  deserializeGeometryCollection(Map gj) =>
-      GeometryCollection(gj["geometries"].map((o) => deserialize(o)).toList());
+  GeometryCollection deserializeGeometryCollection(Map gj) {
+   var list = gj["geometries"].map((o) => deserialize(o)).toList();
+   List<Geometry> geoms = [];
+   list.forEach((dyn) {
+     geoms.add(dyn as Geometry);
+   });
+   return GeometryCollection(geoms);
+  }
 
-  deserializeFeature(Map gj) {
+  Feature deserializeFeature(Map gj) {
     var geometry = deserialize(gj["geometry"]);
     var properties = gj["properties"];
     return Feature(geometry, properties);
   }
 
-  deserializeFeatureCollection(Map gj) {
-    var features = gj["features"].map((f) => deserializeFeature(f)).toList();
+  FeatureCollection deserializeFeatureCollection(Map gj) {
+    List<dynamic> featuresDyn =
+        gj["features"].map((f) => deserializeFeature(f)).toList();
+    List<Feature> features = [];
+    featuresDyn.forEach((dyn) {
+      features.add(dyn as Feature);
+    });
     return FeatureCollection(features);
   }
 

@@ -55,5 +55,5 @@ class FeatureCollection extends Object with IterableMixin<Feature> {
   }
 
   Iterator<Feature> get iterator =>
-      _features == null ? [].iterator : _features.iterator;
+      _features == null ? <Feature>[].iterator : _features.iterator;
 }
