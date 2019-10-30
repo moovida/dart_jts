@@ -1,16 +1,16 @@
 part of dart_sfs;
 
-class _Envelope {
+class Envelope {
   num minx;
   num miny;
   num maxx;
   num maxy;
 
-  _Envelope(this.minx, this.miny, this.maxx, this.maxy);
+  Envelope(this.minx, this.miny, this.maxx, this.maxy);
 
-  _Envelope.empty() : this(null, null, null, null);
+  Envelope.empty() : this(null, null, null, null);
 
-  _Envelope.collapsed(num minx, num miny) : this(minx, miny, minx, miny);
+  Envelope.collapsed(num minx, num miny) : this(minx, miny, minx, miny);
 
   bool get isEmpty => minx == null;
 
@@ -25,7 +25,7 @@ class _Envelope {
   }
 
   growTo(other) {
-    if (other is _Envelope) {
+    if (other is Envelope) {
     } else if (other is Geometry) {
       other = other._envelope;
     } else if (other is Coordinate) {

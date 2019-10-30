@@ -104,10 +104,10 @@ class PolyhedralSurface extends Geometry
   }
 
   @override
-  _Envelope _computeEnvelope() {
-    if (isEmpty) return _Envelope.empty();
+  Envelope _computeEnvelope() {
+    if (isEmpty) return Envelope.empty();
 
-    _Envelope e = _Envelope.empty();
+    Envelope e = Envelope.empty();
     _patches.forEach((p) {
       e.growTo(p);
     });

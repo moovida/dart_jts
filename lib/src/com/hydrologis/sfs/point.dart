@@ -147,9 +147,9 @@ class Point extends Geometry {
   int get dimension => 0;
 
   @override
-  _Envelope _computeEnvelope() {
-    if (isEmpty) return _Envelope.empty();
-    return _Envelope.collapsed(x, y);
+  Envelope _computeEnvelope() {
+    if (isEmpty) return Envelope.empty();
+    return Envelope.collapsed(x, y);
   }
 
   /// Replies true if the (x,y)-coordinates of this point are

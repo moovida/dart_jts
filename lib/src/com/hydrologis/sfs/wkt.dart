@@ -526,14 +526,14 @@ class _WKTParser {
     advanceMandatory();
     var coordSpec = parseCoordSpecificationOrEmpty();
     if (coordSpec == null) return LineString.empty();
-    var points = parseLineStringText(coordSpec);
+    List<Point> points = parseLineStringText(coordSpec);
     return LineString(points);
   }
 
   /// pre: token  is  '('
   /// post: token is  ')'
   parseLineStringText(coordSpec) {
-    var points = [];
+    List<Point> points = [];
     token.ensureLParen();
     while (true) {
       advanceMandatory();
@@ -550,7 +550,7 @@ class _WKTParser {
   }
 
   parseCommaSeperatedList(parse()) {
-    var elements = [];
+    List<Geometry> elements = [];
     while (true) {
       elements.add(parse());
       advanceMandatory();
@@ -560,7 +560,7 @@ class _WKTParser {
       } else if (token.isRParen) {
         break;
       } else {
-        throw new WKTError("expected ',' or ')', got '${token.value}'");
+        throw WKTError("expected ',' or ')', got '${token.value}'");
       }
     }
     return elements;
@@ -699,7 +699,7 @@ class _WKTParser {
     }
     advanceMandatory();
     token.ensureKeyword();
-    var geometries = parseCommaSeperatedList(() {
+    List<Geometry> geometries = parseCommaSeperatedList(() {
       return parseWKTObject();
     });
     return GeometryCollection(geometries);

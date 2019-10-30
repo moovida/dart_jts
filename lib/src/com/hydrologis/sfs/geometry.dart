@@ -90,16 +90,16 @@ abstract class Geometry {
   /// @return the n'th geometry contained in this geometry
   Geometry getGeometryN(int n);
 
-  _Envelope get _envelope {
+  Envelope get _envelope {
     if (_cachedEnvelope == null) {
       _cachedEnvelope = _computeEnvelope();
     }
     return _cachedEnvelope;
   }
 
-  _Envelope _cachedEnvelope;
+  Envelope _cachedEnvelope;
 
-  _Envelope _computeEnvelope();
+  Envelope _computeEnvelope();
 
   /// A WKT representation of the geometry
   @specification(name: "asText()")

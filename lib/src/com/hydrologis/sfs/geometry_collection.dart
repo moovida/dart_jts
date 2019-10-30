@@ -171,9 +171,9 @@ mixin _GeometryContainerMixin<E extends Geometry> on Iterable<E> {
     return _isMeasured;
   }
 
-  _Envelope _computeEnvelope() {
-    if (this.isEmpty) return _Envelope.empty();
-    _Envelope e = _Envelope.empty();
+  Envelope _computeEnvelope() {
+    if (this.isEmpty) return Envelope.empty();
+    Envelope e = Envelope.empty();
     forEach((p) => e.growTo(p));
     return e;
   }

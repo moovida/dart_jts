@@ -202,9 +202,9 @@ class Polygon extends Surface {
   }
 
   @override
-  _Envelope _computeEnvelope() {
-    if (this.isEmpty) return _Envelope.empty();
-    _Envelope e = _Envelope.empty();
+  Envelope _computeEnvelope() {
+    if (this.isEmpty) return Envelope.empty();
+    Envelope e = Envelope.empty();
     e.growTo(_exterior);
     return e;
   }
