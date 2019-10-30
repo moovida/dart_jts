@@ -8,7 +8,7 @@ const _EPSILON = 10E-10;
 ///
 /// Returns -1 if, if [r] is left to [p]-[q], 0 if is colinear with [p]-[q]
 /// and 1 if it is to the right of [p]-[q].
-int _orientation(Coordinate p, Coordinate q, Coordinate r) {
+int orientation(Coordinate p, Coordinate q, Coordinate r) {
   var v = (p.x - r.x) * (q.y - r.y) - (q.x - r.x) * (p.y - r.y);
   if (v < -_EPSILON) return -1;
   if (v > _EPSILON) return 1;
@@ -83,11 +83,11 @@ class LineSegment {
     if (this == other) return false;
     if (_fastExcludeIntersect(other)) return false;
     if (this.connectsTo(other) && !this.overlaps(other)) return true;
-    var o1 = _orientation(_start, _end, other._start);
-    var o2 = _orientation(_start, _end, other._end);
+    var o1 = orientation(_start, _end, other._start);
+    var o2 = orientation(_start, _end, other._end);
     if (o1 == o2) return false;
-    o1 = _orientation(other._start, other._end, _start);
-    o2 = _orientation(other._start, other._end, _end);
+    o1 = orientation(other._start, other._end, _start);
+    o2 = orientation(other._start, other._end, _end);
     return o1 != o2;
   }
 
@@ -102,8 +102,8 @@ class LineSegment {
   /// lie on a straight line.
   ///
   bool isColinear(LineSegment other) {
-    var o1 = _orientation(_start, _end, other._start);
-    var o2 = _orientation(_start, _end, other._end);
+    var o1 = orientation(_start, _end, other._start);
+    var o2 = orientation(_start, _end, other._end);
     return o1 == 0 && o2 == 0;
   }
 
@@ -231,7 +231,7 @@ _comparePositionsInEventOrder(p1, p2) {
   return p1.x.compareTo(p2.x);
 }
 
-class _EventQueue {
+class EventQueue {
   /// both key and value are events. Having events as keys
   /// ensure that they are ordered in
   /// comparePositionsInEventOrder. Having events as values ensures
@@ -239,7 +239,7 @@ class _EventQueue {
   /// events position
   var _events = SplayTreeMap<_Event, _Event>();
 
-  _EventQueue();
+  EventQueue();
 
   /// Adds a new event at position [pos], unless there is already
   /// an event at this position in the queue.
@@ -286,6 +286,7 @@ class _EventQueue {
 class _SweepLineCompareFunction {
   Coordinate event;
   int sign = 1;
+  bool simple = false;
 
   /// the compare function used for compare operations just *before*
   /// the sweep line goes through the event position
@@ -295,12 +296,14 @@ class _SweepLineCompareFunction {
   /// the sweep line went through the event position
   _SweepLineCompareFunction.atPlusEpsilon(this.event) : sign = 1;
 
+  _SweepLineCompareFunction.simple(this.event) : simple = true;
+
   int call(LineSegment value, LineSegment other) {
     // if other is left or right of the reference point
     // 'event' (which a priori is known to be on the segment
     // 'value' too), the ordering is clear
-    var o = _orientation(other.start, other.end, event);
-    if (o != 0) return o;
+    var o = orientation(other.start, other.end, event);
+    if(simple || o != 0) return o;
 
     // otherwise 'value' and 'other' intersect in the
     // point event and are ordered according to the counter clockwise orientation
@@ -350,7 +353,7 @@ Iterable<LineIntersection> computeLineIntersections(
 
   final AvlTree<LineSegment> sweepLine =
       AvlTree<LineSegment>(withEquivalenceClasses: true);
-  final eventQueue = _EventQueue();
+  final eventQueue = EventQueue();
   final intersections = List<LineIntersection>();
 
   /// initializes the event queue with the start events of the segments
@@ -390,7 +393,7 @@ Iterable<LineIntersection> computeLineIntersections(
     // the list of segments intersecting with the sweepline at point
     // event.pos
     var t = sweepLine.inorder
-        .where((s) => _orientation(s.first.start, s.first.end, event.pos) == 0)
+        .where((s) => orientation(s.first.start, s.first.end, event.pos) == 0)
         .expand((s) => s) // 'unwrap' the lists
         .toList(growable: false);
 
@@ -408,7 +411,7 @@ Iterable<LineIntersection> computeLineIntersections(
       intersections.add(LineIntersection._(event.pos, intersecting));
     }
 
-    Function compare = _SweepLineCompareFunction.atMinusEpsilon(event.pos);
+    var compare = _SweepLineCompareFunction.atMinusEpsilon(event.pos);
 
     L.forEach((s) => sweepLine.remove(s, compare: compare));
     C.forEach((s) => sweepLine.remove(s, compare: compare));
@@ -417,8 +420,8 @@ Iterable<LineIntersection> computeLineIntersections(
     U.forEach((s) => sweepLine.add(s, compare: compare));
     C.forEach((s) => sweepLine.add(s, compare: compare));
 
-    compare =
-        (LineSegment other) => _orientation(other.start, other.end, event.pos);
+    compare = _SweepLineCompareFunction.simple(event.pos);
+//        (LineSegment other) => orientation(other.start, other.end, event.pos);
 
     if (U.length + C.length == 0) {
       var sl = sweepLine.leftNeighbour(compare);

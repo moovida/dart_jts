@@ -83,7 +83,7 @@ class LineString extends Geometry
   factory LineString.empty() => _EMPTY_LINESTRING;
 
   Iterator<Point> get iterator =>
-      _points == null ? [].iterator : _points.iterator;
+      _points == null ? <Point>[].iterator : _points.iterator;
 
   @override
   Coordinate getCoordinate() {
