@@ -1,7 +1,7 @@
 part of dart_sfs;
 
 /// the singleton empty geometry collection
-final _EMPTY_GEOMETRY_COLLECTION = new GeometryCollection(null);
+final _EMPTY_GEOMETRY_COLLECTION = GeometryCollection(null);
 
 /// A [GeometryCollection] is a geometric object that is a collection of
 /// some number of geometric objects.
@@ -41,12 +41,21 @@ class GeometryCollection extends Geometry
     return g;
   }
 
-  /// Replies the number of geometries in this collection.
-  ///
-  /// This getter is equivaled to the method `getNumGeometries()`
-  /// in the SFS, but see also [length].
-  @specification(name: "getNumGeometries")
-  int get numGeometries => length;
+  @override
+  Coordinate getCoordinate() {
+    return _geometries.isEmpty ? null : _geometries[0].getCoordinate();
+  }
+
+  @override
+  List<Coordinate> getCoordinates() {
+    return _geometries.isEmpty
+        ? []
+        : _geometries.map((g) => g.getCoordinates()).expand((i) => i).toList();
+  }
+
+  int getNumGeometries() {
+    return length;
+  }
 
   /// Replies the <em>n</em>-th geometry in this collection.
   @specification(name: "getGeometryN")
@@ -110,12 +119,14 @@ class GeometryCollection extends Geometry
   String get geometryType => "GeometryCollection";
 
   @override
-  int get dimension => fold(0, (prev, g) => max(prev, g.dimension));
+  int get dimension => fold(0, (prev, g) => math.max(prev, g.dimension));
 
-  noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+  @override
+  Geometry get boundary => throw UnsupportedError(
+      "Operation does not support GeometryCollection arguments");
 }
 
-class _GeometryContainerMixin { // with IterableMixin<Geometry> ??
+mixin _GeometryContainerMixin<E extends Geometry> on Iterable<E> {
   bool _is3D;
 
   _computeIs3D() {
@@ -138,7 +149,7 @@ class _GeometryContainerMixin { // with IterableMixin<Geometry> ??
     return _is3D;
   }
 
-  bool _isMeasured = null;
+  bool _isMeasured;
 
   _computeIsMeasured() {
     if (this.isEmpty) {
@@ -148,14 +159,12 @@ class _GeometryContainerMixin { // with IterableMixin<Geometry> ??
     }
   }
 
-  /**
-   * A collection of geometries is considered *measured* if *every* child
-   * geometry has an m-component.
-   *
-   * The value of this property is computed upon first access and then
-   * cached. Subsequent reads of the property efficiently reply the cached
-   * value.
-   */
+  /// A collection of geometries is considered *measured* if *every* child
+  /// geometry has an m-component.
+  ///
+  /// The value of this property is computed upon first access and then
+  /// cached. Subsequent reads of the property efficiently reply the cached
+  /// value.
   @override
   bool get isMeasured {
     if (_isMeasured == null) _computeIsMeasured();
@@ -163,8 +172,8 @@ class _GeometryContainerMixin { // with IterableMixin<Geometry> ??
   }
 
   _Envelope _computeEnvelope() {
-    if (this.isEmpty) return new _Envelope.empty();
-    _Envelope e = new _Envelope.empty();
+    if (this.isEmpty) return _Envelope.empty();
+    _Envelope e = _Envelope.empty();
     forEach((p) => e.growTo(p));
     return e;
   }

@@ -40,7 +40,7 @@ class Point extends Geometry {
   factory Point.wkt(String wkt) {
     var p = parseWKT(wkt);
     if (p is! Point) {
-      throw new WKTError("WKT string doesn't represent a Point");
+      throw WKTError("WKT string doesn't represent a Point");
     }
     return p;
   }
@@ -66,6 +66,24 @@ class Point extends Geometry {
     var z = values[2];
     var m = values[3];
     return Point(x, y, m: m, z: z);
+  }
+
+  @override
+  Coordinate getCoordinate() {
+    return x != null ? Coordinate(x, y) : null;
+  }
+
+  @override
+  List<Coordinate> getCoordinates() {
+    return x != null ? [Coordinate(x, y)] : [];
+  }
+
+  int getNumGeometries(){
+    return 1;
+  }
+
+  Geometry getGeometryN(int n){
+    return this;
   }
 
   @override
@@ -117,7 +135,7 @@ class Point extends Geometry {
   /// empty set. Like the Java Topology Suite we reply an empty
   /// [GeometryCollection], not an empty [Point].
   @override
-  Geometry get boundary => new GeometryCollection.empty();
+  Geometry get boundary => GeometryCollection.empty();
 
   @override
   bool get isSimple => true;
@@ -143,14 +161,12 @@ class Point extends Geometry {
     return x == other.x && y == other.y;
   }
 
-  /// Returns [DirectPosition2D] given by the [x] and [y] coordinates of
+  /// Returns [Coordinate] given by the [x] and [y] coordinates of
   /// this point.
   ///
   /// Throws [StateError] if this point [isEmpty].
-  DirectPosition2D toDirectPosition2D() {
-    if (isEmpty) throw new StateError("not supported on empty point");
-    return new DirectPosition2D(x, y);
+  Coordinate toCoordinate() {
+    if (isEmpty) throw StateError("not supported on empty point");
+    return Coordinate(x, y);
   }
-
-  noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

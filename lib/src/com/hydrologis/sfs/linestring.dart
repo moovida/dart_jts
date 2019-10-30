@@ -1,7 +1,7 @@
 part of dart_sfs;
 
 /// the singleton empty line string
-final _EMPTY_LINESTRING = new LineString(null);
+final _EMPTY_LINESTRING = LineString(null);
 
 /// A LineString is a curve with linear interpolation between points.
 ///
@@ -61,7 +61,7 @@ class LineString extends Geometry
   /// a linear ring.
   LineString.ring(List<Point> points) {
     _init(points);
-    _require(!this.isEmpty, "a ring can't be empty");
+    _require(this.isNotEmpty, "a ring can't be empty");
     _require(this.length >= 4, "a ring must have at least four nodes");
     _require(this.isClosed, "a ring must be closed");
     _require(this._checkIsSimple(), "a ring must be simple");
@@ -84,6 +84,39 @@ class LineString extends Geometry
 
   Iterator<Point> get iterator =>
       _points == null ? [].iterator : _points.iterator;
+
+  @override
+  Coordinate getCoordinate() {
+    return _points.isEmpty ? null : _points[0].toCoordinate();
+  }
+
+  @override
+  List<Coordinate> getCoordinates() {
+    return _points.isEmpty ? [] : _points.map((p) => p.toCoordinate()).toList();
+  }
+
+  int getNumGeometries() {
+    return 1;
+  }
+
+  Geometry getGeometryN(int n) {
+    return this;
+  }
+
+  Coordinate getCoordinateN(int n) {
+    return elementAt(n).toCoordinate();
+  }
+
+  @override
+  _Envelope _computeEnvelope() {
+    if (isEmpty) return _Envelope.empty();
+
+    _Envelope e = _Envelope.empty();
+    _points.forEach((p) {
+      e.growTo(p.toCoordinate());
+    });
+    return e;
+  }
 
   @override
   String get geometryType => "LineString";
@@ -172,15 +205,14 @@ class LineString extends Geometry
   Geometry get boundary {
     if (this.isEmpty) return GeometryCollection.empty();
     if (this.isClosed) return GeometryCollection.empty();
-    return MultiPoint([first, last]);
+    return BoundaryOp(this).getBoundary();
   }
 
   bool _checkIsSimple() {
     //TODO: check spec - an empty linestring is always simple?
     if (isEmpty) return true;
-    var pos =
-        _points.map((p) => p.toDirectPosition2D()).toList(growable: false);
-    var segments = new List.generate(
+    var pos = _points.map((p) => p.toCoordinate()).toList(growable: false);
+    var segments = List.generate(
         length - 1, (i) => LineSegment(pos[i], pos[i + 1]),
         growable: false);
 
@@ -203,7 +235,15 @@ class LineString extends Geometry
   @override
   bool get isSimple => _checkIsSimple();
 
-  noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+  Geometry getStartPoint() {
+    if (isEmpty) return null;
+    return first;
+  }
+
+  getEndPoint() {
+    if (isEmpty) return null;
+    return last;
+  }
 }
 
 /// A Line is a [LineString] with exactly 2 [Point]s.

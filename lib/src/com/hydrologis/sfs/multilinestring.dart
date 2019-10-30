@@ -1,4 +1,4 @@
-part of simple_features;
+part of dart_sfs;
 
 final _EMPTY_MULTI_LINE_STRING = MultiLineString(null);
 
@@ -46,32 +46,7 @@ class MultiLineString extends GeometryCollection {
   /// times in the boundaries.
   @override
   Geometry get boundary {
-    var pointRefCounts = Map<DirectPosition2D, int>();
-    countPosition(pos) {
-      if (pointRefCounts.containsKey(pos)) {
-        pointRefCounts[pos] = pointRefCounts[pos] + 1;
-      } else {
-        pointRefCounts[pos] = 1;
-      }
-    }
-
-    // count the number of occurences for each boundary point
-    forEach((child) {
-      if (child.isEmpty) return;
-      child.boundary.forEach((p) {
-        countPosition(DirectPosition2D(p.x, p.y));
-      });
-    });
-
-    // boundary points with odd occurences in the child boundaries
-    // are considered to be boundary points of this MultiLineString
-    // too
-    var points = [];
-    pointRefCounts.forEach((pos, count) {
-      if (count % 2 == 0) return;
-      points.add(Point(pos.x, pos.y));
-    });
-    return MultiPoint(points);
+    return BoundaryOp(this).getBoundary();
   }
 
   _writeTaggedWKT(writer, {bool withZ: false, bool withM: false}) {

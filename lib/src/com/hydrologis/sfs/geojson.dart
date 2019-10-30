@@ -8,20 +8,24 @@ part of dart_sfs;
 //TODO: provide an optional factory object, in particular for Features
 //  and FeatureCollection
 parseGeoJson(String geoJson) {
-  var value = JSON.jsonDecode(geoJson);
+  var value = json.jsonDecode(geoJson);
   assert(value is Map);
 
   Point pos(coord) => Point(coord[0], coord[1]);
-  List<DirectPosition2D> poslist(l) => l.map(pos).toList();
+
+  List<Coordinate> poslist(l) => l.map(pos).toList();
 
   deserializePoint(Map gj) => pos(gj["coordinates"]);
 
-  deserializeMultiPoint(Map gj) => MultiPoint(poslist(gj["coordinates"]));
+  deserializeMultiPoint(Map gj) =>
+      MultiPoint(poslist(gj["coordinates"]).map((dp) => Point(dp.x, dp.y)));
 
-  deserializeLineString(Map gj) => LineString(poslist(gj["coordinates"]));
+  deserializeLineString(Map gj) =>
+      LineString(poslist(gj["coordinates"]).map((dp) => Point(dp.x, dp.y)));
 
-  deserializeMultiLineString(Map gj) => MultiLineString(
-      gj["coordinates"].map((ls) => LineString(poslist(ls))).toList());
+  deserializeMultiLineString(Map gj) => MultiLineString(gj["coordinates"]
+      .map((ls) => LineString(poslist(ls).map((dp) => Point(dp.x, dp.y))))
+      .toList());
 
   polygonFromCoordinates(coords) {
     var rings = coords
