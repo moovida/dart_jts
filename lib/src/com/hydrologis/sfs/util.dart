@@ -13,18 +13,68 @@ _require(cond, [msg]) {
 //  int compareTo(T other);
 //}
 
-class Stringutils {
+/// Utilities for collections
+class CollectionsUtils {
+  /// Shift a list of items from a given [index] to the first position.
+  static List<T> shiftToFirst<T>(List<T> list, int index) {
+    if (list == null || list.isEmpty) return list;
+    if (index > list.length - 1) throw ArgumentError("The shift index can't be bigger than the list size.");
+    return list.sublist(index)..addAll(list.sublist(0, index));
+  }
+
+  /// Removes subsequent equal items from a [list].
+  static List<T> removeRepeated<T>(List<T> list) {
+    List<T> newList = [];
+    for (int i = 1; i < list.length; i++) {
+      if (list[i - 1] != list[i]) {
+        newList.add(list[i - 1]);
+      }
+    }
+    if (newList.last != list.last) {
+      newList.add(list.last);
+    }
+    return newList;
+  }
+
+  /// CHecks if there are subsequent repeating items.
+  static bool hasRepeated<T>(List<T> list) {
+    for (int i = 1; i < list.length; i++) {
+      if (list[i - 1] == list[i]) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  static bool addIfNotEqualToLast<T>(List<T> list, T item){
+    if(list.isEmpty || list.last == item){
+      list.add(item);
+    }
+  }
+}
+
+class StringUtils {
   static String replaceCharAt(String oldString, int index, String newChar) {
-    return oldString.substring(0, index) +
-        newChar +
-        oldString.substring(index + 1);
+    return oldString.substring(0, index) + newChar + oldString.substring(index + 1);
   }
 }
 
 class MatrixUtils {
   static List<List<int>> createIntMatrix(int rows, int cols) {
-    final grid = List<List<int>>.generate(
-        rows, (i) => List<int>.generate(cols, (j) => i * cols + j));
+    final grid = List<List<int>>.generate(rows, (i) => List<int>.generate(cols, (j) => i * cols + j));
     return grid;
+  }
+}
+
+class MathUtils {
+  /// Clamps a <tt>double</tt> value to a given range.
+  /// @param x the value to clamp
+  /// @param min the minimum value of the range
+  /// @param max the maximum value of the range
+  /// @return the clamped value
+  static num clamp(num x, num min, num max) {
+    if (x < min) return min;
+    if (x > max) return max;
+    return x;
   }
 }

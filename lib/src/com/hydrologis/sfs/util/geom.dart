@@ -3,9 +3,9 @@ part of dart_sfs;
  * Copyright (c) 2016 Vivid Solutions.
  *
  * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
+ * are made available under the terms of the Eclipse  License v1.0
  * and Eclipse Distribution License v. 1.0 which accompanies this distribution.
- * The Eclipse Public License is available at http://www.eclipse.org/legal/epl-v10.html
+ * The Eclipse  License is available at http://www.eclipse.org/legal/epl-v10.html
  * and the Eclipse Distribution License is available at
  *
  * http://www.eclipse.org/org/documents/edl-v10.php.
@@ -213,24 +213,15 @@ class IntersectionMatrix {
   ///@param  other  an <code>IntersectionMatrix</code> to copy
   IntersectionMatrix.fromMatrix(IntersectionMatrix other) {
     _init();
-    matrix[Location.INTERIOR][Location.INTERIOR] =
-        other.matrix[Location.INTERIOR][Location.INTERIOR];
-    matrix[Location.INTERIOR][Location.BOUNDARY] =
-        other.matrix[Location.INTERIOR][Location.BOUNDARY];
-    matrix[Location.INTERIOR][Location.EXTERIOR] =
-        other.matrix[Location.INTERIOR][Location.EXTERIOR];
-    matrix[Location.BOUNDARY][Location.INTERIOR] =
-        other.matrix[Location.BOUNDARY][Location.INTERIOR];
-    matrix[Location.BOUNDARY][Location.BOUNDARY] =
-        other.matrix[Location.BOUNDARY][Location.BOUNDARY];
-    matrix[Location.BOUNDARY][Location.EXTERIOR] =
-        other.matrix[Location.BOUNDARY][Location.EXTERIOR];
-    matrix[Location.EXTERIOR][Location.INTERIOR] =
-        other.matrix[Location.EXTERIOR][Location.INTERIOR];
-    matrix[Location.EXTERIOR][Location.BOUNDARY] =
-        other.matrix[Location.EXTERIOR][Location.BOUNDARY];
-    matrix[Location.EXTERIOR][Location.EXTERIOR] =
-        other.matrix[Location.EXTERIOR][Location.EXTERIOR];
+    matrix[Location.INTERIOR][Location.INTERIOR] = other.matrix[Location.INTERIOR][Location.INTERIOR];
+    matrix[Location.INTERIOR][Location.BOUNDARY] = other.matrix[Location.INTERIOR][Location.BOUNDARY];
+    matrix[Location.INTERIOR][Location.EXTERIOR] = other.matrix[Location.INTERIOR][Location.EXTERIOR];
+    matrix[Location.BOUNDARY][Location.INTERIOR] = other.matrix[Location.BOUNDARY][Location.INTERIOR];
+    matrix[Location.BOUNDARY][Location.BOUNDARY] = other.matrix[Location.BOUNDARY][Location.BOUNDARY];
+    matrix[Location.BOUNDARY][Location.EXTERIOR] = other.matrix[Location.BOUNDARY][Location.EXTERIOR];
+    matrix[Location.EXTERIOR][Location.INTERIOR] = other.matrix[Location.EXTERIOR][Location.INTERIOR];
+    matrix[Location.EXTERIOR][Location.BOUNDARY] = other.matrix[Location.EXTERIOR][Location.BOUNDARY];
+    matrix[Location.EXTERIOR][Location.EXTERIOR] = other.matrix[Location.EXTERIOR][Location.EXTERIOR];
   }
 
   /// Adds one matrix to another.
@@ -268,29 +259,23 @@ class IntersectionMatrix {
   ///      are <code>{T, F, * , 0, 1, 2}</code>.
   ///@return                          true if the dimension symbol matches
   ///      the dimension value
-  static bool matchesDimValue(
-      int actualDimensionValue, String requiredDimensionSymbol) {
+  static bool matchesDimValue(int actualDimensionValue, String requiredDimensionSymbol) {
     if (requiredDimensionSymbol == Dimension.SYM_DONTCARE) {
       return true;
     }
-    if (requiredDimensionSymbol == Dimension.SYM_TRUE &&
-        (actualDimensionValue >= 0 || actualDimensionValue == Dimension.TRUE)) {
+    if (requiredDimensionSymbol == Dimension.SYM_TRUE && (actualDimensionValue >= 0 || actualDimensionValue == Dimension.TRUE)) {
       return true;
     }
-    if (requiredDimensionSymbol == Dimension.SYM_FALSE &&
-        actualDimensionValue == Dimension.FALSE) {
+    if (requiredDimensionSymbol == Dimension.SYM_FALSE && actualDimensionValue == Dimension.FALSE) {
       return true;
     }
-    if (requiredDimensionSymbol == Dimension.SYM_P &&
-        actualDimensionValue == Dimension.P) {
+    if (requiredDimensionSymbol == Dimension.SYM_P && actualDimensionValue == Dimension.P) {
       return true;
     }
-    if (requiredDimensionSymbol == Dimension.SYM_L &&
-        actualDimensionValue == Dimension.L) {
+    if (requiredDimensionSymbol == Dimension.SYM_L && actualDimensionValue == Dimension.L) {
       return true;
     }
-    if (requiredDimensionSymbol == Dimension.SYM_A &&
-        actualDimensionValue == Dimension.A) {
+    if (requiredDimensionSymbol == Dimension.SYM_A && actualDimensionValue == Dimension.A) {
       return true;
     }
     return false;
@@ -305,10 +290,8 @@ class IntersectionMatrix {
   ///      against. Possible values are <code>{T, F, * , 0, 1, 2}</code>.
   ///@return                           true if each of the required dimension
   ///      symbols encompass the corresponding actual dimension symbol
-  static bool matchesDimSymbols(
-      String actualDimensionSymbols, String requiredDimensionSymbols) {
-    IntersectionMatrix m =
-        IntersectionMatrix.fromDimensionSymbols(actualDimensionSymbols);
+  static bool matchesDimSymbols(String actualDimensionSymbols, String requiredDimensionSymbols) {
+    IntersectionMatrix m = IntersectionMatrix.fromDimensionSymbols(actualDimensionSymbols);
     return m.matches(requiredDimensionSymbols);
   }
 
@@ -333,8 +316,7 @@ class IntersectionMatrix {
     for (int i = 0; i < dimensionSymbols.length; i++) {
       int row = (i / 3).floor();
       int col = i % 3;
-      matrix[row][col] =
-          Dimension.toDimensionValue(dimensionSymbols[i]);
+      matrix[row][col] = Dimension.toDimensionValue(dimensionSymbols[i]);
     }
   }
 
@@ -382,8 +364,7 @@ class IntersectionMatrix {
     for (int i = 0; i < minimumDimensionSymbols.length; i++) {
       int row = (i / 3).floor();
       int col = i % 3;
-      setAtLeast(
-          row, col, Dimension.toDimensionValue(minimumDimensionSymbols[i]));
+      setAtLeast(row, col, Dimension.toDimensionValue(minimumDimensionSymbols[i]));
     }
   }
 
@@ -450,16 +431,11 @@ class IntersectionMatrix {
       //no need to get transpose because pattern matrix is symmetrical
       return isTouches(dimensionOfGeometryB, dimensionOfGeometryA);
     }
-    if ((dimensionOfGeometryA == Dimension.A &&
-            dimensionOfGeometryB == Dimension.A) ||
-        (dimensionOfGeometryA == Dimension.L &&
-            dimensionOfGeometryB == Dimension.L) ||
-        (dimensionOfGeometryA == Dimension.L &&
-            dimensionOfGeometryB == Dimension.A) ||
-        (dimensionOfGeometryA == Dimension.P &&
-            dimensionOfGeometryB == Dimension.A) ||
-        (dimensionOfGeometryA == Dimension.P &&
-            dimensionOfGeometryB == Dimension.L)) {
+    if ((dimensionOfGeometryA == Dimension.A && dimensionOfGeometryB == Dimension.A) ||
+        (dimensionOfGeometryA == Dimension.L && dimensionOfGeometryB == Dimension.L) ||
+        (dimensionOfGeometryA == Dimension.L && dimensionOfGeometryB == Dimension.A) ||
+        (dimensionOfGeometryA == Dimension.P && dimensionOfGeometryB == Dimension.A) ||
+        (dimensionOfGeometryA == Dimension.P && dimensionOfGeometryB == Dimension.L)) {
       return matrix[Location.INTERIOR][Location.INTERIOR] == Dimension.FALSE &&
           (isTrue(matrix[Location.INTERIOR][Location.BOUNDARY]) ||
               isTrue(matrix[Location.BOUNDARY][Location.INTERIOR]) ||
@@ -492,26 +468,17 @@ class IntersectionMatrix {
   ///@return                       <code>true</code> if the two <code>Geometry</code>s
   ///      related by this <code>IntersectionMatrix</code> cross.
   bool isCrosses(int dimensionOfGeometryA, int dimensionOfGeometryB) {
-    if ((dimensionOfGeometryA == Dimension.P &&
-            dimensionOfGeometryB == Dimension.L) ||
-        (dimensionOfGeometryA == Dimension.P &&
-            dimensionOfGeometryB == Dimension.A) ||
-        (dimensionOfGeometryA == Dimension.L &&
-            dimensionOfGeometryB == Dimension.A)) {
-      return isTrue(matrix[Location.INTERIOR][Location.INTERIOR]) &&
-          isTrue(matrix[Location.INTERIOR][Location.EXTERIOR]);
+    if ((dimensionOfGeometryA == Dimension.P && dimensionOfGeometryB == Dimension.L) ||
+        (dimensionOfGeometryA == Dimension.P && dimensionOfGeometryB == Dimension.A) ||
+        (dimensionOfGeometryA == Dimension.L && dimensionOfGeometryB == Dimension.A)) {
+      return isTrue(matrix[Location.INTERIOR][Location.INTERIOR]) && isTrue(matrix[Location.INTERIOR][Location.EXTERIOR]);
     }
-    if ((dimensionOfGeometryA == Dimension.L &&
-            dimensionOfGeometryB == Dimension.P) ||
-        (dimensionOfGeometryA == Dimension.A &&
-            dimensionOfGeometryB == Dimension.P) ||
-        (dimensionOfGeometryA == Dimension.A &&
-            dimensionOfGeometryB == Dimension.L)) {
-      return isTrue(matrix[Location.INTERIOR][Location.INTERIOR]) &&
-          isTrue(matrix[Location.EXTERIOR][Location.INTERIOR]);
+    if ((dimensionOfGeometryA == Dimension.L && dimensionOfGeometryB == Dimension.P) ||
+        (dimensionOfGeometryA == Dimension.A && dimensionOfGeometryB == Dimension.P) ||
+        (dimensionOfGeometryA == Dimension.A && dimensionOfGeometryB == Dimension.L)) {
+      return isTrue(matrix[Location.INTERIOR][Location.INTERIOR]) && isTrue(matrix[Location.EXTERIOR][Location.INTERIOR]);
     }
-    if (dimensionOfGeometryA == Dimension.L &&
-        dimensionOfGeometryB == Dimension.L) {
+    if (dimensionOfGeometryA == Dimension.L && dimensionOfGeometryB == Dimension.L) {
       return matrix[Location.INTERIOR][Location.INTERIOR] == 0;
     }
     return false;
@@ -548,11 +515,10 @@ class IntersectionMatrix {
   ///@return    <code>true</code> if the first <code>Geometry</code> covers the
   ///      second
   bool isCovers() {
-    bool hasPointInCommon =
-        isTrue(matrix[Location.INTERIOR][Location.INTERIOR]) ||
-            isTrue(matrix[Location.INTERIOR][Location.BOUNDARY]) ||
-            isTrue(matrix[Location.BOUNDARY][Location.INTERIOR]) ||
-            isTrue(matrix[Location.BOUNDARY][Location.BOUNDARY]);
+    bool hasPointInCommon = isTrue(matrix[Location.INTERIOR][Location.INTERIOR]) ||
+        isTrue(matrix[Location.INTERIOR][Location.BOUNDARY]) ||
+        isTrue(matrix[Location.BOUNDARY][Location.INTERIOR]) ||
+        isTrue(matrix[Location.BOUNDARY][Location.BOUNDARY]);
 
     return hasPointInCommon &&
         matrix[Location.EXTERIOR][Location.INTERIOR] == Dimension.FALSE &&
@@ -568,11 +534,10 @@ class IntersectionMatrix {
   ///@return    <code>true</code> if the first <code>Geometry</code>
   /// is covered by the second
   bool isCoveredBy() {
-    bool hasPointInCommon =
-        isTrue(matrix[Location.INTERIOR][Location.INTERIOR]) ||
-            isTrue(matrix[Location.INTERIOR][Location.BOUNDARY]) ||
-            isTrue(matrix[Location.BOUNDARY][Location.INTERIOR]) ||
-            isTrue(matrix[Location.BOUNDARY][Location.BOUNDARY]);
+    bool hasPointInCommon = isTrue(matrix[Location.INTERIOR][Location.INTERIOR]) ||
+        isTrue(matrix[Location.INTERIOR][Location.BOUNDARY]) ||
+        isTrue(matrix[Location.BOUNDARY][Location.INTERIOR]) ||
+        isTrue(matrix[Location.BOUNDARY][Location.BOUNDARY]);
 
     return hasPointInCommon &&
         matrix[Location.INTERIOR][Location.EXTERIOR] == Dimension.FALSE &&
@@ -619,16 +584,13 @@ class IntersectionMatrix {
   ///      function to return <code>true</code>, the <code>Geometry</code>s must
   ///      be two points, two curves or two surfaces.
   bool isOverlaps(int dimensionOfGeometryA, int dimensionOfGeometryB) {
-    if ((dimensionOfGeometryA == Dimension.P &&
-            dimensionOfGeometryB == Dimension.P) ||
-        (dimensionOfGeometryA == Dimension.A &&
-            dimensionOfGeometryB == Dimension.A)) {
+    if ((dimensionOfGeometryA == Dimension.P && dimensionOfGeometryB == Dimension.P) ||
+        (dimensionOfGeometryA == Dimension.A && dimensionOfGeometryB == Dimension.A)) {
       return isTrue(matrix[Location.INTERIOR][Location.INTERIOR]) &&
           isTrue(matrix[Location.INTERIOR][Location.EXTERIOR]) &&
           isTrue(matrix[Location.EXTERIOR][Location.INTERIOR]);
     }
-    if (dimensionOfGeometryA == Dimension.L &&
-        dimensionOfGeometryB == Dimension.L) {
+    if (dimensionOfGeometryA == Dimension.L && dimensionOfGeometryB == Dimension.L) {
       return matrix[Location.INTERIOR][Location.INTERIOR] == 1 &&
           isTrue(matrix[Location.INTERIOR][Location.EXTERIOR]) &&
           isTrue(matrix[Location.EXTERIOR][Location.INTERIOR]);
@@ -650,8 +612,7 @@ class IntersectionMatrix {
     }
     for (int ai = 0; ai < 3; ai++) {
       for (int bi = 0; bi < 3; bi++) {
-        if (!matchesDimValue(
-            matrix[ai][bi], requiredDimensionSymbols[3 * ai + bi])) {
+        if (!matchesDimValue(matrix[ai][bi], requiredDimensionSymbols[3 * ai + bi])) {
           return false;
         }
       }
@@ -684,8 +645,7 @@ class IntersectionMatrix {
     String base = "123456789";
     for (int ai = 0; ai < 3; ai++) {
       for (int bi = 0; bi < 3; bi++) {
-        base = Stringutils.replaceCharAt(
-            base, 3 * ai + bi, Dimension.toDimensionSymbol(matrix[ai][bi]));
+        base = StringUtils.replaceCharAt(base, 3 * ai + bi, Dimension.toDimensionSymbol(matrix[ai][bi]));
       }
     }
     return base;
@@ -723,8 +683,7 @@ class CoordinateXY extends Coordinate {
   num get z => Coordinate.NULL_ORDINATE;
 
   /// The z-ordinate is not supported
-  set z(newZ) =>
-      ArgumentError("CoordinateXY dimension 2 does not support z-ordinate");
+  set z(newZ) => ArgumentError("CoordinateXY dimension 2 does not support z-ordinate");
 
   double getOrdinate(int ordinateIndex) {
     switch (ordinateIndex) {
@@ -754,68 +713,6 @@ class CoordinateXY extends Coordinate {
   }
 }
 
-/// Useful utility functions for handling Coordinate objects.
-class Coordinates {
-  /// Factory method providing access to common Coordinate implementations.
-  ///
-  /// @param dimension
-  /// @return created coordinate
-  static Coordinate create(int dimension) {
-    return createDimMeas(dimension, 0);
-  }
-
-  /// Factory method providing access to common Coordinate implementations.
-  ///
-  /// @param dimension
-  /// @param measures
-  /// @return created coordinate
-  static Coordinate createDimMeas(int dimension, int measures) {
-    if (dimension == 2) {
-      return CoordinateXY.empty();
-    } else if (dimension == 3 && measures == 0) {
-      return Coordinate.empty();
-//    } else if (dimension == 3 && measures == 1) {
-//      return new CoordinateXYM();
-//    } else if (dimension == 4 && measures == 1) {
-//      return new CoordinateXYZM();
-    }
-    return Coordinate.empty();
-  }
-
-  /// Determine dimension based on subclass of {@link Coordinate}.
-  ///
-  /// @param coordinate supplied coordinate
-  /// @return number of ordinates recorded
-  static int dimension(Coordinate coordinate) {
-    if (coordinate is CoordinateXY) {
-      return 2;
-//    } else if (coordinate is CoordinateXYM) {
-//      return 3;
-//    } else if (coordinate is CoordinateXYZM) {
-//      return 4;
-    } else if (coordinate is Coordinate) {
-      return 3;
-    }
-    return 3;
-  }
-
-  /// Determine number of measures based on subclass of {@link Coordinate}.
-  ///
-  /// @param coordinate supplied coordinate
-  /// @return number of measures recorded
-  static int measures(Coordinate coordinate) {
-    if (coordinate is CoordinateXY) {
-      return 0;
-//    } else if (coordinate is CoordinateXYM) {
-//      return 1;
-//    } else if (coordinate is CoordinateXYZM) {
-//      return 1;
-    } else if (coordinate is Coordinate) {
-      return 0;
-    }
-    return 0;
-  }
-}
 
 /// The internal representation of a list of coordinates inside a Geometry.
 /// <p>
@@ -845,22 +742,22 @@ class Coordinates {
 /// @version 1.7
 abstract class CoordinateSequence {
   /// Standard ordinate index value for, where X is 0 */
-  int X = 0;
+  static const int X = 0;
 
   /// Standard ordinate index value for, where Y is 1 */
-  int Y = 1;
+  static const int Y = 1;
 
   /// Standard ordinate index value for, where Z is 2.
   ///
   /// <p>This constant assumes XYZM coordinate sequence definition, please check this assumption
   /// using {@link #getDimension()} and {@link #getMeasures()} before use.
-  int Z = 2;
+  static const int Z = 2;
 
   /// Standard ordinate index value for, where M is 3.
   ///
   /// <p>This constant assumes XYZM coordinate sequence definition, please check this assumption
   /// using {@link #getDimension()} and {@link #getMeasures()} before use.
-  int M = 3;
+  static const int M = 3;
 
   /// Returns the dimension (number of ordinates in each coordinate) for this sequence.
   ///
@@ -1273,7 +1170,7 @@ class PrecisionModel implements Comparable {
   }
 
   ///  Sets the multiplying factor used to obtain a precise coordinate.
-  /// This method is private because PrecisionModel is an immutable (value) type.
+  /// This method is  because PrecisionModel is an immutable (value) type.
   void setScale(double scale) {
     this.scale = scale.abs();
   }
@@ -1323,8 +1220,7 @@ class PrecisionModel implements Comparable {
       return false;
     }
     PrecisionModel otherPrecisionModel = other;
-    return modelType == otherPrecisionModel.modelType &&
-        scale == otherPrecisionModel.scale;
+    return modelType == otherPrecisionModel.modelType && scale == otherPrecisionModel.scale;
   }
 
   ///  Compares this {@link PrecisionModel} object with the specified object for order.
@@ -1404,8 +1300,7 @@ class LinearComponentExtracter implements GeometryComponentFilter {
   /// @param geoms the collection of geometries from which to extract linear components
   /// @param lines the collection to add the extracted linear components to
   /// @return the collection of linear components (LineStrings or LinearRings)
-  static List<LineString> getLinesFromListAndList(
-      List<Geometry> geoms, List<LineString> lines) {
+  static List<LineString> getLinesFromListAndList(List<Geometry> geoms, List<LineString> lines) {
     geoms.forEach((g) => getLinesFromGeomAndList(g, lines));
     return lines;
   }
@@ -1417,10 +1312,8 @@ class LinearComponentExtracter implements GeometryComponentFilter {
   /// @param lines the collection to add the extracted linear components to
   /// @param forceToLineString true if LinearRings should be converted to LineStrings
   /// @return the collection of linear components (LineStrings or LinearRings)
-  static List<LineString> getLinesFromListAndListForce(
-      List<Geometry> geoms, List<LineString> lines, bool forceToLineString) {
-    geoms.forEach(
-        (g) => getLinesFromGeomAndListForce(g, lines, forceToLineString));
+  static List<LineString> getLinesFromListAndListForce(List<Geometry> geoms, List<LineString> lines, bool forceToLineString) {
+    geoms.forEach((g) => getLinesFromGeomAndListForce(g, lines, forceToLineString));
     return lines;
   }
 
@@ -1430,8 +1323,7 @@ class LinearComponentExtracter implements GeometryComponentFilter {
   /// @param geom the geometry from which to extract linear components
   /// @param lines the Collection to add the extracted linear components to
   /// @return the Collection of linear components (LineStrings or LinearRings)
-  static List<LineString> getLinesFromGeomAndList(
-      Geometry geom, List<LineString> lines) {
+  static List<LineString> getLinesFromGeomAndList(Geometry geom, List<LineString> lines) {
     if (geom is LineString) {
       lines.add(geom);
     } else {
@@ -1447,10 +1339,8 @@ class LinearComponentExtracter implements GeometryComponentFilter {
   /// @param lines the Collection to add the extracted linear components to
   /// @param forceToLineString true if LinearRings should be converted to LineStrings
   /// @return the Collection of linear components (LineStrings or LinearRings)
-  static List<LineString> getLinesFromGeomAndListForce(
-      Geometry geom, List<LineString> lines, bool forceToLineString) {
-    geom.apply(
-        LinearComponentExtracter.forceLineString(lines, forceToLineString));
+  static List<LineString> getLinesFromGeomAndListForce(Geometry geom, List<LineString> lines, bool forceToLineString) {
+    geom.apply(LinearComponentExtracter.forceLineString(lines, forceToLineString));
     return lines;
   }
 
@@ -1473,11 +1363,9 @@ class LinearComponentExtracter implements GeometryComponentFilter {
   /// @param geom the geometry from which to extract linear components
   /// @param forceToLineString true if LinearRings should be converted to LineStrings
   /// @return the list of linear components
-  static List<LineString> getLinesFromGeomForce(
-      Geometry geom, bool forceToLineString) {
+  static List<LineString> getLinesFromGeomForce(Geometry geom, bool forceToLineString) {
     List<LineString> lines = [];
-    geom.apply(
-        LinearComponentExtracter.forceLineString(lines, forceToLineString));
+    geom.apply(LinearComponentExtracter.forceLineString(lines, forceToLineString));
     return lines;
   }
 
@@ -1506,8 +1394,7 @@ class LinearComponentExtracter implements GeometryComponentFilter {
   }
 
   /// Constructs a LineExtracterFilter with a list in which to store LineStrings found.
-  LinearComponentExtracter.forceLineString(
-      List<LineString> lines, bool isForcedToLineString) {
+  LinearComponentExtracter.forceLineString(List<LineString> lines, bool isForcedToLineString) {
     this._lines = lines;
     this._isForcedToLineString = isForcedToLineString;
   }
