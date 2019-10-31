@@ -4,6 +4,7 @@
 library dart_sfs;
 
 import "dart:collection";
+import "dart:core" ;
 import "package:meta/meta.dart";
 import "dart:math" as math;
 import "dart:convert" as json;
@@ -27,4 +28,6 @@ part "src/com/hydrologis/sfs/polyhedral_surface.dart";
 part "src/com/hydrologis/sfs/geojson.dart";
 part "src/com/hydrologis/sfs/feature.dart";
 part "src/com/hydrologis/sfs/line_intersection.dart";
+part "src/com/hydrologis/sfs/util/geom.dart";
+part "src/com/hydrologis/sfs/util/avltree.dart";
 

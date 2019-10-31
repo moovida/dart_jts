@@ -2,6 +2,8 @@ part of dart_sfs;
 
 /// The abstract base class for all geometries.
 abstract class Geometry {
+  GeometryFactory _defaultGeometryFactory = new GeometryFactory();
+
   int _srid;
 
   /// Creates a geometry from the WKT string [wkt].
@@ -100,6 +102,18 @@ abstract class Geometry {
   Envelope _cachedEnvelope;
 
   Envelope _computeEnvelope();
+
+  GeometryFactory getFactory() {
+    return _defaultGeometryFactory;
+  }
+
+  ///  Performs an operation with or on this Geometry and its
+  ///  component Geometry's.  Only GeometryCollections and
+  ///  Polygons have component Geometry's; for Polygons they are the LinearRings
+  ///  of the shell and holes.
+  ///
+  ///@param  filter  the filter to apply to this <code>Geometry</code>.
+  void apply(GeometryComponentFilter filter);
 
   /// A WKT representation of the geometry
   @specification(name: "asText()")

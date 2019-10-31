@@ -138,6 +138,11 @@ class PolyhedralSurface extends Geometry
   @specification(name: "getGeometryN")
   Geometry getGeometryN(int n) => elementAt(n);
 
+  void apply(GeometryComponentFilter filter) {
+    filter.filter(this);
+    _patches.forEach((g) => g.apply(filter));
+  }
+
   @override
   // TODO: implement isSimple
   bool get isSimple => null;

@@ -48,7 +48,9 @@ class LineString extends Geometry
     _require(points != null);
     _require(points.length == 2);
     _require(points.every((p) => p != null && !p.isEmpty));
-    _require(!points.first.equals2D(points.last));
+    if (points.length == 2) {
+      _require(!points.first.equals2D(points.last));
+    }
     _points = List.from(points, growable: false);
   }
 
@@ -65,6 +67,13 @@ class LineString extends Geometry
     _require(this.length >= 4, "a ring must have at least four nodes");
     _require(this.isClosed, "a ring must be closed");
     _require(this._checkIsSimple(), "a ring must be simple");
+  }
+
+  LineString.fromCoordinates(List<Coordinate> coordinates) {
+    _require(coordinates != null);
+    _require(coordinates.length == 2);
+    _require(coordinates.every((p) => p != null));
+    _points = coordinates.map((c) => Point(c.x, c.y)).toList();
   }
 
   /// Creates a new linestring from the WKT string [wkt].
@@ -105,6 +114,10 @@ class LineString extends Geometry
 
   Coordinate getCoordinateN(int n) {
     return elementAt(n).toCoordinate();
+  }
+
+  void apply(GeometryComponentFilter filter) {
+    filter.filter(this);
   }
 
   @override

@@ -86,6 +86,10 @@ class Point extends Geometry {
     return this;
   }
 
+  void apply(GeometryComponentFilter filter) {
+    filter.filter(this);
+  }
+
   @override
   bool get isEmpty => x == null || y == null;
 

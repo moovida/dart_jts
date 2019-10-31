@@ -61,6 +61,11 @@ class GeometryCollection extends Geometry
   @specification(name: "getGeometryN")
   Geometry getGeometryN(int n) => elementAt(n);
 
+  void apply(GeometryComponentFilter filter) {
+    filter.filter(this);
+    _geometries.forEach((g) => g.apply(filter));
+  }
+
   /// Replies the <em>n</em>-th geometry in this collection.
   ///
   /// This is the Dart'ish implemenation of `getGeometryN()` using

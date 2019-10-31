@@ -92,12 +92,18 @@ class Polygon extends Surface {
     return coords;
   }
 
-  int getNumGeometries(){
+  int getNumGeometries() {
     return 1;
   }
 
-  Geometry getGeometryN(int n){
+  Geometry getGeometryN(int n) {
     return this;
+  }
+
+  void apply(GeometryComponentFilter filter) {
+    filter.filter(this);
+    _exterior.apply(filter);
+    _interiors.forEach((g) => g.apply(filter));
   }
 
   /// The exterior ring of this polygon.
