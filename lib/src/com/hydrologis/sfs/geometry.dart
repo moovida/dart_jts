@@ -2,14 +2,16 @@ part of dart_sfs;
 
 /// The abstract base class for all geometries.
 abstract class Geometry {
-  GeometryFactory _defaultGeometryFactory = new GeometryFactory();
+  GeometryFactory _defaultGeometryFactory = GeometryFactory.defaultPrecision();
+
+  GeometryComponentFilter _geometryChangedFilter = GeometryChangedFilter();
 
   int _srid;
 
   /// Creates a geometry from the WKT string [wkt].
   ///
   /// Throws a [WKTError] if [wkt] isn't a valid WKT geometry.
-  factory Geometry.wkt(String wkt) => parseWKT(wkt);
+  factory Geometry.wkt(String wkt) => WKTReader().read(wkt);
 
   /// Creates a geometry from a GeoJSON string [json].
   ///
@@ -107,21 +109,59 @@ abstract class Geometry {
     return _defaultGeometryFactory;
   }
 
+  ///  Returns the <code>PrecisionModel</code> used by the <code>Geometry</code>.
+  ///
+  ///@return    the specification of the grid of allowable points, for this
+  ///      <code>Geometry</code> and all other <code>Geometry</code>s
+  PrecisionModel getPrecisionModel() {
+    return _defaultGeometryFactory.getPrecisionModel();
+  }
+
   ///  Performs an operation with or on this Geometry and its
   ///  component Geometry's.  Only GeometryCollections and
   ///  Polygons have component Geometry's; for Polygons they are the LinearRings
   ///  of the shell and holes.
   ///
   ///@param  filter  the filter to apply to this <code>Geometry</code>.
-  void apply(GeometryComponentFilter filter);
+  void applyGCF(GeometryComponentFilter filter);
 
-  /// A WKT representation of the geometry
-  @specification(name: "asText()")
-  String get asText {
-    var buffer = StringBuffer();
-    var writer = WKTWriter(buffer);
-    _writeTaggedWKT(writer, withZ: is3D, withM: isMeasured);
-    return buffer.toString();
+  void applyCSF(CoordinateSequenceFilter filter);
+
+  CoordinateSequence getCoordinateSequence() {
+    return CoordinateArraySequence(getCoordinates());
+  }
+
+  /**
+   * Notifies this geometry that its coordinates have been changed by an external
+   * party (for example, via a {@link CoordinateFilter}).
+   * When this method is called the geometry will flush
+   * and/or update any derived information it has cached (such as its {@link Envelope} ).
+   * The operation is applied to all component Geometries.
+   */
+  void geometryChanged() {
+    applyGCF(_geometryChangedFilter);
+  }
+
+  /**
+   * Notifies this Geometry that its Coordinates have been changed by an external
+   * party. When #geometryChanged is called, this method will be called for
+   * this Geometry and its component Geometries.
+   *
+   * @see #apply(GeometryComponentFilter)
+   */
+  void geometryChangedAction() {
+    _cachedEnvelope = null;
+  }
+
+  ///  Returns the Well-known Text representation of this <code>Geometry</code>.
+  ///  For a definition of the Well-known Text format, see the OpenGIS Simple
+  ///  Features Specification.
+  ///
+  ///@return    the Well-known Text representation of this <code>Geometry</code>
+  @specification(name: "toText()")
+  String toText() {
+    WKTWriter writer = WKTWriter();
+    return writer.write(this);
   }
 
   _writeTaggedWKT(writer, {bool withZ: false, bool withM: false});
@@ -198,6 +238,54 @@ abstract class Geometry {
 }
 
 class GeometryFactory {
+  CoordinateSequenceFactory _coordinateSequenceFactory;
+
+  PrecisionModel _precisionModel;
+  int _SRID;
+
+  /// Gets the SRID value defined for this factory.
+  ///
+  /// @return the factory SRID value
+  int getSRID() {
+    return _SRID;
+  }
+
+  /// Constructs a GeometryFactory that generates Geometries having the given
+  /// PrecisionModel, spatial-reference ID, and CoordinateSequence implementation.
+  GeometryFactory(PrecisionModel precisionModel, int SRID, CoordinateSequenceFactory coordinateSequenceFactory) {
+    this._precisionModel = precisionModel;
+    this._coordinateSequenceFactory = coordinateSequenceFactory;
+    this._SRID = SRID;
+  }
+
+  /// Constructs a GeometryFactory that generates Geometries having the given
+  /// CoordinateSequence implementation, a double-precision floating PrecisionModel and a
+  /// spatial-reference ID of 0.
+  GeometryFactory.withCoordinateSequenceFactory(CoordinateSequenceFactory coordinateSequenceFactory) : this(PrecisionModel(), 0, coordinateSequenceFactory);
+
+  /// Constructs a GeometryFactory that generates Geometries having the given
+  /// {@link PrecisionModel} and the default CoordinateSequence
+  /// implementation.
+  ///
+  /// @param precisionModel the PrecisionModel to use
+  GeometryFactory.withPrecisionModel(PrecisionModel precisionModel) : this(precisionModel, 0, getDefaultCoordinateSequenceFactory());
+
+  /// Constructs a GeometryFactory that generates Geometries having the given
+  /// {@link PrecisionModel} and spatial-reference ID, and the default CoordinateSequence
+  /// implementation.
+  ///
+  /// @param precisionModel the PrecisionModel to use
+  /// @param SRID the SRID to use
+  GeometryFactory.withPrecisionModelSrid(PrecisionModel precisionModel, int SRID) : this(precisionModel, SRID, getDefaultCoordinateSequenceFactory());
+
+  /// Constructs a GeometryFactory that generates Geometries having a floating
+  /// PrecisionModel and a spatial-reference ID of 0.
+  GeometryFactory.defaultPrecision() : this.withPrecisionModelSrid(PrecisionModel(), 0);
+
+  static CoordinateSequenceFactory getDefaultCoordinateSequenceFactory() {
+    return CoordinateArraySequenceFactory();
+  }
+
   /// Creates a {@link MultiPoint} using the given {@link Point}s.
   /// A null or empty array will create an empty MultiPoint.
   ///
@@ -221,6 +309,10 @@ class GeometryFactory {
     return LinearRing.fromCoordinates(coordinates);
   }
 
+  MultiLineString createMultiLineString(List<LineString> lines) {
+    return MultiLineString(lines);
+  }
+
   /// Creates a Point using the given Coordinate.
   /// A null Coordinate creates an empty Geometry.
   ///
@@ -228,7 +320,7 @@ class GeometryFactory {
   /// @return the created Point
   Point createPoint(Coordinate coordinate) {
     if (coordinate == null) return Point.empty();
-    return Point(coordinate.x, coordinate.y);
+    return Point(coordinate.x, coordinate.y, z: coordinate.z, m: coordinate.getM());
   }
 
   Polygon createPolygon(LinearRing ring) {
@@ -260,21 +352,41 @@ class GeometryFactory {
 
     // point?
     if (envelope.getMinX() == envelope.getMaxX() && envelope.getMinY() == envelope.getMaxY()) {
-      return createPoint(new Coordinate(envelope.getMinX(), envelope.getMinY()));
+      return createPoint(Coordinate(envelope.getMinX(), envelope.getMinY()));
     }
 
     // vertical or horizontal line?
     if (envelope.getMinX() == envelope.getMaxX() || envelope.getMinY() == envelope.getMaxY()) {
-      return createLineString([new Coordinate(envelope.getMinX(), envelope.getMinY()), new Coordinate(envelope.getMaxX(), envelope.getMaxY())]);
+      return createLineString([Coordinate(envelope.getMinX(), envelope.getMinY()), Coordinate(envelope.getMaxX(), envelope.getMaxY())]);
     }
 
     // create a CW ring for the polygon
     return createPolygon(createLinearRing([
-      new Coordinate(envelope.getMinX(), envelope.getMinY()),
-      new Coordinate(envelope.getMinX(), envelope.getMaxY()),
-      new Coordinate(envelope.getMaxX(), envelope.getMaxY()),
-      new Coordinate(envelope.getMaxX(), envelope.getMinY()),
-      new Coordinate(envelope.getMinX(), envelope.getMinY())
+      Coordinate(envelope.getMinX(), envelope.getMinY()),
+      Coordinate(envelope.getMinX(), envelope.getMaxY()),
+      Coordinate(envelope.getMaxX(), envelope.getMaxY()),
+      Coordinate(envelope.getMaxX(), envelope.getMinY()),
+      Coordinate(envelope.getMinX(), envelope.getMinY())
     ]));
+  }
+
+  CoordinateSequenceFactory getCoordinateSequenceFactory() {
+    return _coordinateSequenceFactory;
+  }
+
+  /// Returns the PrecisionModel that Geometries created by this factory
+  /// will be associated with.
+  ///
+  /// @return the PrecisionModel for this factory
+  PrecisionModel getPrecisionModel() {
+    return _precisionModel;
+  }
+
+  MultiPolygon createMultiPolygon(List<Polygon> polygons) {
+    return MultiPolygon(polygons);
+  }
+
+  GeometryCollection createGeometryCollection(List<Geometry> geometries) {
+    return GeometryCollection(geometries);
   }
 }

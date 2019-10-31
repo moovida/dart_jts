@@ -5,9 +5,11 @@ library dart_sfs;
 
 import "dart:collection";
 import "dart:core" ;
+import 'package:intl/intl.dart';
 import "package:meta/meta.dart";
 import "dart:math" as math;
 import "dart:convert" as json;
+import 'package:collection/collection.dart';
 
 part "src/com/hydrologis/sfs/io.dart";
 part "src/com/hydrologis/sfs/annotations.dart";
@@ -17,7 +19,6 @@ part "src/com/hydrologis/sfs/ops.dart";
 part "src/com/hydrologis/sfs/util.dart";
 part "src/com/hydrologis/sfs/geometry.dart";
 part "src/com/hydrologis/sfs/point.dart";
-part "src/com/hydrologis/sfs/wkt.dart";
 part "src/com/hydrologis/sfs/geometry_collection.dart";
 part "src/com/hydrologis/sfs/multipoint.dart";
 part "src/com/hydrologis/sfs/linestring.dart";

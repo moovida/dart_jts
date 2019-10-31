@@ -27,11 +27,9 @@ class Polygon extends Surface {
     _require(exteriorRing != null);
     //TODO: valdiate that exteriorRing is indeed a ring
     if (interiorRings == null) interiorRings = [];
-    _require(interiorRings.every((r) => r != null),
-        "interior rings must not be null");
+    _require(interiorRings.every((r) => r != null), "interior rings must not be null");
     if (exteriorRing.isEmpty) {
-      _require(interiorRings.every((r) => r.isEmpty),
-          "exterior ring is empty => all interior rings must be empty");
+      _require(interiorRings.every((r) => r.isEmpty), "exterior ring is empty => all interior rings must be empty");
       _exterior = null;
       _interiors = null;
       return;
@@ -54,9 +52,9 @@ class Polygon extends Surface {
   /// Throws a [WKTError] if [wkt] isn't a valid representation of
   /// a [Polygon].
   factory Polygon.wkt(String wkt) {
-    var g = parseWKT(wkt);
+    var g = WKTReader().read(wkt);
     if (g is! Polygon) {
-      throw WKTError("WKT string doesn't represent a Polygon");
+      throw ArgumentError("WKT string doesn't represent a Polygon");
     }
     return g;
   }
@@ -69,8 +67,7 @@ class Polygon extends Surface {
   /// Throws [ArgumentError] if the preconditions aren't met.
   Polygon.triangle(LineString exterior) {
     _require(exterior != null);
-    _require(exterior.map((p) => Coordinate(p.x, p.y)).toSet().length == 3,
-        "a triangle must consist of three non-colinear nodes");
+    _require(exterior.map((p) => Coordinate(p.x, p.y)).toSet().length == 3, "a triangle must consist of three non-colinear nodes");
     _require(exterior.isClosed, "the exterior of a triangle must be closed");
     //TODO: check for colienarity of the three points
 
@@ -100,23 +97,36 @@ class Polygon extends Surface {
     return this;
   }
 
-  void apply(GeometryComponentFilter filter) {
+  void applyGCF(GeometryComponentFilter filter) {
     filter.filter(this);
-    _exterior.apply(filter);
-    _interiors.forEach((g) => g.apply(filter));
+    _exterior.applyGCF(filter);
+    _interiors.forEach((g) => g.applyGCF(filter));
+  }
+
+  void applyCSF(CoordinateSequenceFilter filter) {
+    _exterior.applyCSF(filter);
+    if (!filter.isDone()) {
+      for (int i = 0; i < _interiors.length; i++) {
+        _interiors[i].applyCSF(filter);
+        if (filter.isDone()) {
+          break;
+        }
+      }
+    }
+    if (filter.isGeometryChanged()) {
+      geometryChanged();
+    }
   }
 
   /// The exterior ring of this polygon.
   ///
   /// Replies an empty linestring if this polygon is empty.
   @specification(name: "exteriorRing()")
-  LineString get exteriorRing =>
-      _exterior == null ? LineString.empty() : _exterior;
+  LineString get exteriorRing => _exterior == null ? LineString.empty() : _exterior;
 
   /// The interior rings. Replies an empty iterable, if
   /// this polygon doesn't have interior rings.
-  Iterable<LineString> get interiorRings =>
-      _interiors == null ? [] : _interiors;
+  Iterable<LineString> get interiorRings => _interiors == null ? [] : _interiors;
 
   /// the number of interior rings
   @specification(name: "numInteriorRing()")

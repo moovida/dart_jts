@@ -26,9 +26,9 @@ class PolyhedralSurface extends Geometry with IterableMixin<Polygon>, _GeometryC
   /// Throws a [WKTError] if [wkt] isn't a valid representation of
   /// a [PolyhedralSurface].
   factory PolyhedralSurface.wkt(String wkt) {
-    var g = parseWKT(wkt);
+    var g = WKTReader().read(wkt);
     if (g is! PolyhedralSurface) {
-      throw WKTError("WKT string doesn't represent a PolyhedralSurface");
+      throw ArgumentError("WKT string doesn't represent a PolyhedralSurface");
     }
     return g;
   }
@@ -59,7 +59,7 @@ class PolyhedralSurface extends Geometry with IterableMixin<Polygon>, _GeometryC
     throw UnimplementedError();
   }
 
-  Iterator<Polygon> get iterator => _patches == null ? [].iterator : _patches.iterator;
+  Iterator<Polygon> get iterator => _patches == null ? <Polygon>[].iterator : _patches.iterator;
 
   @override
   int get dimension => 2;
@@ -134,9 +134,16 @@ class PolyhedralSurface extends Geometry with IterableMixin<Polygon>, _GeometryC
   @specification(name: "getGeometryN")
   Geometry getGeometryN(int n) => elementAt(n);
 
-  void apply(GeometryComponentFilter filter) {
+  void applyGCF(GeometryComponentFilter filter) {
     filter.filter(this);
-    _patches.forEach((g) => g.apply(filter));
+    _patches.forEach((g) => g.applyGCF(filter));
+  }
+
+  void applyCSF(CoordinateSequenceFilter filter) {
+    _patches.forEach((g) => g.applyCSF(filter));
+    if (filter.isGeometryChanged()) {
+      geometryChanged();
+    }
   }
 
   @override
@@ -157,9 +164,9 @@ class Tin extends PolyhedralSurface {
   /// Throws a [WKTError] if [wkt] isn't a valid representation of
   /// a [Tin].
   factory Tin.wkt(String wkt) {
-    var g = parseWKT(wkt);
+    var g = WKTReader().read(wkt);
     if (g is! Tin) {
-      throw WKTError("WKT string doesn't represent a Tin");
+      throw AssertionError("WKT string doesn't represent a Tin");
     }
     return g;
   }

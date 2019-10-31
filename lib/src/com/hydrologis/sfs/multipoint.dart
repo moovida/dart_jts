@@ -29,9 +29,9 @@ class MultiPoint extends GeometryCollection {
   /// Throws a [WKTError] if [wkt] isn't a valid representation of
   /// a [MultiPoint].
   factory MultiPoint.wkt(String wkt) {
-    var g = parseWKT(wkt);
+    var g = WKTReader().read(wkt);
     if (g is! MultiPoint) {
-      throw WKTError("WKT string doesn't represent a MultiPoint");
+      throw ArgumentError("WKT string doesn't represent a MultiPoint");
     }
     return g;
   }

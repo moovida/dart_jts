@@ -13,6 +13,12 @@ _require(cond, [msg]) {
 //  int compareTo(T other);
 //}
 
+class FormattingUtils {
+
+
+}
+
+
 /// Utilities for collections
 class CollectionsUtils {
   /// Shift a list of items from a given [index] to the first position.
@@ -46,10 +52,15 @@ class CollectionsUtils {
     return false;
   }
 
-  static bool addIfNotEqualToLast<T>(List<T> list, T item){
-    if(list.isEmpty || list.last == item){
+  static bool addIfNotEqualToLast<T>(List<T> list, T item) {
+    if (list.isEmpty || list.last == item) {
       list.add(item);
     }
+  }
+
+  static bool areEqual<T>(List<T> listA, List<T> listB) {
+    Function eq = const ListEquality().equals;
+    return eq(listA, listB);
   }
 }
 

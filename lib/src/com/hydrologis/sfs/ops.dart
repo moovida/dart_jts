@@ -428,7 +428,7 @@ class BoundaryOp {
   }
 
   Geometry geom;
-  GeometryFactory geomFact = GeometryFactory();
+  GeometryFactory geomFact = GeometryFactory.defaultPrecision();
   Mod2BoundaryNodeRule bnRule = Mod2BoundaryNodeRule();
 
   BoundaryOp(Geometry geom) {

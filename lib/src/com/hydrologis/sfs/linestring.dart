@@ -67,9 +67,8 @@ class LineString extends Geometry with IterableMixin<Point>, _GeometryContainerM
 
   LineString.fromCoordinates(List<Coordinate> coordinates) {
     _require(coordinates != null);
-    _require(coordinates.length == 2);
     _require(coordinates.every((p) => p != null));
-    _points = coordinates.map((c) => Point(c.x, c.y)).toList();
+    _points = coordinates.map((c) => Point(c.x, c.y, z: c.z)).toList();
   }
 
   /// Creates a new linestring from the WKT string [wkt].
@@ -77,9 +76,9 @@ class LineString extends Geometry with IterableMixin<Point>, _GeometryContainerM
   /// Throws a [WKTError] if [wkt] isn't a valid representation of
   /// a [LineString].
   factory LineString.wkt(String wkt) {
-    var g = parseWKT(wkt);
+    var g = WKTReader().read(wkt);
     if (g is! LineString) {
-      throw WKTError("WKT string doesn't represent a LineString");
+      throw ArgumentError("WKT string doesn't represent a LineString");
     }
     return g;
   }
@@ -111,8 +110,17 @@ class LineString extends Geometry with IterableMixin<Point>, _GeometryContainerM
     return elementAt(n).toCoordinate();
   }
 
-  void apply(GeometryComponentFilter filter) {
+  void applyGCF(GeometryComponentFilter filter) {
     filter.filter(this);
+  }
+
+  void applyCSF(CoordinateSequenceFilter filter) {
+    if (_points.isEmpty) return;
+    for (int i = 0; i < _points.length; i++) {
+      filter.filter(CoordinateArraySequence(_points.map((p) => p.toCoordinate()).toList()), i);
+      if (filter.isDone()) break;
+    }
+    if (filter.isGeometryChanged()) geometryChanged();
   }
 
   @override
@@ -267,11 +275,11 @@ class LinearRing extends LineString {
   /// Empty rings with 0 vertices are also valid.
   static final int MINIMUM_VALID_SIZE = 4;
 
-  LinearRing(List<Point> points) : super.ring(points){
+  LinearRing(List<Point> points) : super.ring(points) {
     validateConstruction();
   }
 
-  LinearRing.fromCoordinates(List<Coordinate> coords) : super.fromCoordinates(coords){
+  LinearRing.fromCoordinates(List<Coordinate> coords) : super.fromCoordinates(coords) {
     validateConstruction();
   }
 

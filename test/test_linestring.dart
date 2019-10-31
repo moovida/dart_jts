@@ -229,35 +229,35 @@ main() {
     });
   });
 
-  group("asText -", () {
-    test("of an empty linestring", () {
-      var ls = LineString.empty();
-      ls = parseWKT(ls.asText);
-      expect(ls.isEmpty, true);
-    });
-
-    test("of a 2D linestring with three points", () {
-      var ls = LineString([Point(11, 12), Point(21, 22), Point(31.5, 32.6)]);
-      ls = parseWKT(ls.asText);
-      expect(ls.length, 3);
-      expect(ls.first.x, 11);
-      expect(ls.last.y, 32.6);
-    });
-
-    test("of a 3D, measured linestring with three points", () {
-      var ls = LineString([
-        Point(11, 12, z: 13, m: 14),
-        Point(21, 22, z: 23, m: 24),
-        Point(31.5, 32.6, z: 33.7, m: 34.8)
-      ]);
-      ls = parseWKT(ls.asText);
-      expect(ls.length, 3);
-      expect(ls.is3D, true);
-      expect(ls.isMeasured, true);
-      expect(ls.first.z, 13);
-      expect(ls.last.m, 34.8);
-    });
-  });
+//  group("asText -", () {
+//    test("of an empty linestring", () {
+//      var ls = LineString.empty();
+//      ls = parseWKT(ls.asText);
+//      expect(ls.isEmpty, true);
+//    });
+//
+//    test("of a 2D linestring with three points", () {
+//      var ls = LineString([Point(11, 12), Point(21, 22), Point(31.5, 32.6)]);
+//      ls = parseWKT(ls.asText);
+//      expect(ls.length, 3);
+//      expect(ls.first.x, 11);
+//      expect(ls.last.y, 32.6);
+//    });
+//
+//    test("of a 3D, measured linestring with three points", () {
+//      var ls = LineString([
+//        Point(11, 12, z: 13, m: 14),
+//        Point(21, 22, z: 23, m: 24),
+//        Point(31.5, 32.6, z: 33.7, m: 34.8)
+//      ]);
+//      ls = parseWKT(ls.asText);
+//      expect(ls.length, 3);
+//      expect(ls.is3D, true);
+//      expect(ls.isMeasured, true);
+//      expect(ls.first.z, 13);
+//      expect(ls.last.m, 34.8);
+//    });
+//  });
 
   group("geojson", () {
     test("- LineString", () {

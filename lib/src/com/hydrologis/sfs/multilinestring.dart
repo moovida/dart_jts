@@ -18,9 +18,9 @@ class MultiLineString extends GeometryCollection {
   /// Throws a [WKTError] if [wkt] isn't a valid representation of
   /// a [MultiLineString].
   factory MultiLineString.wkt(String wkt) {
-    var g = parseWKT(wkt);
+    var g = WKTReader().read(wkt);
     if (g is! MultiLineString) {
-      throw WKTError("WKT string doesn't represent a MultiLineString");
+      throw ArgumentError("WKT string doesn't represent a MultiLineString");
     }
     return g;
   }

@@ -11,8 +11,7 @@ final _EMPTY_GEOMETRY_COLLECTION = GeometryCollection(null);
 /// Dart'ish [length] property and an overloaded index operator. It also
 /// implements the [Iterable] interface.
 ///
-class GeometryCollection extends Geometry
-    with IterableMixin<Geometry>, _GeometryContainerMixin {
+class GeometryCollection extends Geometry with IterableMixin<Geometry>, _GeometryContainerMixin {
   List<Geometry> _geometries;
 
   /// Creates a geometry collection given a collection of
@@ -34,9 +33,9 @@ class GeometryCollection extends Geometry
   /// Throws a [WKTError] if [wkt] isn't a valid representation of
   /// a [GeometryCollection].
   factory GeometryCollection.wkt(String wkt) {
-    var g = parseWKT(wkt);
+    var g = WKTReader().read(wkt);
     if (g is! GeometryCollection) {
-      throw WKTError("WKT string doesn't represent a GeometryCollection");
+      throw ArgumentError("WKT string doesn't represent a GeometryCollection");
     }
     return g;
   }
@@ -48,9 +47,7 @@ class GeometryCollection extends Geometry
 
   @override
   List<Coordinate> getCoordinates() {
-    return _geometries.isEmpty
-        ? []
-        : _geometries.map((g) => g.getCoordinates()).expand((i) => i).toList();
+    return _geometries.isEmpty ? [] : _geometries.map((g) => g.getCoordinates()).expand((i) => i).toList();
   }
 
   int getNumGeometries() {
@@ -61,9 +58,20 @@ class GeometryCollection extends Geometry
   @specification(name: "getGeometryN")
   Geometry getGeometryN(int n) => elementAt(n);
 
-  void apply(GeometryComponentFilter filter) {
+  void applyGCF(GeometryComponentFilter filter) {
     filter.filter(this);
-    _geometries.forEach((g) => g.apply(filter));
+    _geometries.forEach((g) => g.applyGCF(filter));
+  }
+
+  void applyCSF(CoordinateSequenceFilter filter) {
+    if (_geometries.isEmpty) return;
+    for (int i = 0; i < _geometries.length; i++) {
+      _geometries[i].applyCSF(filter);
+      if (filter.isDone()) {
+        break;
+      }
+    }
+    if (filter.isGeometryChanged()) geometryChanged();
   }
 
   /// Replies the <em>n</em>-th geometry in this collection.
@@ -127,8 +135,7 @@ class GeometryCollection extends Geometry
   int get dimension => fold(0, (prev, g) => math.max(prev, g.dimension));
 
   @override
-  Geometry get boundary => throw UnsupportedError(
-      "Operation does not support GeometryCollection arguments");
+  Geometry get boundary => throw UnsupportedError("Operation does not support GeometryCollection arguments");
 }
 
 mixin _GeometryContainerMixin<E extends Geometry> on Iterable<E> {

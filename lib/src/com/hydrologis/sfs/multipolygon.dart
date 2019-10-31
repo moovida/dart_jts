@@ -48,9 +48,9 @@ class MultiPolygon extends MultiSurface {
   /// Throws a [WKTError] if [wkt] isn't a valid representation of
   /// a [MultiPolygon].
   factory MultiPolygon.wkt(String wkt) {
-    var g = parseWKT(wkt);
+    var g = WKTReader().read(wkt);
     if (g is! MultiPolygon) {
-      throw WKTError("WKT string doesn't represent a MultiPolygon");
+      throw ArgumentError("WKT string doesn't represent a MultiPolygon");
     }
     return g;
   }

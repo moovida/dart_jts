@@ -1,20 +1,17 @@
 part of dart_sfs;
 
 class Point extends Geometry {
-  //TODO: z and m mostly unused. More efficient layout?
-  //Using a List<num>, similar to jts? Using decicated subclasses?
-  //
   /// the x-coordinate. null, if this point [isEmpty]
-  final num x;
+  final double x;
 
   /// the y-coordinate. null, if this point [isEmpty]
-  final num y;
+  final double y;
 
   /// the z coordinate. null, if missing
-  final num z;
+  final double z;
 
   /// the measurement value. null, if missing
-  final num m;
+  final double m;
 
   /// Creates an empty point.
   ///
@@ -38,9 +35,9 @@ class Point extends Geometry {
   /// Throws a [WKTError] if [wkt] isn't a valid representation of
   /// a [Point].
   factory Point.wkt(String wkt) {
-    var p = parseWKT(wkt);
+    var p = WKTReader().read(wkt);
     if (p is! Point) {
-      throw WKTError("WKT string doesn't represent a Point");
+      throw ArgumentError("WKT string doesn't represent a Point");
     }
     return p;
   }
@@ -75,7 +72,7 @@ class Point extends Geometry {
 
   @override
   List<Coordinate> getCoordinates() {
-    return x != null ? [Coordinate(x, y)] : [];
+    return x != null ? [Coordinate(x, y, y)] : [];
   }
 
   int getNumGeometries() {
@@ -86,8 +83,14 @@ class Point extends Geometry {
     return this;
   }
 
-  void apply(GeometryComponentFilter filter) {
+  void applyGCF(GeometryComponentFilter filter) {
     filter.filter(this);
+  }
+
+  void applyCSF(CoordinateSequenceFilter filter) {
+    if (isEmpty) return;
+    filter.filter(CoordinateArraySequence([this.toCoordinate()]), 0);
+    if (filter.isGeometryChanged()) geometryChanged();
   }
 
   @override
@@ -171,6 +174,6 @@ class Point extends Geometry {
   /// Throws [StateError] if this point [isEmpty].
   Coordinate toCoordinate() {
     if (isEmpty) throw StateError("not supported on empty point");
-    return Coordinate(x, y);
+    return Coordinate(x, y, z);
   }
 }

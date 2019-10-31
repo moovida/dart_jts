@@ -3,34 +3,31 @@ import "package:test/test.dart";
 import "dart:math" as math;
 
 void main() {
-  List<Coordinate> COORDS_1 = [new Coordinate(1, 1), new Coordinate(2, 2), new Coordinate(3, 3)];
+  List<Coordinate> COORDS_1 = [Coordinate(1, 1), Coordinate(2, 2), Coordinate(3, 3)];
   List<Coordinate> COORDS_EMPTY = [];
 
   group("CoordinateArraysTest - ", () {
     test("testPtNotInList", () {
       expect(
-          CoordinateArrays.ptNotInList(
-                  [new Coordinate(1, 1), new Coordinate(2, 2), new Coordinate(3, 3)], [new Coordinate(1, 1), new Coordinate(1, 2), new Coordinate(1, 3)])
-              .equals2D(new Coordinate(2, 2)),
+          CoordinateArrays.ptNotInList([Coordinate(1, 1), Coordinate(2, 2), Coordinate(3, 3)], [Coordinate(1, 1), Coordinate(1, 2), Coordinate(1, 3)])
+              .equals2D(Coordinate(2, 2)),
           true);
 
       expect(
-          CoordinateArrays.ptNotInList(
-                  [new Coordinate(1, 1), new Coordinate(2, 2), new Coordinate(3, 3)], [new Coordinate(1, 1), new Coordinate(2, 2), new Coordinate(3, 3)]) ==
-              null,
+          CoordinateArrays.ptNotInList([Coordinate(1, 1), Coordinate(2, 2), Coordinate(3, 3)], [Coordinate(1, 1), Coordinate(2, 2), Coordinate(3, 3)]) == null,
           true);
     });
 
     test("testEnvelopes", () {
-      expect(CoordinateArrays.envelope(COORDS_1), new Envelope(1, 3, 1, 3));
-      expect(CoordinateArrays.envelope(COORDS_EMPTY), new Envelope.empty());
-      expect(CoordinateArrays.equals(CoordinateArrays.intersection(COORDS_1, new Envelope(1, 2, 1, 2)), [new Coordinate(1, 1), new Coordinate(2, 2)]), true);
+      expect(CoordinateArrays.envelope(COORDS_1), Envelope(1, 3, 1, 3));
+      expect(CoordinateArrays.envelope(COORDS_EMPTY), Envelope.empty());
+      expect(CoordinateArrays.equals(CoordinateArrays.intersection(COORDS_1, Envelope(1, 2, 1, 2)), [Coordinate(1, 1), Coordinate(2, 2)]), true);
 
-      expect(CoordinateArrays.equals(CoordinateArrays.intersection(COORDS_1, new Envelope(10, 20, 10, 20)), COORDS_EMPTY), true);
+      expect(CoordinateArrays.equals(CoordinateArrays.intersection(COORDS_1, Envelope(10, 20, 10, 20)), COORDS_EMPTY), true);
 
-      expect(CoordinateArrays.equals(CoordinateArrays.intersection(COORDS_EMPTY, new Envelope(1, 2, 1, 2)), COORDS_EMPTY), true);
+      expect(CoordinateArrays.equals(CoordinateArrays.intersection(COORDS_EMPTY, Envelope(1, 2, 1, 2)), COORDS_EMPTY), true);
 
-      expect(CoordinateArrays.equals(CoordinateArrays.intersection(COORDS_1, new Envelope.empty()), COORDS_EMPTY), true);
+      expect(CoordinateArrays.equals(CoordinateArrays.intersection(COORDS_1, Envelope.empty()), COORDS_EMPTY), true);
     });
   });
 
@@ -43,14 +40,14 @@ void main() {
 
   group("CoordinateSequencesTest - ", () {
     test("testCopyToLargerDim", () {
-      PackedCoordinateSequenceFactory csFactory = new PackedCoordinateSequenceFactory();
+      PackedCoordinateSequenceFactory csFactory = PackedCoordinateSequenceFactory();
       CoordinateSequence cs2D = createTestSequence(csFactory, 10, 2);
       CoordinateSequence cs3D = csFactory.createSizeDim(10, 3);
       CoordinateSequences.copy(cs2D, 0, cs3D, 0, cs3D.size());
       expect(CoordinateSequences.isEqual(cs2D, cs3D), true);
     });
     test("testCopyToSmallerDim", () {
-      PackedCoordinateSequenceFactory csFactory = new PackedCoordinateSequenceFactory();
+      PackedCoordinateSequenceFactory csFactory = PackedCoordinateSequenceFactory();
       CoordinateSequence cs3D = createTestSequence(csFactory, 10, 3);
       CoordinateSequence cs2D = csFactory.createSizeDim(10, 2);
       CoordinateSequences.copy(cs3D, 0, cs2D, 0, cs2D.size());
@@ -158,9 +155,7 @@ CoordinateSequence createTestSequence(CoordinateSequenceFactory csFactory, int s
   return cs;
 }
 
-/**
- * @deprecated only use to update in conjunction with {@link this.ttestCreateRandomOrdinates}
- */
+/// @deprecated only use to update in conjunction with {@link this.ttestCreateRandomOrdinates}
 CoordinateSequence createRandomTestSequence(CoordinateSequenceFactory csFactory, int size, int dim, math.Random rnd, Envelope range, PrecisionModel pm) {
   CoordinateSequence cs = csFactory.createSizeDim(size, dim);
   for (int i = 0; i < size; i++) {
@@ -207,8 +202,8 @@ void doTestCopy(CoordinateSequenceFactory factory, int dimension) {
 
 void doTestIsRing(CoordinateSequenceFactory factory, int dimension) {
   // arrange
-  CoordinateSequence ring = createCircle(factory, dimension, new Coordinate.empty(), 5);
-  CoordinateSequence noRing = createCircularString(factory, dimension, new Coordinate.empty(), 5, 0.1, 22);
+  CoordinateSequence ring = createCircle(factory, dimension, Coordinate.empty(), 5);
+  CoordinateSequence noRing = createCircularString(factory, dimension, Coordinate.empty(), 5, 0.1, 22);
   CoordinateSequence empty = createAlmostRing(factory, dimension, 0);
   CoordinateSequence incomplete1 = createAlmostRing(factory, dimension, 1);
   CoordinateSequence incomplete2 = createAlmostRing(factory, dimension, 2);

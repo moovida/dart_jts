@@ -28,12 +28,20 @@ class Coordinate implements Comparable {
   double _y;
   double _z;
 
-  Coordinate(this._x, this._y, [this._z]);
+  Coordinate(double x, double y, [double z]) {
+    this._x = x;
+    this._y = y;
+    if (z != null) {
+      this._z = z;
+    } else {
+      this._z = NULL_ORDINATE;
+    }
+  }
 
   Coordinate.empty() {
     _x = 0.0;
     _y = 0.0;
-    _z = NULL_ORDINATE;
+    _z = 0.0;
   }
 
   Coordinate.fromCoordinate(Coordinate c) {
