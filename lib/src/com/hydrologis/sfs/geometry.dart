@@ -119,7 +119,7 @@ abstract class Geometry {
   @specification(name: "asText()")
   String get asText {
     var buffer = StringBuffer();
-    var writer = _WKTWriter(buffer);
+    var writer = WKTWriter(buffer);
     _writeTaggedWKT(writer, withZ: is3D, withM: isMeasured);
     return buffer.toString();
   }
@@ -213,6 +213,14 @@ class GeometryFactory {
     return MultiPoint(coords.map((c) => Point(c.x, c.y)));
   }
 
+  LineString createLineString(List<Coordinate> coordinates) {
+    return LineString.fromCoordinates(coordinates);
+  }
+
+  LinearRing createLinearRing(List<Coordinate> coordinates) {
+    return LinearRing.fromCoordinates(coordinates);
+  }
+
   /// Creates a Point using the given Coordinate.
   /// A null Coordinate creates an empty Geometry.
   ///
@@ -221,5 +229,52 @@ class GeometryFactory {
   Point createPoint(Coordinate coordinate) {
     if (coordinate == null) return Point.empty();
     return Point(coordinate.x, coordinate.y);
+  }
+
+  Polygon createPolygon(LinearRing ring) {
+    return Polygon(ring, null);
+  }
+
+  /// Creates a {@link Geometry} with the same extent as the given envelope.
+  /// The Geometry returned is guaranteed to be valid.
+  /// To provide this behaviour, the following cases occur:
+  /// <p>
+  /// If the <code>Envelope</code> is:
+  /// <ul>
+  /// <li>null : returns an empty {@link Point}
+  /// <li>a point : returns a non-empty {@link Point}
+  /// <li>a line : returns a two-point {@link LineString}
+  /// <li>a rectangle : returns a {@link Polygon} whose points are (minx, miny),
+  ///  (minx, maxy), (maxx, maxy), (maxx, miny), (minx, miny).
+  /// </ul>
+  ///
+  ///@param  envelope the <code>Envelope</code> to convert
+  ///@return an empty <code>Point</code> (for null <code>Envelope</code>s),
+  ///	a <code>Point</code> (when min x = max x and min y = max y) or a
+  ///      <code>Polygon</code> (in all other cases)
+  Geometry toGeometry(Envelope envelope) {
+    // null envelope - return empty point geometry
+    if (envelope.isNull()) {
+      return Point.empty();
+    }
+
+    // point?
+    if (envelope.getMinX() == envelope.getMaxX() && envelope.getMinY() == envelope.getMaxY()) {
+      return createPoint(new Coordinate(envelope.getMinX(), envelope.getMinY()));
+    }
+
+    // vertical or horizontal line?
+    if (envelope.getMinX() == envelope.getMaxX() || envelope.getMinY() == envelope.getMaxY()) {
+      return createLineString([new Coordinate(envelope.getMinX(), envelope.getMinY()), new Coordinate(envelope.getMaxX(), envelope.getMaxY())]);
+    }
+
+    // create a CW ring for the polygon
+    return createPolygon(createLinearRing([
+      new Coordinate(envelope.getMinX(), envelope.getMinY()),
+      new Coordinate(envelope.getMinX(), envelope.getMaxY()),
+      new Coordinate(envelope.getMaxX(), envelope.getMaxY()),
+      new Coordinate(envelope.getMaxX(), envelope.getMinY()),
+      new Coordinate(envelope.getMinX(), envelope.getMinY())
+    ]));
   }
 }

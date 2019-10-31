@@ -7,7 +7,7 @@ part of dart_sfs;
 /// Throws a [WKTError] if parsing fails.
 Geometry parseWKT(String wkt) {
   _require(wkt != null);
-  var parser = _WKTParser(wkt);
+  var parser = WKTReader(wkt);
   parser.advanceMandatory();
   return parser.parseWKTObject();
 }
@@ -391,11 +391,11 @@ class _CoordSpecification {
   bool get withMZ => withZ && withM;
 }
 
-class _WKTParser {
+class WKTReader {
   var tokenizer;
   var token;
 
-  _WKTParser(source) {
+  WKTReader(source) {
     tokenizer = _WKTTokenizer(source);
   }
 
@@ -706,11 +706,11 @@ class _WKTParser {
   }
 }
 
-class _WKTWriter {
+class WKTWriter {
   final StringSink _sink;
   int _ident = 0;
 
-  _WKTWriter(this._sink);
+  WKTWriter(this._sink);
 
   lparen() => _sink.write("(");
 

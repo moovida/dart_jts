@@ -5,21 +5,17 @@ final _EMPTY_LINESTRING = LineString(null);
 
 /// A LineString is a curve with linear interpolation between points.
 ///
-class LineString extends Geometry
-    with IterableMixin<Point>, _GeometryContainerMixin {
+class LineString extends Geometry with IterableMixin<Point>, _GeometryContainerMixin {
   List<Point> _points;
 
   _init(points) {
     if (points == null || points.isEmpty) {
       _points = null;
     } else {
-      _require(
-          points.length >= 2, "illegal number of points, got ${points.length}");
-      _require(points.every((p) => p != null && !p.isEmpty),
-          "points must not contain null values or empty points");
+      _require(points.length >= 2, "illegal number of points, got ${points.length}");
+      _require(points.every((p) => p != null && !p.isEmpty), "points must not contain null values or empty points");
       for (int i = 1; i < points.length; i++) {
-        _require(!points[i - 1].equals2D(points[i]),
-            "idenical consequtive point ${points[i - 1]} at index ${i - 1}");
+        _require(!points[i - 1].equals2D(points[i]), "idenical consequtive point ${points[i - 1]} at index ${i - 1}");
       }
       _points = List.from(points, growable: false);
     }
@@ -91,8 +87,7 @@ class LineString extends Geometry
   /// Creates an empty linestring.
   factory LineString.empty() => _EMPTY_LINESTRING;
 
-  Iterator<Point> get iterator =>
-      _points == null ? <Point>[].iterator : _points.iterator;
+  Iterator<Point> get iterator => _points == null ? <Point>[].iterator : _points.iterator;
 
   @override
   Coordinate getCoordinate() {
@@ -225,9 +220,7 @@ class LineString extends Geometry
     //TODO: check spec - an empty linestring is always simple?
     if (isEmpty) return true;
     var pos = _points.map((p) => p.toCoordinate()).toList(growable: false);
-    var segments = List.generate(
-        length - 1, (i) => LineSegment(pos[i], pos[i + 1]),
-        growable: false);
+    var segments = List.generate(length - 1, (i) => LineSegment(pos[i], pos[i + 1]), growable: false);
 
     var intersections = computeLineIntersections(segments);
     return intersections.every((intersection) {
@@ -270,9 +263,28 @@ class Line extends LineString {
 
 /// A [LinearRing] is a [LineString] that is both closed and simple.
 class LinearRing extends LineString {
-  LinearRing(List<Point> points) : super.ring(points);
+  /// The minimum number of vertices allowed in a valid non-empty ring (= 4).
+  /// Empty rings with 0 vertices are also valid.
+  static final int MINIMUM_VALID_SIZE = 4;
+
+  LinearRing(List<Point> points) : super.ring(points){
+    validateConstruction();
+  }
+
+  LinearRing.fromCoordinates(List<Coordinate> coords) : super.fromCoordinates(coords){
+    validateConstruction();
+  }
 
   // a ring is always simple, simplicity is enforced in the constructor
   @override
   bool get isSimple => true;
+
+  void validateConstruction() {
+    if (!isEmpty && !isClosed) {
+      throw ArgumentError("Points of LinearRing do not form a closed linestring");
+    }
+    if (length >= 1 && length < MINIMUM_VALID_SIZE) {
+      throw ArgumentError("Invalid number of points in LinearRing (found $length - must be 0 or >= 4)");
+    }
+  }
 }
