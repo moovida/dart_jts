@@ -179,7 +179,7 @@ mixin _GeometryContainerMixin<E extends Geometry> on Iterable<E> {
   Envelope _computeEnvelope() {
     if (this.isEmpty) return Envelope.empty();
     Envelope e = Envelope.empty();
-    forEach((p) => e.growTo(p));
+    forEach((p) => e.expandToIncludeEnvelope(p.envelope));
     return e;
   }
 

@@ -2,8 +2,7 @@ part of dart_sfs;
 
 /// A PolyhedralSurface is a contiguous collection of polygons, which share
 /// common boundary segments.
-class PolyhedralSurface extends Geometry
-    with IterableMixin<Polygon>, _GeometryContainerMixin {
+class PolyhedralSurface extends Geometry with IterableMixin<Polygon>, _GeometryContainerMixin {
   List<Polygon> _patches;
 
   /// Creates a polyhedral surface with the polygons [patches].
@@ -60,8 +59,7 @@ class PolyhedralSurface extends Geometry
     throw UnimplementedError();
   }
 
-  Iterator<Polygon> get iterator =>
-      _patches == null ? [].iterator : _patches.iterator;
+  Iterator<Polygon> get iterator => _patches == null ? [].iterator : _patches.iterator;
 
   @override
   int get dimension => 2;
@@ -109,7 +107,7 @@ class PolyhedralSurface extends Geometry
 
     Envelope e = Envelope.empty();
     _patches.forEach((p) {
-      e.growTo(p);
+      e.expandToIncludeEnvelope(p.envelope);
     });
     return e;
   }
@@ -125,9 +123,7 @@ class PolyhedralSurface extends Geometry
 
   @override
   List<Coordinate> getCoordinates() {
-    return _patches.isEmpty
-        ? []
-        : _patches.map((g) => g.getCoordinates()).expand((i) => i).toList();
+    return _patches.isEmpty ? [] : _patches.map((g) => g.getCoordinates()).expand((i) => i).toList();
   }
 
   int getNumGeometries() {

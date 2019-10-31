@@ -92,7 +92,7 @@ abstract class Geometry {
   /// @return the n'th geometry contained in this geometry
   Geometry getGeometryN(int n);
 
-  Envelope get _envelope {
+  Envelope get envelope {
     if (_cachedEnvelope == null) {
       _cachedEnvelope = _computeEnvelope();
     }

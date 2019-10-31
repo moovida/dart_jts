@@ -211,7 +211,7 @@ class Polygon extends Surface {
   Envelope _computeEnvelope() {
     if (this.isEmpty) return Envelope.empty();
     Envelope e = Envelope.empty();
-    e.growTo(_exterior);
+    e.expandToIncludeEnvelope(_exterior.envelope);
     return e;
   }
 

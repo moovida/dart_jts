@@ -126,7 +126,7 @@ class LineString extends Geometry
 
     Envelope e = Envelope.empty();
     _points.forEach((p) {
-      e.growTo(p.toCoordinate());
+      e.expandToIncludeCoordinate(p.toCoordinate());
     });
     return e;
   }

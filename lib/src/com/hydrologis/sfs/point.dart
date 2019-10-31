@@ -78,11 +78,11 @@ class Point extends Geometry {
     return x != null ? [Coordinate(x, y)] : [];
   }
 
-  int getNumGeometries(){
+  int getNumGeometries() {
     return 1;
   }
 
-  Geometry getGeometryN(int n){
+  Geometry getGeometryN(int n) {
     return this;
   }
 
@@ -153,7 +153,7 @@ class Point extends Geometry {
   @override
   Envelope _computeEnvelope() {
     if (isEmpty) return Envelope.empty();
-    return Envelope.collapsed(x, y);
+    return Envelope.fromCoordinate(Coordinate(x, y));
   }
 
   /// Replies true if the (x,y)-coordinates of this point are

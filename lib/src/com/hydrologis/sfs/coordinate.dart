@@ -119,7 +119,7 @@ class Coordinate implements Comparable {
     const prime = 31;
     int result = 1;
     result = prime * result + _x.hashCode;
-    result = prime * result + -y.hashCode;
+    result = prime * result + _y.hashCode;
     return result;
   }
 
