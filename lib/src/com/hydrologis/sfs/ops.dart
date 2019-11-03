@@ -447,7 +447,7 @@ class BoundaryOp {
     if (geom is MultiLineString) {
       return boundaryMultiLineString(geom);
     }
-    return geom.boundary;
+    return geom.getBoundary();
   }
 
   MultiPoint getEmptyMultiPoint() {
@@ -455,7 +455,7 @@ class BoundaryOp {
   }
 
   Geometry boundaryMultiLineString(MultiLineString mLine) {
-    if (geom.isEmpty) {
+    if (geom.isEmpty()) {
       return getEmptyMultiPoint();
     }
 
@@ -513,7 +513,7 @@ class BoundaryOp {
   }
 
   Geometry boundaryLineString(LineString line) {
-    if (geom.isEmpty) {
+    if (geom.isEmpty()) {
       return getEmptyMultiPoint();
     }
 

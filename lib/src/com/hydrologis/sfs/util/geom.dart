@@ -1478,3 +1478,88 @@ abstract class CoordinateSequenceFilter {
   /// @return true if this filter has changed the coordinates of the geometry
   bool isGeometryChanged();
 }
+
+/// Extracts all the 0-dimensional ({@link Point}) components from a {@link Geometry}.
+///
+/// @version 1.7
+/// @see GeometryExtracter
+class PointExtracter implements GeometryFilter {
+  /// Extracts the {@link Point} elements from a single {@link Geometry}
+  /// and adds them to the provided {@link List}.
+  ///
+  /// @param geom the geometry from which to extract
+  /// @param list the list to add the extracted elements to
+  static List<Point> getPointsWithList(Geometry geom, List<Point> list) {
+    if (geom is Point) {
+      list.add(geom);
+    } else if (geom is GeometryCollection) {
+      geom.applyGF(PointExtracter(list));
+    }
+    // skip non-Polygonal elemental geometries
+
+    return list;
+  }
+
+  /// Extracts the {@link Point} elements from a single {@link Geometry}
+  /// and returns them in a {@link List}.
+  ///
+  /// @param geom the geometry from which to extract
+  static List getPoints(Geometry geom) {
+    if (geom is Point) {
+      return [geom];
+    }
+    return getPointsWithList(geom, <Point>[]);
+  }
+
+  List pts;
+
+  /// Constructs a PointExtracterFilter with a list in which to store Points found.
+  PointExtracter(List pts) {
+    this.pts = pts;
+  }
+
+  void filter(Geometry geom) {
+    if (geom is Point) pts.add(geom);
+  }
+}
+
+/// Extracts all the {@link Polygon} elements from a {@link Geometry}.
+///
+/// @version 1.7
+/// @see GeometryExtracter
+class PolygonExtracter implements GeometryFilter {
+  /// Extracts the {@link Polygon} elements from a single {@link Geometry}
+  /// and adds them to the provided {@link List}.
+  ///
+  /// @param geom the geometry from which to extract
+  /// @param list the list to add the extracted elements to
+  static List<Polygon> getPolygonsWithList(Geometry geom, List<Polygon> list) {
+    if (geom is Polygon) {
+      list.add(geom);
+    } else if (geom is GeometryCollection) {
+      geom.applyGF(PolygonExtracter(list));
+    }
+    // skip non-Polygonal elemental geometries
+
+    return list;
+  }
+
+  /// Extracts the {@link Polygon} elements from a single {@link Geometry}
+  /// and returns them in a {@link List}.
+  ///
+  /// @param geom the geometry from which to extract
+  static List getPolygons(Geometry geom) {
+    return getPolygonsWithList(geom, <Polygon>[]);
+  }
+
+  List comps;
+
+  /// Constructs a PolygonExtracterFilter with a list in which to store Polygons found.
+  PolygonExtracter(List comps) {
+    this.comps = comps;
+  }
+
+  void filter(Geometry geom) {
+    if (geom is Polygon) comps.add(geom);
+  }
+}
