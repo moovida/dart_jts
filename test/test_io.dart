@@ -3,46 +3,32 @@ import 'package:dart_sfs/dart_sfs.dart';
 import 'dart:math' as math;
 
 void main() {
-//  group("WKTReaderTest - ", () {
-//    test("testRead", () {
-//      var seq = CoordinateArraySequenceFactory().create([Coordinate(10, 10)]);
-//
-//      WKTReader reader = WKTReader();
-//
-//      // act
-//      Point pt1 = reader.read("POINT (10 10)");
-//
-//      // assert
-//      expect(checkEqual(seq, CoordinateArraySequenceFactory().create(pt1.getCoordinates())), true);
-//    });
-//  });
-
-  PrecisionModel precisionModel = PrecisionModel.fixedPrecision(1);
-  GeometryFactory geometryFactory = GeometryFactory.withPrecisionModelSrid(precisionModel, 0);
-  WKTWriter writer = WKTWriter();
-  WKTWriter writer3D = WKTWriter.withDimension(3);
-  WKTWriter writer2DM = WKTWriter.withDimension(3);
-
   group("WKTWriterTest - ", () {
-    writer2DM.setOutputOrdinates(XYM);
+    PrecisionModel precisionModel = PrecisionModel.fixedPrecision(1);
+    GeometryFactory geometryFactory = GeometryFactory.withPrecisionModelSrid(precisionModel, 0);
+    WKTWriter writer = WKTWriter();
+    WKTWriter writer3D = WKTWriter.withDimension(3);
+    WKTWriter writer2DM = WKTWriter.withDimension(3);
+
+    writer2DM.setOutputOrdinates(OrdinateSet_XYM);
 
     test("testProperties", () {
-      expect(XY, writer.getOutputOrdinates());
-      expect(XYZ, writer3D.getOutputOrdinates());
-      expect(XYM, writer2DM.getOutputOrdinates());
+      expect(OrdinateSet_XY, writer.getOutputOrdinates());
+      expect(OrdinateSet_XYZ, writer3D.getOutputOrdinates());
+      expect(OrdinateSet_XYM, writer2DM.getOutputOrdinates());
 
       GeometryFactory gf = GeometryFactory.withCoordinateSequenceFactory(PackedCoordinateSequenceFactory.DOUBLE_FACTORY);
       WKTWriter writer3DM = WKTWriter.withDimension(4);
-      expect(XYZM, writer3DM.getOutputOrdinates());
+      expect(OrdinateSet_XYZM, writer3DM.getOutputOrdinates());
 
-      writer3DM.setOutputOrdinates(XY);
-      expect(XY, writer3DM.getOutputOrdinates());
-      writer3DM.setOutputOrdinates(XYZ);
-      expect(XYZ, writer3DM.getOutputOrdinates());
-      writer3DM.setOutputOrdinates(XYM);
-      expect(XYM, writer2DM.getOutputOrdinates());
-      writer3DM.setOutputOrdinates(XYZM);
-      expect(XYZM, writer3DM.getOutputOrdinates());
+      writer3DM.setOutputOrdinates(OrdinateSet_XY);
+      expect(OrdinateSet_XY, writer3DM.getOutputOrdinates());
+      writer3DM.setOutputOrdinates(OrdinateSet_XYZ);
+      expect(OrdinateSet_XYZ, writer3DM.getOutputOrdinates());
+      writer3DM.setOutputOrdinates(OrdinateSet_XYM);
+      expect(OrdinateSet_XYM, writer2DM.getOutputOrdinates());
+      writer3DM.setOutputOrdinates(OrdinateSet_XYZM);
+      expect(OrdinateSet_XYZM, writer3DM.getOutputOrdinates());
     });
 
     test("testWritePoint", () {
@@ -122,10 +108,148 @@ void main() {
     });
   });
 
-//  group("StringUtils - ", () {
-//    test("", () {
-//    });
-//  });
+  WKTReader reader2D = getWKTReaderFromOrdinateSetAndScale(OrdinateSet_XY, 1.0);
+  reader2D.setIsOldJtsCoordinateSyntaxAllowed(false);
+  WKTReader reader2DOld = getWKTReaderFromOrdinateSetAndScale(OrdinateSet_XY, 1.0);
+  reader2DOld.setIsOldJtsCoordinateSyntaxAllowed(true);
+  WKTReader reader3D = getWKTReaderFromOrdinateSetAndScale(OrdinateSet_XYZ, 1.0);
+  WKTReader reader2DM = getWKTReaderFromOrdinateSetAndScale(OrdinateSet_XYM, 1.0);
+  WKTReader reader3DM = getWKTReaderFromOrdinateSetAndScale(OrdinateSet_XYZM, 1.0);
+  group("WKTReaderTest - ", () {
+    test("", () {
+      // arrange
+      CoordinateSequence seq = createSequence(OrdinateSet_XYZ, [10, 10]);
+      seq.setOrdinate(0, CoordinateSequence.Z, double.nan);
+
+      // act
+      Point pt1 = reader2DOld.read("POINT (10 10 NaN)");
+      Point pt2 = reader2DOld.read("POINT (10 10 nan)");
+      Point pt3 = reader2DOld.read("POINT (10 10 NAN)");
+
+      // assert
+      expect(checkEqual(seq, pt1.getCoordinateSequence()), true);
+      expect(checkEqual(seq, pt2.getCoordinateSequence()), true);
+      expect(checkEqual(seq, pt3.getCoordinateSequence()), true);
+    });
+    test("", () {
+
+    });
+    test("", () {
+
+    });
+    test("", () {
+
+    });
+    test("", () {
+
+    });
+    test("", () {
+
+    });
+    test("", () {
+
+    });
+  });
+}
+
+CoordinateSequence createSequence(List<Ordinate> ordinateFlags, List<double> xy) {
+// get the number of dimension to verify size of provided ordinate values array
+  int dimension = requiredDimension(ordinateFlags);
+
+// inject additional values
+  List<double> ordinateValues = injectZM(ordinateFlags, xy);
+
+  if ((ordinateValues.length % dimension) != 0) throw new ArgumentError("ordinateFlags and number of provided ordinate values don't match");
+
+// get the required size of the sequence
+  int size = ordinateValues.length ~/ dimension;
+
+// create a sequence capable of storing all ordinate values.
+  CoordinateSequence res = getCSFactory(ordinateFlags).createSizeDim(size, requiredDimension(ordinateFlags));
+
+// fill in values
+  int k = 0;
+  for (int i = 0; i < ordinateValues.length; i += dimension) {
+    for (int j = 0; j < dimension; j++) res.setOrdinate(k, j, ordinateValues[i + j]);
+    k++;
+  }
+
+  return res;
+}
+
+int requiredDimension(List<Ordinate> ordinateFlags) {
+  return ordinateFlags.length;
+}
+
+List<double> injectZM(List<Ordinate> ordinateFlags, List<double> xy) {
+  int size = xy.length ~/ 2;
+  int dimension = requiredDimension(ordinateFlags);
+  List<double> res = List(size * dimension);
+  int k = 0;
+  for (int i = 0; i < xy.length; i += 2) {
+    res[k++] = xy[i];
+    res[k++] = xy[i + 1];
+    if (ordinateFlags.contains(Ordinate.Z)) res[k++] = 10;
+    if (ordinateFlags.contains(Ordinate.M)) res[k++] = 11;
+  }
+  return res;
+}
+
+/// Gets a {@link CoordinateSequenceFactory} that can create sequences
+/// for ordinates defined in the provided bit-pattern.
+/// @param ordinateFlags a bit-pattern of ordinates
+/// @return a {@code CoordinateSequenceFactory}
+CoordinateSequenceFactory getCSFactory(List<Ordinate> ordinateFlags) {
+  if (ordinateFlags.contains(Ordinate.M)) {
+    return PackedCoordinateSequenceFactory.DOUBLE_FACTORY;
+  }
+
+  return CoordinateArraySequenceFactory();
+}
+
+/// Gets a {@link WKTReader} to read geometries from WKT with expected ordinates.
+///
+/// @param ordinateFlags a set of expected ordinates
+/// @param precisionModel a precision model
+///
+/// @return a {@code WKTReader}
+WKTReader getWKTReader(List<Ordinate> ordinateFlags, PrecisionModel precisionModel) {
+  WKTReader result;
+
+  if (!ordinateFlags.contains(Ordinate.X)) ordinateFlags.add(Ordinate.X);
+  if (!ordinateFlags.contains(Ordinate.Y)) ordinateFlags.add(Ordinate.Y);
+
+  if (ordinateFlags.length == 2) {
+    result = WKTReader.withFactory(GeometryFactory(precisionModel, 0, CoordinateArraySequenceFactory()));
+    result.setIsOldJtsCoordinateSyntaxAllowed(false);
+  } else if (ordinateFlags.contains(Ordinate.Z)) {
+    result = WKTReader.withFactory(GeometryFactory(precisionModel, 0, CoordinateArraySequenceFactory()));
+  } else if (ordinateFlags.contains(Ordinate.M)) {
+    result = WKTReader.withFactory(GeometryFactory(precisionModel, 0, PackedCoordinateSequenceFactory.DOUBLE_FACTORY));
+    result.setIsOldJtsCoordinateSyntaxAllowed(false);
+  } else {
+    result = WKTReader.withFactory(GeometryFactory(precisionModel, 0, PackedCoordinateSequenceFactory.DOUBLE_FACTORY));
+  }
+
+  return result;
+}
+
+/// Gets a {@link WKTReader} to read geometries from WKT with expected ordinates.
+///
+/// @param ordinateFlags a set of expected ordinates
+/// @return a {@code WKTReader}
+WKTReader getWKTReaderFromOrdinateSet(List<Ordinate> ordinateFlags) {
+  return getWKTReader(ordinateFlags, PrecisionModel());
+}
+
+/// Gets a {@link WKTReader} to read geometries from WKT with expected ordinates.
+///
+/// @param ordinateFlags a set of expected ordinates
+/// @param scale         a scale value to create a {@link PrecisionModel}
+///
+/// @return a {@code WKTReader}
+WKTReader getWKTReaderFromOrdinateSetAndScale(List<Ordinate> ordinateFlags, double scale) {
+  return getWKTReader(ordinateFlags, PrecisionModel.fixedPrecision(scale));
 }
 
 /// Checks two {@link CoordinateSequence}s for equality. The following items are checked:

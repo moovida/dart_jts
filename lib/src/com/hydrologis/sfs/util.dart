@@ -65,6 +65,11 @@ class CollectionsUtils {
 }
 
 class StringUtils {
+
+  static bool equalsIgnoreCase(String string1, String string2) {
+    return string1?.toLowerCase() == string2?.toLowerCase();
+  }
+
   static String replaceCharAt(String oldString, int index, String newChar) {
     return oldString.substring(0, index) + newChar + oldString.substring(index + 1);
   }

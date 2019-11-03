@@ -17,10 +17,10 @@ enum Ordinate {
   M
 }
 
-List<Ordinate> XY = List.from([Ordinate.X, Ordinate.Y]);
-List<Ordinate> XYZ = List.from([Ordinate.X, Ordinate.Y, Ordinate.Z]);
-List<Ordinate> XYM = List.from([Ordinate.X, Ordinate.Y, Ordinate.M]);
-List<Ordinate> XYZM = List.from([Ordinate.X, Ordinate.Y, Ordinate.Z, Ordinate.M]);
+final List<Ordinate> OrdinateSet_XY = List.from([Ordinate.X, Ordinate.Y]);
+final List<Ordinate> OrdinateSet_XYZ = List.from([Ordinate.X, Ordinate.Y, Ordinate.Z]);
+final List<Ordinate> OrdinateSet_XYM = List.from([Ordinate.X, Ordinate.Y, Ordinate.M]);
+final List<Ordinate> OrdinateSet_XYZM = List.from([Ordinate.X, Ordinate.Y, Ordinate.Z, Ordinate.M]);
 
 /// A filter implementation to test if a coordinate sequence actually has
 /// meaningful values for an ordinate bit-pattern
@@ -127,7 +127,7 @@ class WKTWriter {
   ///
   /// @return the WKT string
   static String toLineString(List<Coordinate> coord) {
-    StringBuffer buf = new StringBuffer();
+    StringBuffer buf = StringBuffer();
     buf.write("LINESTRING ");
     if (coord.length == 0)
       buf.write(" EMPTY");
@@ -170,7 +170,7 @@ class WKTWriter {
     // to accommodate the maximum precision of a double.
     int decimalPlaces = precisionModel.getMaximumSignificantDigits();
     // specify decimal separator explicitly to avoid problems in other locales
-//    NumberFormatSymbols symbols = new NumberFormatSymbols();
+//    NumberFormatSymbols symbols = NumberFormatSymbols();
 //    symbols.setDecimalSeparator('.');
     String fmtString = "0" + (decimalPlaces > 0 ? "." : "") + stringOfChar('#', decimalPlaces);
     return NumberFormat(fmtString);
@@ -182,7 +182,7 @@ class WKTWriter {
   ///@param  count  the number of times to repeat the character
   ///@return        a <code>String</code> of characters
   static String stringOfChar(String ch, int count) {
-    StringBuffer buf = new StringBuffer();
+    StringBuffer buf = StringBuffer();
     for (int i = 0; i < count; i++) {
       buf.write(ch);
     }
@@ -196,7 +196,7 @@ class WKTWriter {
   int coordsPerLine = -1;
   String indentTabStr;
 
-  /// Creates a new WKTStringBuffer with default settings
+  /// Creates a WKTStringBuffer with default settings
   WKTWriter() : this.withDimension(OUTPUT_DIMENSION);
 
   /// Creates a writer that writes {@link Geometry}s with
@@ -306,7 +306,7 @@ class WKTWriter {
   ///@return           a &lt;Geometry Tagged Text&gt; string (see the OpenGIS Simple
   ///      Features Specification)
   String write(Geometry geometry) {
-    StringBuffer sw = new StringBuffer();
+    StringBuffer sw = StringBuffer();
 
     // determine the precision model
     PrecisionModel pm = this.precisionModel;
@@ -339,7 +339,7 @@ class WKTWriter {
   ///@return           a &lt;Geometry Tagged Text&gt; string (see the OpenGIS Simple
   ///      Features Specification), with newlines and spaces
   String writeFormatted(Geometry geometry) {
-    StringBuffer sw = new StringBuffer();
+    StringBuffer sw = StringBuffer();
     try {
       writeFormatted4Args(geometry, true, sw, precisionModel);
     } catch (ex) {
@@ -382,7 +382,7 @@ class WKTWriter {
   ///      from a precise coordinate to an external coordinate
   void appendGeometryTaggedText(Geometry geometry, bool useFormatting, StringBuffer writer, NumberFormat formatter) {
     // evaluate the ordinates actually present in the geometry
-    CheckOrdinatesFilter cof = new CheckOrdinatesFilter(this.outputOrdinates);
+    CheckOrdinatesFilter cof = CheckOrdinatesFilter(this.outputOrdinates);
     geometry.applyCSF(cof);
 
     // Append the WKT
@@ -600,7 +600,7 @@ class WKTWriter {
   ///
   /// @param outputOrdinates  a bit-pattern of ordinates to write.
   /// @param writer         the output writer to append to.
-  /// @throws IOException   if an error occurs while using the writer.
+  /// @   if an error occurs while using the writer.
   void appendOrdinateText(List<Ordinate> outputOrdinates, StringBuffer writer) {
     if (outputOrdinates.contains(Ordinate.Z)) {
       writer.write('Z');
@@ -793,6 +793,350 @@ class WKTWriter {
   }
 }
 
+class WKTTokenType {
+  static const QUOTED_NAME = WKTTokenType._(0, "QUOTED_NAME");
+  static const KEYWORD = WKTTokenType._(1, "KEYWORD");
+  static const NUMERIC_LITERAL = WKTTokenType._(2, "NUMERIC_LITERAL");
+  static const WHITESPACE = WKTTokenType._(3, "WHITESPACE");
+  static const LPAREN = WKTTokenType._(4, "LPAREN");
+  static const RPAREN = WKTTokenType._(5, "RPAREN");
+  static const LBRACKET = WKTTokenType._(6, "LBRACKET");
+  static const RBRACKET = WKTTokenType._(7, "RBRACKET");
+  static const ERROR = WKTTokenType._(8, "ERROR");
+  static const EOS = WKTTokenType._(9, "EOS");
+  static const COMMA = WKTTokenType._(10, "COMMA");
+  static const NOTHING = WKTTokenType._(-1, "NOTHING");
+
+  final _type;
+  final _displayName;
+
+  const WKTTokenType._(this._type, this._displayName);
+
+  String toString() => _displayName;
+}
+
+class WKTToken {
+  final type;
+  final value;
+
+  const WKTToken(this.type, this.value);
+
+  String toString() => "{${type}: $value}";
+
+  bool get isKeyword => type == WKTTokenType.KEYWORD;
+
+  bool get isLParen => type == WKTTokenType.LPAREN;
+
+  bool get isRParen => type == WKTTokenType.RPAREN;
+
+  bool get isComma => type == WKTTokenType.COMMA;
+
+  bool get isNumber => type == WKTTokenType.NUMERIC_LITERAL;
+
+  bool get isEOS => type == WKTTokenType.EOS;
+
+  ensureKeyword([kw = null]) {
+    if (!isKeyword) {
+      throw ArgumentError("expected a keyword, got '$value'");
+    }
+    if (kw != null && value.toLowerCase() != kw.toLowerCase()) {
+      throw ArgumentError("unexpected keyword: expected '$kw', got '$value'");
+    }
+  }
+
+  ensureLParen() {
+    if (!isLParen) throw ArgumentError("expected left paren '(', got '$value'");
+  }
+
+  ensureRParen() {
+    if (!isRParen) throw ArgumentError("expected right paren ')', got '$value'");
+  }
+
+  ensureNumber() {
+    if (!isNumber) throw ArgumentError("expected numeric literal, got '$value'");
+  }
+
+  ensureNotEOS() {
+    if (isEOS) throw ArgumentError("unexpected end of input");
+  }
+
+  bool matchKeyword(kw) => isKeyword && value.toLowerCase() == kw.toLowerCase();
+}
+
+class WKTTokenizer {
+  static final CC_0 = "0".codeUnitAt(0);
+  static final CC_9 = "9".codeUnitAt(0);
+  static final CC_a = "a".codeUnitAt(0);
+  static final CC_z = "z".codeUnitAt(0);
+  static final CC_A = "A".codeUnitAt(0);
+  static final CC_Z = "Z".codeUnitAt(0);
+  static final CC_SPACE = " ".codeUnitAt(0);
+  static final CC_CR = "\n".codeUnitAt(0);
+  static final CC_LF = "\r".codeUnitAt(0);
+  static final CC_LPAREN = "(".codeUnitAt(0);
+  static final CC_RPAREN = ")".codeUnitAt(0);
+  static final CC_DQUOTE = "\"".codeUnitAt(0);
+  static final CC_QUOTE = "'".codeUnitAt(0);
+  static final CC_MINUS = "-".codeUnitAt(0);
+  static final CC_PLUS = "+".codeUnitAt(0);
+  static final CC_UNDERSCORE = "_".codeUnitAt(0);
+  static final CC_PERIOD = ".".codeUnitAt(0);
+  static final CC_COMMA = ",".codeUnitAt(0);
+  static final CC_DOT = ".".codeUnitAt(0);
+  static final CC_E = "E".codeUnitAt(0);
+  static final CC_e = "e".codeUnitAt(0);
+
+  static bool isDigit(int c) => c >= CC_0 && c <= CC_9;
+
+  static bool isLowerCaseLetter(int c) => c >= CC_a && c <= CC_z;
+
+  static bool isUpperCaseLetter(int c) => c >= CC_A && c <= CC_Z;
+
+  static bool isLetter(int c) => isLowerCaseLetter(c) || isUpperCaseLetter(c);
+
+  static bool isWS(int c) => c == CC_SPACE || c == CC_CR || c == CC_LF;
+
+  static bool isParen(int c) => c == CC_LPAREN || c == CC_RPAREN;
+
+  static bool isDQuote(int c) => c == CC_DQUOTE;
+
+  static bool isSpecial(int c) => c == CC_RPAREN || c == CC_LPAREN || c == CC_MINUS || c == CC_UNDERSCORE || c == CC_PERIOD || c == CC_QUOTE || c == CC_SPACE;
+
+  static bool isComma(int c) => c == CC_COMMA;
+
+  static bool isSign(int c) => c == CC_MINUS || c == CC_PLUS;
+
+  static bool isDot(int c) => c == CC_DOT;
+
+  static bool isE(int c) => c == CC_E || c == CC_e;
+
+  static bool isDelimiter(int c) => isWS(c) || isParen(c) || isComma(c) || isDQuote(c) || isDot(c);
+
+  static bool isLParen(int c) => c == CC_LPAREN;
+
+  static bool isRParen(int c) => c == CC_RPAREN;
+
+  static errorToken(value) => WKTToken(WKTTokenType.ERROR, value);
+
+  static numericLiteralToken(value) => WKTToken(WKTTokenType.NUMERIC_LITERAL, value);
+
+  static eosToken() => WKTToken(WKTTokenType.EOS, null);
+
+  static wsToken(value) => WKTToken(WKTTokenType.WHITESPACE, value);
+
+  static keywordToken(value) => WKTToken(WKTTokenType.KEYWORD, value);
+
+  static commaToken(value) => WKTToken(WKTTokenType.COMMA, value);
+
+  static quotedNameToken(value) => WKTToken(WKTTokenType.QUOTED_NAME, value);
+
+  Iterable<int> source;
+  int head = 0;
+  bool eos = false;
+  bool skipWhitespace = true;
+
+  WKTToken _lastReadToken;
+  bool pushedBack = false;
+
+  WKTTokenizer(source, {this.skipWhitespace: true}) {
+    if (source is Iterable<int>) {
+      this.source = source;
+    } else if (source is String) {
+      this.source = source.codeUnits;
+    }
+    try {
+      this.source.elementAt(0);
+    } on RangeError catch (e) {
+      eos = true;
+    }
+  }
+
+  advance() {
+    head++;
+    try {
+      source.elementAt(head);
+      return true;
+    } on RangeError catch (e) {
+      eos = true;
+      return false;
+    }
+  }
+
+  pushBack() {
+    if (_lastReadToken != null) pushedBack = true;
+  }
+
+  int get cur => source.elementAt(head);
+
+  currentToken() => String.fromCharCodes(source.take(head));
+
+  consumeToken() {
+    var token = currentToken();
+    source = source.skip(head);
+    head = 0;
+    return token;
+  }
+
+  consumeWhiteSpace() {
+    assert(isWS(cur));
+    while (advance()) {
+      if (!isWS(cur)) break;
+    }
+    var token = consumeToken();
+    return wsToken(token);
+  }
+
+  consumeComma() {
+    assert(isComma(cur));
+    advance();
+    var token = consumeToken();
+    return commaToken(token);
+  }
+
+  consumeKeyword() {
+    assert(isLetter(cur));
+    while (advance()) {
+      var c = cur;
+      if (isLetter(c)) continue;
+      if (isWS(c)) break;
+      if (isParen(c)) break;
+      if (isComma(c)) break;
+      return errorToken("unexpected character in keyword at <${currentToken()}>");
+    }
+    var token = consumeToken();
+    return keywordToken(token);
+  }
+
+  consumeQuotedName() {
+    assert(isDQuote(cur));
+    while (advance()) {
+      var c = cur;
+      if (isWS(c) || isLetter(c) || isDigit(c) || isSpecial(c)) continue;
+      if (isDQuote(c)) {
+        advance();
+        var token = consumeToken();
+        return quotedNameToken(token);
+      }
+      return errorToken("unexpected character in quoted name at  <${currentToken()}>");
+    }
+    if (eos) {
+      return errorToken("quoted name not terminated at <${currentToken()}>");
+    }
+  }
+
+  scanUnsignedInteger() {
+    assert(isDigit(cur));
+    while (advance()) {
+      if (!isDigit(cur)) break;
+    }
+  }
+
+  scanSignedInteger() {
+    assert(isDigit(cur) || isSign(cur));
+    if (isSign(cur)) {
+      if (!advance()) throw "unexpected end of stream";
+      if (!isDigit(cur)) throw "unexpected character after sign";
+    }
+    scanUnsignedInteger();
+  }
+
+  scanExactNumericLiteral() {
+    if (isDot(cur)) {
+      if (!advance()) return;
+      scanUnsignedInteger();
+    } else if (isDigit(cur)) {
+      scanUnsignedInteger();
+      if (eos) return;
+      if (isDot(cur)) {
+        if (!advance()) return;
+        scanUnsignedInteger();
+      }
+    }
+  }
+
+  scanUnsignedNumericLiteral() {
+    scanExactNumericLiteral();
+    if (eos) return;
+    if (isE(cur)) {
+      if (!advance()) throw "unexpected end of stream";
+      if (!isDigit(cur) && !isSign(cur)) throw "unexpected character after 'E'";
+      scanSignedInteger();
+    }
+  }
+
+  scanSignedNumericLiteral() {
+    if (isSign(cur)) {
+      if (!advance()) throw "unexpected end of stream";
+      if (!(isDot(cur) || isDigit(cur))) throw "unexpected character after sign";
+    }
+    scanUnsignedNumericLiteral();
+  }
+
+  consumeSignedNumericLiteral() {
+    try {
+      scanSignedNumericLiteral();
+      var token = consumeToken();
+      return numericLiteralToken(token);
+    } catch (e, st) {
+      print(st);
+      return errorToken(e.toString());
+    }
+  }
+
+  consumeLParen() {
+    assert(isLParen(cur));
+    advance();
+    var token = consumeToken();
+    return WKTToken(WKTTokenType.LPAREN, "(");
+  }
+
+  consumeRParen() {
+    assert(isRParen(cur));
+    advance();
+    var token = consumeToken();
+    return WKTToken(WKTTokenType.RPAREN, ")");
+  }
+
+  WKTToken next() {
+    if (pushedBack) {
+      pushedBack = false;
+      return _lastReadToken;
+    }
+    if (eos) _lastReadToken = eosToken();
+    while (!eos) {
+      var c = cur;
+      if (isWS(c)) {
+        var token = consumeWhiteSpace();
+        if (!skipWhitespace) {
+          _lastReadToken = token;
+          break;
+        }
+      } else if (isLetter(c)) {
+        _lastReadToken = consumeKeyword();
+        break;
+      } else if (isDQuote(c)) {
+        _lastReadToken = consumeQuotedName();
+        break;
+      } else if (isComma(c)) {
+        _lastReadToken = consumeComma();
+        break;
+      } else if (isLParen(c)) {
+        _lastReadToken = consumeLParen();
+        break;
+      } else if (isRParen(c)) {
+        _lastReadToken = consumeRParen();
+        break;
+      } else if (isDigit(c) || isDot(c) || isSign(c)) {
+        _lastReadToken = consumeSignedNumericLiteral();
+        break;
+      } else {
+        _lastReadToken = errorToken("unexpected character at <${currentToken()}>");
+      }
+    }
+    return _lastReadToken;
+  }
+}
+
 /// Converts a geometry in Well-Known Text format to a {@link Geometry}.
 /// <p>
 /// <code>WKTReader</code> supports
@@ -882,7 +1226,7 @@ class WKTWriter {
 ///
 ///
 ///@version 1.7
-/// @see WKTStringBuffer
+/// @see WKTWriter
 class WKTReader {
   static final String EMPTY = "EMPTY";
   static final String COMMA = ",";
@@ -940,9 +1284,682 @@ class WKTReader {
   ///            one or more &lt;Geometry Tagged Text&gt; strings (see the OpenGIS
   ///            Simple Features Specification) separated by whitespace
   /// @return a <code>Geometry</code> specified by <code>wellKnownText</code>
-  /// @throws ParseException
-  ///             if a parsing problem occurs
+  /// @
   Geometry read(String wellKnownText) {
-    return null; // TODO
+    return readGeometryTaggedText(WKTTokenizer(wellKnownText));
+//  StringReader reader = StringReader(wellKnownText);
+//  try {
+//  return read(reader);
+//  }
+//  finally {
+//  reader.close();
+//  }
+  }
+
+  ///**
+// * Reads a Well-Known Text representation of a {@link Geometry}
+// * from a {@link Reader}.
+// *
+// *@param  reader           a Reader which will return a &lt;Geometry Tagged Text&gt;
+// *      string (see the OpenGIS Simple Features Specification)
+// *@return                  a <code>Geometry</code> read from <code>reader</code>
+// *@throws  ParseException  if a parsing problem occurs
+// */
+// Geometry read(Reader reader)  {
+//WKTTokenizer tokenizer = createTokenizer(reader);
+//try {
+//return readGeometryTaggedText(tokenizer);
+//}
+//catch (IOException e) {
+//throw ParseException(e.toString());
+//}
+//}
+
+  ///**
+// * Utility function to create the tokenizer
+// * @param reader a reader
+// *
+// * @return a WKT Tokenizer.
+// */
+// static WKTTokenizer createTokenizer(Reader reader) {
+//  WKTTokenizer tokenizer = WKTTokenizer(reader);
+//  // set tokenizer to NOT parse numbers
+//  tokenizer.resetSyntax();
+//  tokenizer.wordChars('a', 'z');
+//  tokenizer.wordChars('A', 'Z');
+//  tokenizer.wordChars(128 + 32, 255);
+//  tokenizer.wordChars('0', '9');
+//  tokenizer.wordChars('-', '-');
+//  tokenizer.wordChars('+', '+');
+//  tokenizer.wordChars('.', '.');
+//  tokenizer.whitespaceChars(0, ' ');
+//  tokenizer.commentChar('#');
+//
+//  return tokenizer;
+//}
+
+  /// Reads a <code>Coordinate</Code> from a stream using the given {@link WKTTokenizer}.
+  /// <p>
+  ///   All ordinate values are read, but -depending on the {@link CoordinateSequenceFactory} of the
+  ///   underlying {@link GeometryFactory}- not necessarily all can be handled. Those are silently dropped.
+  /// </p>
+  /// @param tokenizer the tokenizer to use
+  /// @param ordinateFlags a bit-mask defining the ordinates to read.
+  /// @param tryParen a value indicating if a starting {@link #L_PAREN} should be probed.
+  /// @return a {@link CoordinateSequence} of length 1 containing the read ordinate values
+  ///
+  ///@throws  IOException     if an I/O error occurs
+  ///@throws  ParseException  if an unexpected token was encountered
+  CoordinateSequence getCoordinate(WKTTokenizer tokenizer, List<Ordinate> ordinateFlags, bool tryParen) {
+    bool opened = false;
+    if (tryParen && isOpenerNext(tokenizer)) {
+      tokenizer.next();
+      opened = true;
+    }
+
+// create a sequence for one coordinate
+    int offsetM = ordinateFlags.contains(Ordinate.Z) ? 1 : 0;
+    CoordinateSequence sequence = csFactory.createSizeDimMeas(1, toDimension(ordinateFlags), ordinateFlags.contains(Ordinate.M) ? 1 : 0);
+    sequence.setOrdinate(0, CoordinateSequence.X, precisionModel.makePrecise(getNextNumber(tokenizer)));
+    sequence.setOrdinate(0, CoordinateSequence.Y, precisionModel.makePrecise(getNextNumber(tokenizer)));
+
+// additionally read other vertices
+    if (ordinateFlags.contains(Ordinate.Z)) sequence.setOrdinate(0, CoordinateSequence.Z, getNextNumber(tokenizer));
+    if (ordinateFlags.contains(Ordinate.M)) sequence.setOrdinate(0, CoordinateSequence.Z + offsetM, getNextNumber(tokenizer));
+
+    if (ordinateFlags.length == 2 && this.isAllowOldJtsCoordinateSyntax && isNumberNext(tokenizer)) {
+      sequence.setOrdinate(0, CoordinateSequence.Z, getNextNumber(tokenizer));
+    }
+
+// read close token if it was opened here
+    if (opened) {
+      getNextCloser(tokenizer);
+    }
+
+    return sequence;
+  }
+
+  /// Reads a <code>Coordinate</Code> from a stream using the given {@link WKTTokenizer}.
+  /// <p>
+  ///   All ordinate values are read, but -depending on the {@link CoordinateSequenceFactory} of the
+  ///   underlying {@link GeometryFactory}- not necessarily all can be handled. Those are silently dropped.
+  /// </p>
+  /// <p>
+  ///
+  /// </p>
+  /// @param tokenizer the tokenizer to use
+  /// @param ordinateFlags a bit-mask defining the ordinates to read.
+  /// @return a {@link CoordinateSequence} of length 1 containing the read ordinate values
+  ///
+  ///@throws  IOException     if an I/O error occurs
+  ///@throws  ParseException  if an unexpected token was encountered
+  CoordinateSequence getCoordinateSequence(WKTTokenizer tokenizer, List<Ordinate> ordinateFlags) {
+    return getCoordinateSequenceTryParen(tokenizer, ordinateFlags, false);
+  }
+
+  /// Reads a <code>CoordinateSequence</Code> from a stream using the given {@link WKTTokenizer}.
+  /// <p>
+  ///   All ordinate values are read, but -depending on the {@link CoordinateSequenceFactory} of the
+  ///   underlying {@link GeometryFactory}- not necessarily all can be handled. Those are silently dropped.
+  /// </p>
+  /// @param tokenizer the tokenizer to use
+  /// @param ordinateFlags a bit-mask defining the ordinates to read.
+  /// @param tryParen a value indicating if a starting {@link #L_PAREN} should be probed for each coordinate.
+  /// @return a {@link CoordinateSequence} of length 1 containing the read ordinate values
+  ///
+  ///@throws  IOException     if an I/O error occurs
+  ///@throws  ParseException  if an unexpected token was encountered
+  CoordinateSequence getCoordinateSequenceTryParen(WKTTokenizer tokenizer, List<Ordinate> ordinateFlags, bool tryParen) {
+    if (getNextEmptyOrOpener(tokenizer) == EMPTY)
+      return this.csFactory.createSizeDimMeas(0, toDimension(ordinateFlags), ordinateFlags.contains(Ordinate.M) ? 1 : 0);
+
+    List<CoordinateSequence> coordinates = [];
+    do {
+      coordinates.add(getCoordinate(tokenizer, ordinateFlags, tryParen));
+    } while (getNextCloserOrComma(tokenizer) == COMMA);
+
+    return mergeSequences(coordinates, ordinateFlags);
+  }
+
+  /// Computes the required dimension based on the given ordinate values.
+  /// It is assumed that {@link Ordinate#X} and {@link Ordinate#Y} are included.
+  ///
+  /// @param ordinateFlags the ordinate bit-mask
+  /// @return the number of dimensions required to store ordinates for the given bit-mask.
+  int toDimension(List<Ordinate> ordinateFlags) {
+    int dimension = 2;
+    if (ordinateFlags.contains(Ordinate.Z)) dimension++;
+    if (ordinateFlags.contains(Ordinate.M)) dimension++;
+
+    if (dimension == 2 && this.isAllowOldJtsCoordinateSyntax) dimension++;
+
+    return dimension;
+  }
+
+  /// Merges an array of one-coordinate-{@link CoordinateSequence}s into one {@link CoordinateSequence}.
+  ///
+  /// @param sequences an array of coordinate sequences. Each sequence contains <b>exactly one</b> coordinate.
+  /// @param ordinateFlags a bit-mask of required ordinates.
+  /// @return a coordinate sequence containing all coordinate
+  CoordinateSequence mergeSequences(List<CoordinateSequence> sequences, List<Ordinate> ordinateFlags) {
+    // if the sequences array is empty or null create an empty sequence
+    if (sequences == null || sequences.length == 0) return csFactory.createSizeDim(0, toDimension(ordinateFlags));
+
+    if (sequences.length == 1) return sequences[0];
+
+    List<Ordinate> mergeOrdinates;
+    if (this.isAllowOldJtsCoordinateSyntax && ordinateFlags.length == 2) {
+      mergeOrdinates = []..addAll(ordinateFlags); // TODO check if this clone is enough
+      for (int i = 0; i < sequences.length; i++) {
+        if ((sequences[i]).hasZ()) {
+          mergeOrdinates.add(Ordinate.Z);
+          break;
+        }
+      }
+    } else
+      mergeOrdinates = ordinateFlags;
+
+    // create and fill the result sequence
+    CoordinateSequence sequence = this.csFactory.createSizeDimMeas(sequences.length, toDimension(mergeOrdinates), mergeOrdinates.contains(Ordinate.M) ? 1 : 0);
+
+    int offsetM = CoordinateSequence.Z + (mergeOrdinates.contains(Ordinate.Z) ? 1 : 0);
+    for (int i = 0; i < sequences.length; i++) {
+      CoordinateSequence item = sequences[i];
+      sequence.setOrdinate(i, CoordinateSequence.X, item.getOrdinate(0, CoordinateSequence.X));
+      sequence.setOrdinate(i, CoordinateSequence.Y, item.getOrdinate(0, CoordinateSequence.Y));
+      if (mergeOrdinates.contains(Ordinate.Z)) sequence.setOrdinate(i, CoordinateSequence.Z, item.getOrdinate(0, CoordinateSequence.Z));
+      if (mergeOrdinates.contains(Ordinate.M)) sequence.setOrdinate(i, offsetM, item.getOrdinate(0, offsetM));
+    }
+
+    // return it
+    return sequence;
+  }
+
+  /// Returns the next array of <code>Coordinate</code>s in the stream.
+  ///
+  ///@param  tokenizer        tokenizer over a stream of text in Well-known Text
+  ///      format. The next element returned by the stream should be L_PAREN (the
+  ///      beginning of "(x1 y1, x2 y2, ..., xn yn)") or EMPTY.
+  ///@return                  the next array of <code>Coordinate</code>s in the
+  ///      stream, or an empty array if EMPTY is the next element returned by
+  ///      the stream.
+  ///@throws  IOException     if an I/O error occurs
+  ///@throws  ParseException  if an unexpected token was encountered
+  ///
+  ///@deprecated in favor of functions returning {@link CoordinateSequence}s
+  List<Coordinate> getCoordinates(WKTTokenizer tokenizer) {
+    String nextToken = getNextEmptyOrOpener(tokenizer);
+    if (nextToken == EMPTY) {
+      return <Coordinate>[];
+    }
+    List<Coordinate> coordinates = [];
+    coordinates.add(getPreciseCoordinate(tokenizer));
+    nextToken = getNextCloserOrComma(tokenizer);
+    while (nextToken == COMMA) {
+      coordinates.add(getPreciseCoordinate(tokenizer));
+      nextToken = getNextCloserOrComma(tokenizer);
+    }
+    return coordinates;
+  }
+
+  /// Returns the next array of <code>Coordinate</code>s in the stream.
+  ///
+  ///@param  tokenizer        tokenizer over a stream of text in Well-known Text
+  ///      format. The next element returned by the stream should be a number.
+  ///@return                  the next array of <code>Coordinate</code>s in the
+  ///      stream.
+  ///@throws  IOException     if an I/O error occurs
+  ///@throws  ParseException  if an unexpected token was encountered
+  ///
+  ///@deprecated in favor of functions returning {@link CoordinateSequence}s
+  List<Coordinate> getCoordinatesNoLeftParen(WKTTokenizer tokenizer) {
+    String nextToken = null;
+    List<Coordinate> coordinates = [];
+    coordinates.add(getPreciseCoordinate(tokenizer));
+    nextToken = getNextCloserOrComma(tokenizer);
+    while (nextToken == COMMA) {
+      coordinates.add(getPreciseCoordinate(tokenizer));
+      nextToken = getNextCloserOrComma(tokenizer);
+    }
+    return coordinates;
+  }
+
+  /// Returns the next precise <code>Coordinate</code> in the stream.
+  ///
+  ///@param  tokenizer        tokenizer over a stream of text in Well-known Text
+  ///      format. The next element returned by the stream should be a number.
+  ///@return                  the next array of <code>Coordinate</code>s in the
+  ///      stream.
+  ///@throws  IOException     if an I/O error occurs
+  ///@throws  ParseException  if an unexpected token was encountered
+  ///
+  ///@deprecated in favor of functions returning {@link CoordinateSequence}s
+  Coordinate getPreciseCoordinate(WKTTokenizer tokenizer) {
+    Coordinate coord = Coordinate.empty();
+    coord.x = getNextNumber(tokenizer);
+    coord.y = getNextNumber(tokenizer);
+    if (isNumberNext(tokenizer)) {
+      coord.z = getNextNumber(tokenizer);
+    }
+    if (isNumberNext(tokenizer)) {
+      getNextNumber(tokenizer); // ignore M value
+    }
+    precisionModel.makeCoordinatePrecise(coord);
+    return coord;
+  }
+
+  /// Tests if the next token in the stream is a number
+  ///
+  /// @param tokenizer the tokenizer
+  /// @return {@code true} if the next token is a number, otherwise {@code false}
+  /// @throws  IOException     if an I/O error occurs
+  static bool isNumberNext(WKTTokenizer tokenizer) {
+    WKTToken token = tokenizer.next();
+
+    tokenizer.pushBack();
+    return token.type == WKTTokenType.KEYWORD; // TT_WORD;
+  }
+
+  /// Tests if the next token in the stream is a left opener ({@link #L_PAREN})
+  ///
+  /// @param tokenizer the tokenizer
+  /// @return {@code true} if the next token is a {@link #L_PAREN}, otherwise {@code false}
+  /// @throws  IOException     if an I/O error occurs
+  static bool isOpenerNext(WKTTokenizer tokenizer) {
+    WKTToken token = tokenizer.next();
+    tokenizer.pushBack();
+    return token.type == WKTTokenType.LPAREN;
+  }
+
+  /// Parses the next number in the stream.
+  /// Numbers with exponents are handled.
+  /// <tt>NaN</tt> values are handled correctly, and
+  /// the case of the "NaN" symbol is not significant.
+  ///
+  /// @param  tokenizer        tokenizer over a stream of text in Well-known Text
+  /// @return                  the next number in the stream
+  /// @throws  ParseException  if the next token is not a valid number
+  /// @throws  IOException     if an I/O error occurs
+  double getNextNumber(WKTTokenizer tokenizer) {
+    WKTToken token = tokenizer.next();
+    switch (token.type) {
+      case WKTTokenType.KEYWORD:
+        {
+          if (StringUtils.equalsIgnoreCase(token.value, NAN_SYMBOL)) {
+            return double.nan;
+          } else {
+            try {
+              return double.parse(token.value);
+            } catch (ex) {
+              throw ArgumentError("Invalid number: ${token.value}");
+            }
+          }
+          break;
+        }
+      case WKTTokenType.NUMERIC_LITERAL:
+        {
+          try {
+            return double.parse(token.value);
+          } catch (ex) {
+            throw ArgumentError("Invalid number: ${token.value}");
+          }
+        }
+    }
+    throw ArgumentError("Expected number token but found ${token.type}: ${token.value}");
+  }
+
+  ///  Returns the next EMPTY or L_PAREN in the stream as uppercase text.
+  ///
+  ///@return                  the next EMPTY or L_PAREN in the stream as uppercase
+  ///      text.
+  ///@throws  ParseException  if the next token is not EMPTY or L_PAREN
+  ///@throws  IOException     if an I/O error occurs
+  /// @param  tokenizer        tokenizer over a stream of text in Well-known Text
+  static String getNextEmptyOrOpener(WKTTokenizer tokenizer) {
+    String nextWord = getNextWord(tokenizer);
+    if (StringUtils.equalsIgnoreCase(nextWord, "Z")) {
+//z = true;
+      nextWord = getNextWord(tokenizer);
+    } else if (StringUtils.equalsIgnoreCase(nextWord, "M")) {
+//m = true;
+      nextWord = getNextWord(tokenizer);
+    } else if (StringUtils.equalsIgnoreCase(nextWord, "ZM")) {
+//z = true;
+//m = true;
+      nextWord = getNextWord(tokenizer);
+    }
+    if (nextWord == EMPTY || nextWord == L_PAREN) {
+      return nextWord;
+    }
+    throw ArgumentError("Expected $EMPTY or $L_PAREN token but found $nextWord");
+  }
+
+  ///  Returns the next ordinate flag information in the stream as uppercase text.
+  ///  This can be Z, M or ZM.
+  ///
+  ///@return                  the next EMPTY or L_PAREN in the stream as uppercase
+  ///      text.
+  ///@throws  ParseException  if the next token is not EMPTY or L_PAREN
+  ///@throws  IOException     if an I/O error occurs
+  /// @param  tokenizer        tokenizer over a stream of text in Well-known Text
+  static List<Ordinate> getNextOrdinateFlags(WKTTokenizer tokenizer) {
+    List<Ordinate> result = List.from([Ordinate.X, Ordinate.Y]);
+
+    String nextWord = lookAheadWord(tokenizer).toUpperCase();
+    if (StringUtils.equalsIgnoreCase(nextWord, "Z")) {
+      tokenizer.next();
+      result.add(Ordinate.Z);
+    } else if (StringUtils.equalsIgnoreCase(nextWord, "M")) {
+      tokenizer.next();
+      result.add(Ordinate.M);
+    } else if (StringUtils.equalsIgnoreCase(nextWord, "ZM")) {
+      tokenizer.next();
+      result.add(Ordinate.Z);
+      result.add(Ordinate.M);
+    }
+    return result;
+  }
+
+  ///  Returns the next word in the stream.
+  ///
+  ///@param  tokenizer        tokenizer over a stream of text in Well-known Text
+  ///      format. The next token must be a word.
+  ///@return                  the next word in the stream as uppercase text
+  ///@throws  ParseException  if the next token is not a word
+  ///@throws  IOException     if an I/O error occurs
+  static String lookAheadWord(WKTTokenizer tokenizer) {
+    String nextWord = getNextWord(tokenizer);
+    tokenizer.pushBack();
+    return nextWord;
+  }
+
+  ///  Returns the next {@link #R_PAREN} or {@link #COMMA} in the stream.
+  ///
+  ///@return                  the next R_PAREN or COMMA in the stream
+  ///@throws  ParseException  if the next token is not R_PAREN or COMMA
+  ///@throws  IOException     if an I/O error occurs
+  /// @param  tokenizer        tokenizer over a stream of text in Well-known Text
+  static String getNextCloserOrComma(WKTTokenizer tokenizer) {
+    String nextWord = getNextWord(tokenizer);
+    if (nextWord == COMMA || nextWord == R_PAREN) {
+      return nextWord;
+    }
+    throw ArgumentError("Expected $COMMA or $R_PAREN token but found $nextWord");
+  }
+
+  ///  Returns the next {@link #R_PAREN} in the stream.
+  ///
+  ///@param  tokenizer        tokenizer over a stream of text in Well-known Text
+  ///      format. The next token must be R_PAREN.
+  ///@return                  the next R_PAREN in the stream
+  ///@throws  ParseException  if the next token is not R_PAREN
+  ///@throws  IOException     if an I/O error occurs
+  String getNextCloser(WKTTokenizer tokenizer) {
+    String nextWord = getNextWord(tokenizer);
+    if (nextWord == R_PAREN) {
+      return nextWord;
+    }
+    throw ArgumentError("Expected $R_PAREN token but found $nextWord");
+  }
+
+  ///  Returns the next word in the stream.
+  ///
+  ///@return                  the next word in the stream as uppercase text
+  ///@throws  ParseException  if the next token is not a word
+  ///@throws  IOException     if an I/O error occurs
+  /// @param  tokenizer        tokenizer over a stream of text in Well-known Text
+  static String getNextWord(WKTTokenizer tokenizer) {
+    WKTToken token = tokenizer.next();
+    switch (token.type) {
+      case WKTTokenType.KEYWORD:
+        String word = token.value;
+        if (StringUtils.equalsIgnoreCase(word, EMPTY)) {
+          return EMPTY;
+        }
+        return word;
+
+      case WKTTokenType.LPAREN:
+        return L_PAREN; //'('
+      case WKTTokenType.RPAREN:
+        return R_PAREN; //')'
+      case WKTTokenType.COMMA:
+        return COMMA; //','
+    }
+    throw ArgumentError("Expected word token but found ${token.type}: ${token.value}");
+  }
+
+  /// Gets a description of the current token type
+  /// @param tokenizer the tokenizer
+  /// @return a description of the current token
+  static String tokenString(WKTToken token) {
+    switch (token.type) {
+      case WKTTokenType.NUMERIC_LITERAL:
+        return "<NUMBER>";
+//      case WKTTokenType.TT_EOL: // TODO check
+//        return "End-of-Line";
+      case WKTTokenType.EOS:
+        return "End-of-Stream";
+      case WKTTokenType.KEYWORD:
+        return "'${token.value}'";
+    }
+    return "'${token.type}'";
+  }
+
+  ///  Creates a <code>Geometry</code> using the next token in the stream.
+  ///
+  ///@return                  a <code>Geometry</code> specified by the next token
+  ///      in the stream
+  ///@throws  ParseException  if the coordinates used to create a <code>Polygon</code>
+  ///      shell and holes do not form closed linestrings, or if an unexpected
+  ///      token was encountered
+  ///@throws  IOException     if an I/O error occurs
+  /// @param  tokenizer        tokenizer over a stream of text in Well-known Text
+  Geometry readGeometryTaggedText(WKTTokenizer tokenizer) {
+    String type;
+
+    List<Ordinate> ordinateFlags = List.from([Ordinate.X, Ordinate.Y]);
+    try {
+      type = getNextWord(tokenizer).toUpperCase();
+      if (type.endsWith("ZM")) {
+        ordinateFlags.add(Ordinate.Z);
+        ordinateFlags.add(Ordinate.M);
+      } else if (type.endsWith("Z")) {
+        ordinateFlags.add(Ordinate.Z);
+      } else if (type.endsWith("M")) {
+        ordinateFlags.add(Ordinate.M);
+      }
+    } catch (e) {
+      return null;
+    }
+
+    return readGeometryTaggedTextWithOpts(tokenizer, type, ordinateFlags);
+  }
+
+  Geometry readGeometryTaggedTextWithOpts(WKTTokenizer tokenizer, String type, List<Ordinate> ordinateFlags) {
+    if (ordinateFlags.length == 2) {
+      ordinateFlags = getNextOrdinateFlags(tokenizer);
+    }
+
+    // if we can create a sequence with the required dimension everything is ok, otherwise
+    // we need to take a different coordinate sequence factory.
+    // It would be good to not have to try/catch this but if the CoordinateSequenceFactory
+    // exposed a value indicating which min/max dimension it can handle or even an
+    // ordinate bit-flag.
+    try {
+      csFactory.createSizeDimMeas(0, toDimension(ordinateFlags), ordinateFlags.contains(Ordinate.M) ? 1 : 0);
+    } catch (e) {
+      geometryFactory = GeometryFactory(geometryFactory.getPrecisionModel(), geometryFactory.getSRID(), csFactoryXYZM);
+    }
+
+    if (type.startsWith("POINT")) {
+      return readPointText(tokenizer, ordinateFlags);
+    } else if (type.startsWith("LINESTRING")) {
+      return readLineStringText(tokenizer, ordinateFlags);
+    } else if (type.startsWith("LINEARRING")) {
+      return readLinearRingText(tokenizer, ordinateFlags);
+    } else if (type.startsWith("POLYGON")) {
+      return readPolygonText(tokenizer, ordinateFlags);
+    } else if (type.startsWith("MULTIPOINT")) {
+      return readMultiPointText(tokenizer, ordinateFlags);
+    } else if (type.startsWith("MULTILINESTRING")) {
+      return readMultiLineStringText(tokenizer, ordinateFlags);
+    } else if (type.startsWith("MULTIPOLYGON")) {
+      return readMultiPolygonText(tokenizer, ordinateFlags);
+    } else if (type.startsWith("GEOMETRYCOLLECTION")) {
+      return readGeometryCollectionText(tokenizer, ordinateFlags);
+    }
+    var currentToken = tokenizer.currentToken();
+    throw ArgumentError("Unknown geometry type: ${currentToken.type}  -> ${currentToken.value}");
+  }
+
+  ///  Creates a <code>Point</code> using the next token in the stream.
+  ///
+  ///@param  tokenizer        tokenizer over a stream of text in Well-known Text
+  ///      format. The next tokens must form a &lt;Point Text&gt;.
+  ///@return                  a <code>Point</code> specified by the next token in
+  ///      the stream
+  ///@throws  IOException     if an I/O error occurs
+  ///@throws  ParseException  if an unexpected token was encountered
+  Point readPointText(WKTTokenizer tokenizer, List<Ordinate> ordinateFlags) {
+    Point point = geometryFactory.createPointFromSequence(getCoordinateSequence(tokenizer, ordinateFlags));
+    return point;
+  }
+
+  ///  Creates a <code>LineString</code> using the next token in the stream.
+  ///
+  ///@param  tokenizer        tokenizer over a stream of text in Well-known Text
+  ///      format. The next tokens must form a &lt;LineString Text&gt;.
+  ///@return                  a <code>LineString</code> specified by the next
+  ///      token in the stream
+  ///@throws  IOException     if an I/O error occurs
+  ///@throws  ParseException  if an unexpected token was encountered
+  LineString readLineStringText(WKTTokenizer tokenizer, List<Ordinate> ordinateFlags) {
+    return geometryFactory.createLineStringFromSequence(getCoordinateSequence(tokenizer, ordinateFlags));
+  }
+
+  ///  Creates a <code>LinearRing</code> using the next token in the stream.
+  ///
+  ///@param  tokenizer        tokenizer over a stream of text in Well-known Text
+  ///      format. The next tokens must form a &lt;LineString Text&gt;.
+  ///@return                  a <code>LinearRing</code> specified by the next
+  ///      token in the stream
+  ///@throws  IOException     if an I/O error occurs
+  ///@throws  ParseException  if the coordinates used to create the <code>LinearRing</code>
+  ///      do not form a closed linestring, or if an unexpected token was
+  ///      encountered
+  LinearRing readLinearRingText(WKTTokenizer tokenizer, List<Ordinate> ordinateFlags) {
+    return geometryFactory.createLinearRingFromSequence(getCoordinateSequence(tokenizer, ordinateFlags));
+  }
+
+  ///  Creates a <code>MultiPoint</code> using the next tokens in the stream.
+  ///
+  ///@param  tokenizer        tokenizer over a stream of text in Well-known Text
+  ///      format. The next tokens must form a &lt;MultiPoint Text&gt;.
+  ///@return                  a <code>MultiPoint</code> specified by the next
+  ///      token in the stream
+  ///@throws  IOException     if an I/O error occurs
+  ///@throws  ParseException  if an unexpected token was encountered
+  MultiPoint readMultiPointText(WKTTokenizer tokenizer, List<Ordinate> ordinateFlags) {
+    return geometryFactory.createMultiPointFromSequence(getCoordinateSequenceTryParen(tokenizer, ordinateFlags, this.isAllowOldJtsMultipointSyntax));
+  }
+
+  ///  Creates a <code>Polygon</code> using the next token in the stream.
+  ///
+  ///@param  tokenizer        tokenizer over a stream of text in Well-known Text
+  ///      format. The next tokens must form a &lt;Polygon Text&gt;.
+  ///@return                  a <code>Polygon</code> specified by the next token
+  ///      in the stream
+  ///@throws  ParseException  if the coordinates used to create the <code>Polygon</code>
+  ///      shell and holes do not form closed linestrings, or if an unexpected
+  ///      token was encountered.
+  ///@throws  IOException     if an I/O error occurs
+  Polygon readPolygonText(WKTTokenizer tokenizer, List<Ordinate> ordinateFlags) {
+    String nextToken = getNextEmptyOrOpener(tokenizer);
+    if (nextToken == EMPTY) {
+      return geometryFactory.createPolygonEmpty();
+    }
+    List<LinearRing> holes = [];
+    LinearRing shell = readLinearRingText(tokenizer, ordinateFlags);
+    nextToken = getNextCloserOrComma(tokenizer);
+    while (nextToken == COMMA) {
+      LinearRing hole = readLinearRingText(tokenizer, ordinateFlags);
+      holes.add(hole);
+      nextToken = getNextCloserOrComma(tokenizer);
+    }
+    List<LinearRing> array = List(holes.length);
+    return geometryFactory.createPolygonWithHoles(shell, holes);
+  }
+
+  ///  Creates a <code>MultiLineString</code> using the next token in the stream.
+  ///
+  ///@param  tokenizer        tokenizer over a stream of text in Well-known Text
+  ///      format. The next tokens must form a &lt;MultiLineString Text&gt;.
+  ///@return                  a <code>MultiLineString</code> specified by the
+  ///      next token in the stream
+  ///@throws  IOException     if an I/O error occurs
+  ///@throws  ParseException  if an unexpected token was encountered
+  MultiLineString readMultiLineStringText(WKTTokenizer tokenizer, List<Ordinate> ordinateFlags) {
+    String nextToken = getNextEmptyOrOpener(tokenizer);
+    if (nextToken == EMPTY) {
+      return geometryFactory.createMultiLineStringEmpty();
+    }
+
+    List<LineString> lineStrings = [];
+    do {
+      LineString lineString = readLineStringText(tokenizer, ordinateFlags);
+      lineStrings.add(lineString);
+      nextToken = getNextCloserOrComma(tokenizer);
+    } while (nextToken == COMMA);
+
+    return geometryFactory.createMultiLineString(lineStrings);
+  }
+
+  ///  Creates a <code>MultiPolygon</code> using the next token in the stream.
+  ///
+  ///@param  tokenizer        tokenizer over a stream of text in Well-known Text
+  ///      format. The next tokens must form a &lt;MultiPolygon Text&gt;.
+  ///@return                  a <code>MultiPolygon</code> specified by the next
+  ///      token in the stream, or if if the coordinates used to create the
+  ///      <code>Polygon</code> shells and holes do not form closed linestrings.
+  ///@throws  IOException     if an I/O error occurs
+  ///@throws  ParseException  if an unexpected token was encountered
+  MultiPolygon readMultiPolygonText(WKTTokenizer tokenizer, List<Ordinate> ordinateFlags) {
+    String nextToken = getNextEmptyOrOpener(tokenizer);
+    if (nextToken == EMPTY) {
+      return geometryFactory.createMultiPolygonEmpty();
+    }
+    List<Polygon> polygons = [];
+    do {
+      Polygon polygon = readPolygonText(tokenizer, ordinateFlags);
+      polygons.add(polygon);
+      nextToken = getNextCloserOrComma(tokenizer);
+    } while (nextToken == COMMA);
+    return geometryFactory.createMultiPolygon(polygons);
+  }
+
+  ///  Creates a <code>GeometryCollection</code> using the next token in the
+  ///  stream.
+  ///
+  ///@param  tokenizer        tokenizer over a stream of text in Well-known Text
+  ///      format. The next tokens must form a &lt;GeometryCollection Text&gt;.
+  ///@return                  a <code>GeometryCollection</code> specified by the
+  ///      next token in the stream
+  ///@throws  ParseException  if the coordinates used to create a <code>Polygon</code>
+  ///      shell and holes do not form closed linestrings, or if an unexpected
+  ///      token was encountered
+  ///@throws  IOException     if an I/O error occurs
+  GeometryCollection readGeometryCollectionText(WKTTokenizer tokenizer, List<Ordinate> ordinateFlags) {
+    String nextToken = getNextEmptyOrOpener(tokenizer);
+    if (nextToken == EMPTY) {
+      return geometryFactory.createGeometryCollectionEmpty();
+    }
+    List<Geometry> geometries = [];
+    do {
+      Geometry geometry = readGeometryTaggedText(tokenizer);
+      geometries.add(geometry);
+      nextToken = getNextCloserOrComma(tokenizer);
+    } while (nextToken == COMMA);
+
+    return geometryFactory.createGeometryCollection(geometries);
   }
 }

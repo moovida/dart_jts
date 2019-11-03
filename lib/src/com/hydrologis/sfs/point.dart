@@ -72,7 +72,7 @@ class Point extends Geometry {
 
   @override
   List<Coordinate> getCoordinates() {
-    return x != null ? [Coordinate(x, y, y)] : [];
+    return x != null ? [Coordinate(x, y, z)] : [];
   }
 
   int getNumGeometries() {

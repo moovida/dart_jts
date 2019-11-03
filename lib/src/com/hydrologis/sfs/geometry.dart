@@ -298,19 +298,43 @@ class GeometryFactory {
 
   MultiPoint createMultiPointFromCoords([List<Coordinate> coords]) {
     if (coords == null || coords.isEmpty) return MultiPoint.empty();
-    return MultiPoint(coords.map((c) => Point(c.x, c.y)));
+    return MultiPoint(coords.map((c) => Point(c.x, c.y,z:c.z)));
+  }
+
+  MultiPoint createMultiPointFromSequence(CoordinateSequence seq) {
+    if (seq == null || seq.size() == 0) return MultiPoint.empty();
+    List<Point> points = [];
+    for(int i = 0; i < seq.size(); i++){
+      var c = seq.getCoordinate(i);
+      points.add(Point(c.x,c.y,z:c.z));
+    }
+    return MultiPoint(points);
   }
 
   LineString createLineString(List<Coordinate> coordinates) {
     return LineString.fromCoordinates(coordinates);
   }
 
+  LineString createLineStringFromSequence(CoordinateSequence seq) {
+    if (seq == null || seq.size() == 0) return LineString.empty();
+    return LineString.fromCoordinates(seq.toCoordinateArray());
+  }
+
   LinearRing createLinearRing(List<Coordinate> coordinates) {
     return LinearRing.fromCoordinates(coordinates);
   }
 
+  LinearRing createLinearRingFromSequence(CoordinateSequence seq) {
+    if (seq == null || seq.size() == 0) return LineString.empty();
+    return LinearRing.fromCoordinates(seq.toCoordinateArray());
+  }
+
   MultiLineString createMultiLineString(List<LineString> lines) {
     return MultiLineString(lines);
+  }
+
+  MultiLineString createMultiLineStringEmpty() {
+    return MultiLineString.empty();
   }
 
   /// Creates a Point using the given Coordinate.
@@ -323,8 +347,22 @@ class GeometryFactory {
     return Point(coordinate.x, coordinate.y, z: coordinate.z, m: coordinate.getM());
   }
 
+  Point createPointFromSequence(CoordinateSequence seq) {
+    if (seq == null || seq.size() == 0) return Point.empty();
+    var coordinate = seq.getCoordinate(0);
+    return Point(coordinate.x, coordinate.y, z: coordinate.z, m: coordinate.getM());
+  }
+
   Polygon createPolygon(LinearRing ring) {
     return Polygon(ring, null);
+  }
+
+  Polygon createPolygonWithHoles(LinearRing ring, List<LinearRing> holes) {
+    return Polygon(ring, holes);
+  }
+
+  Polygon createPolygonEmpty() {
+    return Polygon.empty();
   }
 
   /// Creates a {@link Geometry} with the same extent as the given envelope.
@@ -386,7 +424,15 @@ class GeometryFactory {
     return MultiPolygon(polygons);
   }
 
+  MultiPolygon createMultiPolygonEmpty() {
+    return MultiPolygon.empty();
+  }
+
   GeometryCollection createGeometryCollection(List<Geometry> geometries) {
     return GeometryCollection(geometries);
+  }
+
+  GeometryCollection createGeometryCollectionEmpty() {
+    return GeometryCollection.empty();
   }
 }
