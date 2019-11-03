@@ -97,6 +97,21 @@ class Polygon extends Surface {
     return this;
   }
 
+  LineString getExteriorRing() {
+    if (_exterior == null) return LineString.empty();
+    return _exterior;
+  }
+
+  int getNumInteriorRing() {
+    if (_interiors == null) return 0;
+    return _interiors.length;
+  }
+
+  LineString getInteriorRingN(int n) {
+    if (_interiors == null) return null;
+    return _interiors[n];
+  }
+
   void applyGCF(GeometryComponentFilter filter) {
     filter.filter(this);
     _exterior.applyGCF(filter);

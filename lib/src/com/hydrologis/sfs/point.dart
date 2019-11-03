@@ -67,12 +67,12 @@ class Point extends Geometry {
 
   @override
   Coordinate getCoordinate() {
-    return x != null ? Coordinate(x, y) : null;
+    return x != null ? Coordinate(x, y, z, m) : null;
   }
 
   @override
   List<Coordinate> getCoordinates() {
-    return x != null ? [Coordinate(x, y, z)] : [];
+    return x != null ? [Coordinate(x, y, z, m)] : [];
   }
 
   int getNumGeometries() {
@@ -174,6 +174,6 @@ class Point extends Geometry {
   /// Throws [StateError] if this point [isEmpty].
   Coordinate toCoordinate() {
     if (isEmpty) throw StateError("not supported on empty point");
-    return Coordinate(x, y, z);
+    return Coordinate(x, y, z, m);
   }
 }

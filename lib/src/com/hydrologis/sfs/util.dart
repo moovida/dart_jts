@@ -13,11 +13,7 @@ _require(cond, [msg]) {
 //  int compareTo(T other);
 //}
 
-class FormattingUtils {
-
-
-}
-
+class FormattingUtils {}
 
 /// Utilities for collections
 class CollectionsUtils {
@@ -65,7 +61,6 @@ class CollectionsUtils {
 }
 
 class StringUtils {
-
   static bool equalsIgnoreCase(String string1, String string2) {
     return string1?.toLowerCase() == string2?.toLowerCase();
   }
@@ -92,5 +87,11 @@ class MathUtils {
     if (x < min) return min;
     if (x > max) return max;
     return x;
+  }
+}
+
+class NumberUtils {
+  static bool equalsWithTolerance(double x1, double x2, double tolerance) {
+    return (x1 - x2).abs() <= tolerance;
   }
 }

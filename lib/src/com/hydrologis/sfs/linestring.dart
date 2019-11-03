@@ -68,7 +68,7 @@ class LineString extends Geometry with IterableMixin<Point>, _GeometryContainerM
   LineString.fromCoordinates(List<Coordinate> coordinates) {
     _require(coordinates != null);
     _require(coordinates.every((p) => p != null));
-    _points = coordinates.map((c) => Point(c.x, c.y, z: c.z)).toList();
+    _points = coordinates.map((c) => Point(c.x, c.y, z: c.z, m: c.getM())).toList();
   }
 
   /// Creates a new linestring from the WKT string [wkt].
@@ -95,7 +95,7 @@ class LineString extends Geometry with IterableMixin<Point>, _GeometryContainerM
 
   @override
   List<Coordinate> getCoordinates() {
-    return _points.isEmpty ? [] : _points.map((p) => p.toCoordinate()).toList();
+    return _points == null || _points.isEmpty ? [] : _points.map((p) => p.toCoordinate()).toList();
   }
 
   int getNumGeometries() {
@@ -278,6 +278,8 @@ class LinearRing extends LineString {
   LinearRing(List<Point> points) : super.ring(points) {
     validateConstruction();
   }
+
+  LinearRing.empty() :  super.fromCoordinates([]);
 
   LinearRing.fromCoordinates(List<Coordinate> coords) : super.fromCoordinates(coords) {
     validateConstruction();

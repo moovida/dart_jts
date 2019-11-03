@@ -128,7 +128,11 @@ abstract class Geometry {
   void applyCSF(CoordinateSequenceFilter filter);
 
   CoordinateSequence getCoordinateSequence() {
-    return CoordinateArraySequence(getCoordinates());
+    List<Coordinate> coordinates = getCoordinates();
+    if (coordinates[0].hasM()) {
+      return PackedCoordinateSequenceFactory.DOUBLE_FACTORY.create(getCoordinates());
+    }
+    return CoordinateArraySequence(coordinates);
   }
 
   /**
@@ -298,15 +302,15 @@ class GeometryFactory {
 
   MultiPoint createMultiPointFromCoords([List<Coordinate> coords]) {
     if (coords == null || coords.isEmpty) return MultiPoint.empty();
-    return MultiPoint(coords.map((c) => Point(c.x, c.y,z:c.z)));
+    return MultiPoint(coords.map((c) => Point(c.x, c.y, z: c.z)));
   }
 
   MultiPoint createMultiPointFromSequence(CoordinateSequence seq) {
     if (seq == null || seq.size() == 0) return MultiPoint.empty();
     List<Point> points = [];
-    for(int i = 0; i < seq.size(); i++){
+    for (int i = 0; i < seq.size(); i++) {
       var c = seq.getCoordinate(i);
-      points.add(Point(c.x,c.y,z:c.z));
+      points.add(Point(c.x, c.y, z: c.z, m: c.getM()));
     }
     return MultiPoint(points);
   }
@@ -325,7 +329,7 @@ class GeometryFactory {
   }
 
   LinearRing createLinearRingFromSequence(CoordinateSequence seq) {
-    if (seq == null || seq.size() == 0) return LineString.empty();
+    if (seq == null || seq.size() == 0) return LinearRing.empty();
     return LinearRing.fromCoordinates(seq.toCoordinateArray());
   }
 

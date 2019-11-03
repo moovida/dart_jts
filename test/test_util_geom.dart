@@ -202,8 +202,8 @@ void doTestCopy(CoordinateSequenceFactory factory, int dimension) {
 
 void doTestIsRing(CoordinateSequenceFactory factory, int dimension) {
   // arrange
-  CoordinateSequence ring = createCircle(factory, dimension, Coordinate.empty(), 5);
-  CoordinateSequence noRing = createCircularString(factory, dimension, Coordinate.empty(), 5, 0.1, 22);
+  CoordinateSequence ring = createCircle(factory, dimension, Coordinate.emptyDefault(), 5);
+  CoordinateSequence noRing = createCircularString(factory, dimension, Coordinate.emptyDefault(), 5, 0.1, 22);
   CoordinateSequence empty = createAlmostRing(factory, dimension, 0);
   CoordinateSequence incomplete1 = createAlmostRing(factory, dimension, 1);
   CoordinateSequence incomplete2 = createAlmostRing(factory, dimension, 2);

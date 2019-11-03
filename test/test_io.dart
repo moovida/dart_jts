@@ -116,7 +116,7 @@ void main() {
   WKTReader reader2DM = getWKTReaderFromOrdinateSetAndScale(OrdinateSet_XYM, 1.0);
   WKTReader reader3DM = getWKTReaderFromOrdinateSetAndScale(OrdinateSet_XYZM, 1.0);
   group("WKTReaderTest - ", () {
-    test("", () {
+    test("testReadNaN", () {
       // arrange
       CoordinateSequence seq = createSequence(OrdinateSet_XYZ, [10, 10]);
       seq.setOrdinate(0, CoordinateSequence.Z, double.nan);
@@ -131,30 +131,304 @@ void main() {
       expect(checkEqual(seq, pt2.getCoordinateSequence()), true);
       expect(checkEqual(seq, pt3.getCoordinateSequence()), true);
     });
-    test("", () {
+    test("testReadPoint", () {
+      // arrange
+      List<double> coordinates = [10, 10];
+      CoordinateSequence seqPt2D = createSequence(OrdinateSet_XY, coordinates);
+      CoordinateSequence seqPt2DE = createSequence(OrdinateSet_XY, <double>[]);
+      CoordinateSequence seqPt3D = createSequence(OrdinateSet_XYZ, coordinates);
+      CoordinateSequence seqPt2DM = createSequence(OrdinateSet_XYM, coordinates);
+      CoordinateSequence seqPt3DM = createSequence(OrdinateSet_XYZM, coordinates);
 
-    });
-    test("", () {
+      // act
+      Point pt2D = reader2D.read("POINT (10 10)");
+      Point pt2DE = reader2D.read("POINT EMPTY");
+      Point pt3D = reader3D.read("POINT Z(10 10 10)");
+      Point pt2DM = reader2DM.read("POINT M(10 10 11)");
+      Point pt3DM = reader3DM.read("POINT ZM(10 10 10 11)");
 
+      // assert
+      var pt2DCS = pt2D.getCoordinateSequence();
+      expect(checkEqual(seqPt2D, pt2DCS), true);
+      var pt2DECS = pt2DE.getCoordinateSequence();
+      expect(checkEqual(seqPt2DE, pt2DECS), true);
+      expect(checkEqual(seqPt3D, pt3D.getCoordinateSequence()), true);
+      expect(checkEqual(seqPt2DM, pt2DM.getCoordinateSequence()), true);
+      expect(checkEqual(seqPt3DM, pt3DM.getCoordinateSequence()), true);
     });
-    test("", () {
+    test("testReadLineString", () {
+      // arrange
+      List<double> coordinates = [10, 10, 20, 20, 30, 40];
+      CoordinateSequence seqLs2D = createSequence(OrdinateSet_XY, coordinates);
+      CoordinateSequence seqLs2DE = createSequence(OrdinateSet_XY, <double>[]);
+      CoordinateSequence seqLs3D = createSequence(OrdinateSet_XYZ, coordinates);
+      CoordinateSequence seqLs2DM = createSequence(OrdinateSet_XYM, coordinates);
+      CoordinateSequence seqLs3DM = createSequence(OrdinateSet_XYZM, coordinates);
 
-    });
-    test("", () {
+      // act
+      LineString ls2D = reader2D.read("LINESTRING (10 10, 20 20, 30 40)");
+      LineString ls2DE = reader2D.read("LINESTRING EMPTY");
+      LineString ls3D = reader3D.read("LINESTRING Z(10 10 10, 20 20 10, 30 40 10)");
+      LineString ls2DM = reader2DM.read("LINESTRING M(10 10 11, 20 20 11, 30 40 11)");
+      LineString ls3DM = reader3DM.read("LINESTRING ZM(10 10 10 11, 20 20 10 11, 30 40 10 11)");
 
+      // assert
+      var ls2DCS = ls2D.getCoordinateSequence();
+      expect(checkEqual(seqLs2D, ls2DCS), true);
+      expect(checkEqual(seqLs2DE, ls2DE.getCoordinateSequence()), true);
+      expect(checkEqual(seqLs3D, ls3D.getCoordinateSequence()), true);
+      expect(checkEqual(seqLs2DM, ls2DM.getCoordinateSequence()), true);
+      var ls3DMCS = ls3DM.getCoordinateSequence();
+      expect(checkEqual(seqLs3DM, ls3DMCS), true);
     });
-    test("", () {
+    test("testReadLinearRing", () {
+      List<double> coordinates = [10, 10, 20, 20, 30, 40, 10, 10];
+      CoordinateSequence seqLs2D = createSequence(OrdinateSet_XY, coordinates);
+      CoordinateSequence seqLs2DE = createSequence(OrdinateSet_XY, <double>[]);
+      CoordinateSequence seqLs3D = createSequence(OrdinateSet_XYZ, coordinates);
+      CoordinateSequence seqLs2DM = createSequence(OrdinateSet_XYM, coordinates);
+      CoordinateSequence seqLs3DM = createSequence(OrdinateSet_XYZM, coordinates);
 
-    });
-    test("", () {
+      // act
+      LineString ls2D = reader2D.read("LINEARRING (10 10, 20 20, 30 40, 10 10)");
+      LineString ls2DE = reader2D.read("LINEARRING EMPTY");
+      LineString ls3D = reader3D.read("LINEARRING Z(10 10 10, 20 20 10, 30 40 10, 10 10 10)");
+      LineString ls2DM = reader2DM.read("LINEARRING M(10 10 11, 20 20 11, 30 40 11, 10 10 11)");
+      LineString ls3DM = reader3DM.read("LINEARRING ZM(10 10 10 11, 20 20 10 11, 30 40 10 11, 10 10 10 11)");
 
+      // assert
+      expect(checkEqual(seqLs2D, ls2D.getCoordinateSequence()), true);
+      expect(checkEqual(seqLs2DE, ls2DE.getCoordinateSequence()), true);
+      expect(checkEqual(seqLs3D, ls3D.getCoordinateSequence()), true);
+      expect(checkEqual(seqLs2DM, ls2DM.getCoordinateSequence()), true);
+      expect(checkEqual(seqLs3DM, ls3DM.getCoordinateSequence()), true);
+
+      expect(() => reader2D.read("LINEARRING (10 10, 20 20, 30 40, 10 99)"), throwsArgumentError);
     });
+    test("testReadPolygon", () {
+      List<double> shell = [10, 10, 10, 20, 20, 20, 20, 15, 10, 10];
+      List<double> ring1 = [11, 11, 12, 11, 12, 12, 12, 11, 11, 11];
+      List<double> ring2 = [11, 19, 11, 18, 12, 18, 12, 19, 11, 19];
+
+      List<CoordinateSequence> csPoly2D = [createSequence(OrdinateSet_XY, shell), createSequence(OrdinateSet_XY, ring1), createSequence(OrdinateSet_XY, ring2)];
+      CoordinateSequence csPoly2DE = createSequence(OrdinateSet_XY, <double>[]);
+      List<CoordinateSequence> csPoly3D = [
+        createSequence(OrdinateSet_XYZ, shell),
+        createSequence(OrdinateSet_XYZ, ring1),
+        createSequence(OrdinateSet_XYZ, ring2)
+      ];
+      List<CoordinateSequence> csPoly2DM = [
+        createSequence(OrdinateSet_XYM, shell),
+        createSequence(OrdinateSet_XYM, ring1),
+        createSequence(OrdinateSet_XYM, ring2)
+      ];
+      List<CoordinateSequence> csPoly3DM = [
+        createSequence(OrdinateSet_XYZM, shell),
+        createSequence(OrdinateSet_XYZM, ring1),
+        createSequence(OrdinateSet_XYZM, ring2)
+      ];
+
+      WKTReader rdr = reader2D;
+      List<Polygon> poly2D = [
+        rdr.read("POLYGON ((10 10, 10 20, 20 20, 20 15, 10 10))"),
+        rdr.read("POLYGON ((10 10, 10 20, 20 20, 20 15, 10 10), (11 11, 12 11, 12 12, 12 11, 11 11))"),
+        rdr.read("POLYGON ((10 10, 10 20, 20 20, 20 15, 10 10), (11 11, 12 11, 12 12, 12 11, 11 11), (11 19, 11 18, 12 18, 12 19, 11 19))")
+      ];
+      Polygon poly2DE = rdr.read("POLYGON EMPTY");
+      rdr = reader3D;
+      List<Polygon> poly3D = [
+        rdr.read("POLYGON Z((10 10 10, 10 20 10, 20 20 10, 20 15 10, 10 10 10))"),
+        rdr.read("POLYGON Z((10 10 10, 10 20 10, 20 20 10, 20 15 10, 10 10 10), (11 11 10, 12 11 10, 12 12 10, 12 11 10, 11 11 10))"),
+        rdr.read(
+            "POLYGON Z((10 10 10, 10 20 10, 20 20 10, 20 15 10, 10 10 10), (11 11 10, 12 11 10, 12 12 10, 12 11 10, 11 11 10), (11 19 10, 11 18 10, 12 18 10, 12 19 10, 11 19 10))")
+      ];
+      rdr = reader2DM;
+      List<Polygon> poly2DM = [
+        rdr.read("POLYGON M((10 10 11, 10 20 11, 20 20 11, 20 15 11, 10 10 11))"),
+        rdr.read("POLYGON M((10 10 11, 10 20 11, 20 20 11, 20 15 11, 10 10 11), (11 11 11, 12 11 11, 12 12 11, 12 11 11, 11 11 11))"),
+        rdr.read(
+            "POLYGON M((10 10 11, 10 20 11, 20 20 11, 20 15 11, 10 10 11), (11 11 11, 12 11 11, 12 12 11, 12 11 11, 11 11 11), (11 19 11, 11 18 11, 12 18 11, 12 19 11, 11 19 11))")
+      ];
+      rdr = reader3DM;
+      List<Polygon> poly3DM = [
+        rdr.read("POLYGON ZM((10 10 10 11, 10 20 10 11, 20 20 10 11, 20 15 10 11, 10 10 10 11))"),
+        rdr.read(
+            "POLYGON ZM((10 10 10 11, 10 20 10 11, 20 20 10 11, 20 15 10 11, 10 10 10 11), (11 11 10 11, 12 11 10 11, 12 12 10 11, 12 11 10 11, 11 11 10 11))"),
+        rdr.read(
+            "POLYGON ZM((10 10 10 11, 10 20 10 11, 20 20 10 11, 20 15 10 11, 10 10 10 11), (11 11 10 11, 12 11 10 11, 12 12 10 11, 12 11 10 11, 11 11 10 11), (11 19 10 11, 11 18 10 11, 12 18 10 11, 12 19 10 11, 11 19 10 11))")
+      ];
+      // assert
+      expect(checkEqual(csPoly2D[0], poly2D[2].getExteriorRing().getCoordinateSequence()), true);
+      expect(checkEqual(csPoly2D[1], poly2D[2].getInteriorRingN(0).getCoordinateSequence()), true);
+      expect(checkEqual(csPoly2D[2], poly2D[2].getInteriorRingN(1).getCoordinateSequence()), true);
+      expect(checkEqualWithDim(csPoly2DE, poly2DE.getExteriorRing().getCoordinateSequence(), 2), true);
+      expect(checkEqual(csPoly3D[0], poly3D[2].getExteriorRing().getCoordinateSequence()), true);
+      expect(checkEqual(csPoly3D[1], poly3D[2].getInteriorRingN(0).getCoordinateSequence()), true);
+      expect(checkEqual(csPoly3D[2], poly3D[2].getInteriorRingN(1).getCoordinateSequence()), true);
+      expect(checkEqual(csPoly2DM[0], poly2DM[2].getExteriorRing().getCoordinateSequence()), true);
+      expect(checkEqual(csPoly2DM[1], poly2DM[2].getInteriorRingN(0).getCoordinateSequence()), true);
+      expect(checkEqual(csPoly2DM[2], poly2DM[2].getInteriorRingN(1).getCoordinateSequence()), true);
+      expect(checkEqual(csPoly3DM[0], poly3DM[2].getExteriorRing().getCoordinateSequence()), true);
+      expect(checkEqual(csPoly3DM[1], poly3DM[2].getInteriorRingN(0).getCoordinateSequence()), true);
+      expect(checkEqual(csPoly3DM[2], poly3DM[2].getInteriorRingN(1).getCoordinateSequence()), true);
+    });
+    test("testReadMultiPoint", () {
+      // arrange
+      List<List<double>> coordinates = [
+        [10, 10],
+        [20, 20]
+      ];
+      List<CoordinateSequence> csMP2D = [createSequence(OrdinateSet_XY, coordinates[0]), createSequence(OrdinateSet_XY, coordinates[1])];
+      List<CoordinateSequence> csMP3D = [createSequence(OrdinateSet_XYZ, coordinates[0]), createSequence(OrdinateSet_XYZ, coordinates[1])];
+      List<CoordinateSequence> csMP2DM = [createSequence(OrdinateSet_XYM, coordinates[0]), createSequence(OrdinateSet_XYM, coordinates[1])];
+      List<CoordinateSequence> csMP3DM = [createSequence(OrdinateSet_XYZM, coordinates[0]), createSequence(OrdinateSet_XYZM, coordinates[1])];
+
+      // act
+      WKTReader rdr = reader2D;
+      MultiPoint mP2D = rdr.read("MULTIPOINT ((10 10), (20 20))");
+      MultiPoint mP2DE = rdr.read("MULTIPOINT EMPTY");
+      rdr = reader3D;
+      MultiPoint mP3D = rdr.read("MULTIPOINT Z((10 10 10), (20 20 10))");
+      rdr = reader2DM;
+      MultiPoint mP2DM = rdr.read("MULTIPOINT M((10 10 11), (20 20 11))");
+      rdr = reader3DM;
+      MultiPoint mP3DM = rdr.read("MULTIPOINT ZM((10 10 10 11), (20 20 10 11))");
+
+      // assert
+      expect(checkEqual(csMP2D[0], (mP2D.getGeometryN(0)).getCoordinateSequence()), true);
+      expect(checkEqual(csMP2D[1], (mP2D.getGeometryN(1)).getCoordinateSequence()), true);
+      expect(mP2DE.isEmpty, true);
+      expect(mP2DE.getNumGeometries() == 0, true);
+      expect(checkEqual(csMP3D[0], (mP3D.getGeometryN(0)).getCoordinateSequence()), true);
+      expect(checkEqual(csMP3D[1], (mP3D.getGeometryN(1)).getCoordinateSequence()), true);
+      expect(checkEqual(csMP2DM[0], (mP2DM.getGeometryN(0)).getCoordinateSequence()), true);
+      expect(checkEqual(csMP2DM[1], (mP2DM.getGeometryN(1)).getCoordinateSequence()), true);
+      var mp3DMCS = (mP3DM.getGeometryN(0)).getCoordinateSequence();
+      expect(checkEqual(csMP3DM[0], mp3DMCS), true);
+      expect(checkEqual(csMP3DM[1], (mP3DM.getGeometryN(1)).getCoordinateSequence()), true);
+    });
+    test("testReadMultiLineString", () {
+      // arrange
+      List<List<double>> coordinates = [
+        [10, 10, 20, 20],
+        [15, 15, 30, 15]
+      ];
+      List<CoordinateSequence> csMls2D = [createSequence(OrdinateSet_XY, coordinates[0]), createSequence(OrdinateSet_XY, coordinates[1])];
+      List<CoordinateSequence> csMls3D = [createSequence(OrdinateSet_XYZ, coordinates[0]), createSequence(OrdinateSet_XYZ, coordinates[1])];
+      List<CoordinateSequence> csMls2DM = [createSequence(OrdinateSet_XYM, coordinates[0]), createSequence(OrdinateSet_XYM, coordinates[1])];
+      List<CoordinateSequence> csMls3DM = [createSequence(OrdinateSet_XYZM, coordinates[0]), createSequence(OrdinateSet_XYZM, coordinates[1])];
+
+      // act
+      WKTReader rdr = reader2D;
+      MultiLineString mLs2D = rdr.read("MULTILINESTRING ((10 10, 20 20), (15 15, 30 15))");
+      MultiLineString mLs2DE = rdr.read("MULTILINESTRING EMPTY");
+      rdr = reader3D;
+      MultiLineString mLs3D = rdr.read("MULTILINESTRING Z((10 10 10, 20 20 10), (15 15 10, 30 15 10))");
+      rdr = reader2DM;
+      MultiLineString mLs2DM = rdr.read("MULTILINESTRING M((10 10 11, 20 20 11), (15 15 11, 30 15 11))");
+      rdr = reader3DM;
+      MultiLineString mLs3DM = rdr.read("MULTILINESTRING ZM((10 10 10 11, 20 20 10 11), (15 15 10 11, 30 15 10 11))");
+
+      // assert
+      expect(checkEqual(csMls2D[0], (mLs2D.getGeometryN(0)).getCoordinateSequence()), true);
+      expect(checkEqual(csMls2D[1], (mLs2D.getGeometryN(1)).getCoordinateSequence()), true);
+      expect(mLs2DE.isEmpty, true);
+      expect(mLs2DE.getNumGeometries() == 0, true);
+      expect(checkEqual(csMls3D[0], (mLs3D.getGeometryN(0)).getCoordinateSequence()), true);
+      expect(checkEqual(csMls3D[1], (mLs3D.getGeometryN(1)).getCoordinateSequence()), true);
+      expect(checkEqual(csMls2DM[0], (mLs2DM.getGeometryN(0)).getCoordinateSequence()), true);
+      expect(checkEqual(csMls2DM[1], (mLs2DM.getGeometryN(1)).getCoordinateSequence()), true);
+      expect(checkEqual(csMls3DM[0], (mLs3DM.getGeometryN(0)).getCoordinateSequence()), true);
+      expect(checkEqual(csMls3DM[1], (mLs3DM.getGeometryN(1)).getCoordinateSequence()), true);
+    });
+    test("testReadMultiPolygon", () {
+      List<double> shell1 = [10, 10, 10, 20, 20, 20, 20, 15, 10, 10];
+      List<double> ring1 = [11, 11, 12, 11, 12, 12, 12, 11, 11, 11];
+      List<double> shell2 = [60, 60, 70, 70, 80, 60, 60, 60];
+
+      List<CoordinateSequence> csPoly2D = [
+        createSequence(OrdinateSet_XY, shell1),
+        createSequence(OrdinateSet_XY, ring1),
+        createSequence(OrdinateSet_XY, shell2)
+      ];
+      List<CoordinateSequence> csPoly3D = [
+        createSequence(OrdinateSet_XYZ, shell1),
+        createSequence(OrdinateSet_XYZ, ring1),
+        createSequence(OrdinateSet_XYZ, shell2)
+      ];
+      List<CoordinateSequence> csPoly2DM = [
+        createSequence(OrdinateSet_XYM, shell1),
+        createSequence(OrdinateSet_XYM, ring1),
+        createSequence(OrdinateSet_XYM, shell2)
+      ];
+      List<CoordinateSequence> csPoly3DM = [
+        createSequence(OrdinateSet_XYZM, shell1),
+        createSequence(OrdinateSet_XYZM, ring1),
+        createSequence(OrdinateSet_XYZM, shell2)
+      ];
+
+      WKTReader rdr = reader2D;
+      List<MultiPolygon> poly2D = [
+        rdr.read("MULTIPOLYGON (((10 10, 10 20, 20 20, 20 15, 10 10)))"),
+        rdr.read("MULTIPOLYGON (((10 10, 10 20, 20 20, 20 15, 10 10), (11 11, 12 11, 12 12, 12 11, 11 11)))"),
+        rdr.read("MULTIPOLYGON (((10 10, 10 20, 20 20, 20 15, 10 10), (11 11, 12 11, 12 12, 12 11, 11 11)), ((60 60, 70 70, 80 60, 60 60)))")
+      ];
+      MultiPolygon poly2DE = rdr.read("MULTIPOLYGON EMPTY");
+      rdr = reader3D;
+      List<MultiPolygon> poly3D = [
+        rdr.read("MULTIPOLYGON Z(((10 10 10, 10 20 10, 20 20 10, 20 15 10, 10 10 10)))"),
+        rdr.read("MULTIPOLYGON Z(((10 10 10, 10 20 10, 20 20 10, 20 15 10, 10 10 10), (11 11 10, 12 11 10, 12 12 10, 12 11 10, 11 11 10)))"),
+        rdr.read(
+            "MULTIPOLYGON Z(((10 10 10, 10 20 10, 20 20 10, 20 15 10, 10 10 10), (11 11 10, 12 11 10, 12 12 10, 12 11 10, 11 11 10)), ((60 60 10, 70 70 10, 80 60 10, 60 60 10)))")
+      ];
+      List<MultiPolygon> poly2DM = [
+        rdr.read("MULTIPOLYGON M(((10 10 11, 10 20 11, 20 20 11, 20 15 11, 10 10 11)))"),
+        rdr.read("MULTIPOLYGON M(((10 10 11, 10 20 11, 20 20 11, 20 15 11, 10 10 11), (11 11 11, 12 11 11, 12 12 11, 12 11 11, 11 11 11)))"),
+        rdr.read(
+            "MULTIPOLYGON M(((10 10 11, 10 20 11, 20 20 11, 20 15 11, 10 10 11), (11 11 11, 12 11 11, 12 12 11, 12 11 11, 11 11 11)), ((60 60 11, 70 70 11, 80 60 11, 60 60 11)))")
+      ];
+      rdr = reader3DM;
+      List<MultiPolygon> poly3DM = [
+        rdr.read("MULTIPOLYGON ZM(((10 10 10 11, 10 20 10 11, 20 20 10 11, 20 15 10 11, 10 10 10 11)))"),
+        rdr.read(
+            "MULTIPOLYGON ZM(((10 10 10 11, 10 20 10 11, 20 20 10 11, 20 15 10 11, 10 10 10 11), (11 11 10 11, 12 11 10 11, 12 12 10 11, 12 11 10 11, 11 11 10 11)))"),
+        rdr.read(
+            "MULTIPOLYGON ZM(((10 10 10 11, 10 20 10 11, 20 20 10 11, 20 15 10 11, 10 10 10 11), (11 11 10 11, 12 11 10 11, 12 12 10 11, 12 11 10 11, 11 11 10 11)), ((60 60 10 11, 70 70 10 11, 80 60 10 11, 60 60 10 11)))")
+      ];
+
+      // assert
+      expect(checkEqual(csPoly2D[0], (poly2D[2].getGeometryN(0) as Polygon).getExteriorRing().getCoordinateSequence()), true);
+      expect(checkEqual(csPoly2D[1], (poly2D[2].getGeometryN(0) as Polygon).getInteriorRingN(0).getCoordinateSequence()), true);
+      expect(checkEqual(csPoly2D[2], (poly2D[2].getGeometryN(1) as Polygon).getExteriorRing().getCoordinateSequence()), true);
+      expect(poly2DE.isEmpty, true);
+      expect(poly2DE.getNumGeometries() == 0, true);
+
+      expect(checkEqual(csPoly3D[0], (poly3D[2].getGeometryN(0) as Polygon).getExteriorRing().getCoordinateSequence()), true);
+      expect(checkEqual(csPoly3D[1], (poly3D[2].getGeometryN(0) as Polygon).getInteriorRingN(0).getCoordinateSequence()), true);
+      expect(checkEqual(csPoly3D[2], (poly3D[2].getGeometryN(1) as Polygon).getExteriorRing().getCoordinateSequence()), true);
+
+      var poly2DMExtRing = (poly2DM[2].getGeometryN(0) as Polygon).getExteriorRing();
+      var poly2DMExtRingCS = poly2DMExtRing.getCoordinateSequence();
+      expect(checkEqual(csPoly2DM[0], poly2DMExtRingCS), true);
+      expect(checkEqual(csPoly2DM[1], (poly2DM[2].getGeometryN(0) as Polygon).getInteriorRingN(0).getCoordinateSequence()), true);
+      expect(checkEqual(csPoly2DM[2], (poly2DM[2].getGeometryN(1) as Polygon).getExteriorRing().getCoordinateSequence()), true);
+
+      expect(checkEqual(csPoly3DM[0], (poly3DM[2].getGeometryN(0) as Polygon).getExteriorRing().getCoordinateSequence()), true);
+      expect(checkEqual(csPoly3DM[1], (poly3DM[2].getGeometryN(0) as Polygon).getInteriorRingN(0).getCoordinateSequence()), true);
+      expect(checkEqual(csPoly3DM[2], (poly3DM[2].getGeometryN(1) as Polygon).getExteriorRing().getCoordinateSequence()), true);
+    });
+    test("", () {});
+    test("", () {});
+    test("", () {});
   });
 }
 
 CoordinateSequence createSequence(List<Ordinate> ordinateFlags, List<double> xy) {
 // get the number of dimension to verify size of provided ordinate values array
   int dimension = requiredDimension(ordinateFlags);
+  if (xy.isEmpty) {
+    dimension = 3; // seems to be default for empty
+  }
 
 // inject additional values
   List<double> ordinateValues = injectZM(ordinateFlags, xy);
@@ -165,12 +439,14 @@ CoordinateSequence createSequence(List<Ordinate> ordinateFlags, List<double> xy)
   int size = ordinateValues.length ~/ dimension;
 
 // create a sequence capable of storing all ordinate values.
-  CoordinateSequence res = getCSFactory(ordinateFlags).createSizeDim(size, requiredDimension(ordinateFlags));
+  CoordinateSequence res = getCSFactory(ordinateFlags).createSizeDim(size, dimension);
 
 // fill in values
   int k = 0;
   for (int i = 0; i < ordinateValues.length; i += dimension) {
-    for (int j = 0; j < dimension; j++) res.setOrdinate(k, j, ordinateValues[i + j]);
+    for (int ordinateIndex = 0; ordinateIndex < dimension; ordinateIndex++) {
+      res.setOrdinate(k, ordinateIndex, ordinateValues[i + ordinateIndex]);
+    }
     k++;
   }
 
@@ -306,7 +582,11 @@ bool checkEqualWithDimTol(CoordinateSequence seq1, CoordinateSequence seq2, int 
     for (int j = 0; j < dimension; j++) {
       double val1 = seq1.getOrdinate(i, j);
       double val2 = seq2.getOrdinate(i, j);
-      if (val1.isNaN) {
+      if (val1 != null && val2 == null) {
+        return false;
+      } else if (val1 == null && val2 != null) {
+        return false;
+      } else if (val1.isNaN) {
         if (!val2.isNaN) return false;
       } else if ((val1 - val2).abs() > tolerance) return false;
     }

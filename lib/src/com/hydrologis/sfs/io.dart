@@ -1364,8 +1364,12 @@ class WKTReader {
     sequence.setOrdinate(0, CoordinateSequence.Y, precisionModel.makePrecise(getNextNumber(tokenizer)));
 
 // additionally read other vertices
-    if (ordinateFlags.contains(Ordinate.Z)) sequence.setOrdinate(0, CoordinateSequence.Z, getNextNumber(tokenizer));
-    if (ordinateFlags.contains(Ordinate.M)) sequence.setOrdinate(0, CoordinateSequence.Z + offsetM, getNextNumber(tokenizer));
+    if (ordinateFlags.contains(Ordinate.Z)) {
+      sequence.setOrdinate(0, CoordinateSequence.Z, getNextNumber(tokenizer));
+    }
+    if (ordinateFlags.contains(Ordinate.M)) {
+      sequence.setOrdinate(0, CoordinateSequence.Z + offsetM, getNextNumber(tokenizer));
+    }
 
     if (ordinateFlags.length == 2 && this.isAllowOldJtsCoordinateSyntax && isNumberNext(tokenizer)) {
       sequence.setOrdinate(0, CoordinateSequence.Z, getNextNumber(tokenizer));
@@ -1443,7 +1447,7 @@ class WKTReader {
   /// @return a coordinate sequence containing all coordinate
   CoordinateSequence mergeSequences(List<CoordinateSequence> sequences, List<Ordinate> ordinateFlags) {
     // if the sequences array is empty or null create an empty sequence
-    if (sequences == null || sequences.length == 0) return csFactory.createSizeDim(0, toDimension(ordinateFlags));
+    if (sequences == null || sequences.isEmpty) return csFactory.createSizeDim(0, toDimension(ordinateFlags));
 
     if (sequences.length == 1) return sequences[0];
 
@@ -1459,7 +1463,7 @@ class WKTReader {
     } else
       mergeOrdinates = ordinateFlags;
 
-    // create and fill the result sequence
+    // create and fill the result sequence // TODO check
     CoordinateSequence sequence = this.csFactory.createSizeDimMeas(sequences.length, toDimension(mergeOrdinates), mergeOrdinates.contains(Ordinate.M) ? 1 : 0);
 
     int offsetM = CoordinateSequence.Z + (mergeOrdinates.contains(Ordinate.Z) ? 1 : 0);
@@ -1467,8 +1471,12 @@ class WKTReader {
       CoordinateSequence item = sequences[i];
       sequence.setOrdinate(i, CoordinateSequence.X, item.getOrdinate(0, CoordinateSequence.X));
       sequence.setOrdinate(i, CoordinateSequence.Y, item.getOrdinate(0, CoordinateSequence.Y));
-      if (mergeOrdinates.contains(Ordinate.Z)) sequence.setOrdinate(i, CoordinateSequence.Z, item.getOrdinate(0, CoordinateSequence.Z));
-      if (mergeOrdinates.contains(Ordinate.M)) sequence.setOrdinate(i, offsetM, item.getOrdinate(0, offsetM));
+      if (mergeOrdinates.contains(Ordinate.Z)) {
+        sequence.setOrdinate(i, CoordinateSequence.Z, item.getOrdinate(0, CoordinateSequence.Z));
+      }
+      if (mergeOrdinates.contains(Ordinate.M)) {
+        sequence.setOrdinate(i, offsetM, item.getOrdinate(0, offsetM));
+      }
     }
 
     // return it
@@ -1535,7 +1543,7 @@ class WKTReader {
   ///
   ///@deprecated in favor of functions returning {@link CoordinateSequence}s
   Coordinate getPreciseCoordinate(WKTTokenizer tokenizer) {
-    Coordinate coord = Coordinate.empty();
+    Coordinate coord = Coordinate.emptyDefault();
     coord.x = getNextNumber(tokenizer);
     coord.y = getNextNumber(tokenizer);
     if (isNumberNext(tokenizer)) {

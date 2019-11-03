@@ -377,7 +377,7 @@ class Envelope {
   /// <code>null</code> if the envelope is null
   Coordinate centre() {
     if (isNull()) return null;
-    return Coordinate((getMinX() + getMaxX()) / 2.0, (getMinY() + getMaxY()) / 2.0);
+    return Coordinate.fromXY((getMinX() + getMaxX()) / 2.0, (getMinY() + getMaxY()) / 2.0);
   }
 
   /// Computes the intersection of two {@link Envelope}s.

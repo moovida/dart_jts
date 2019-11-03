@@ -652,66 +652,66 @@ class IntersectionMatrix {
   }
 }
 
-/// Coordinate subclass supporting XY ordinate.
-/// <p>
-/// This data object is suitable for use with coordinate sequences dimension 3, measures 1.
-/// The {@link Coordinate#Z} field is visible, but intended to be ignored.
-///
-/// @since 1.16
-class CoordinateXY extends Coordinate {
-  CoordinateXY.empty() : super.empty();
-
-  CoordinateXY(double x, double y) : super(x, y);
-
-  CoordinateXY.fromCoordinate(Coordinate coord) : super.fromCoordinate(coord);
-
-  CoordinateXY.fromCoordinateXY(CoordinateXY coord) : super(coord.x, coord.y);
-
-  CoordinateXY copy() {
-    return CoordinateXY.fromCoordinateXY(this);
-  }
-
-  num get x => _x;
-
-  set x(newX) => _x = newX;
-
-  num get y => _y;
-
-  set y(newY) => _y = newY;
-
-  /// The z-ordinate is not supported
-  num get z => Coordinate.NULL_ORDINATE;
-
-  /// The z-ordinate is not supported
-  set z(newZ) => ArgumentError("CoordinateXY dimension 2 does not support z-ordinate");
-
-  double getOrdinate(int ordinateIndex) {
-    switch (ordinateIndex) {
-      case Coordinate.X:
-        return _x;
-      case Coordinate.Y:
-        return _y;
-    }
-    throw ArgumentError("Invalid ordinate index: $ordinateIndex");
-  }
-
-  void setOrdinate(int ordinateIndex, double value) {
-    switch (ordinateIndex) {
-      case Coordinate.X:
-        _x = value;
-        break;
-      case Coordinate.Y:
-        _y = value;
-        break;
-      default:
-        throw ArgumentError("Invalid ordinate index: $ordinateIndex");
-    }
-  }
-
-  String toString() {
-    return "($_x, $_y)";
-  }
-}
+///// Coordinate subclass supporting XY ordinate.
+///// <p>
+///// This data object is suitable for use with coordinate sequences dimension 3, measures 1.
+///// The {@link Coordinate#Z} field is visible, but intended to be ignored.
+/////
+///// @since 1.16
+//class CoordinateXY extends Coordinate {
+//  CoordinateXY.empty() : super.empty();
+//
+//  CoordinateXY(double x, double y) : super(x, y);
+//
+//  CoordinateXY.fromCoordinate(Coordinate coord) : super.fromCoordinate(coord);
+//
+//  CoordinateXY.fromCoordinateXY(CoordinateXY coord) : super(coord.x, coord.y);
+//
+//  CoordinateXY copy() {
+//    return CoordinateXY.fromCoordinateXY(this);
+//  }
+//
+//  num get x => _x;
+//
+//  set x(newX) => _x = newX;
+//
+//  num get y => _y;
+//
+//  set y(newY) => _y = newY;
+//
+//  /// The z-ordinate is not supported
+//  num get z => Coordinate.NULL_ORDINATE;
+//
+//  /// The z-ordinate is not supported
+//  set z(newZ) => ArgumentError("CoordinateXY dimension 2 does not support z-ordinate");
+//
+//  double getOrdinate(int ordinateIndex) {
+//    switch (ordinateIndex) {
+//      case Coordinate.X:
+//        return _x;
+//      case Coordinate.Y:
+//        return _y;
+//    }
+//    throw ArgumentError("Invalid ordinate index: $ordinateIndex");
+//  }
+//
+//  void setOrdinate(int ordinateIndex, double value) {
+//    switch (ordinateIndex) {
+//      case Coordinate.X:
+//        _x = value;
+//        break;
+//      case Coordinate.Y:
+//        _y = value;
+//        break;
+//      default:
+//        throw ArgumentError("Invalid ordinate index: $ordinateIndex");
+//    }
+//  }
+//
+//  String toString() {
+//    return "($_x, $_y)";
+//  }
+//}
 
 /// The internal representation of a list of coordinates inside a Geometry.
 /// <p>
