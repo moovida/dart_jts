@@ -18,6 +18,11 @@ part 'src/com/hydrologis/sfs/geom/envelope.dart';
 part 'src/com/hydrologis/sfs/geom/geom.dart';
 part 'src/com/hydrologis/sfs/algorithm/distance.dart';
 part 'src/com/hydrologis/sfs/algorithm/algorithm.dart';
+part 'src/com/hydrologis/sfs/algorithm/locate.dart';
+part 'src/com/hydrologis/sfs/operation/operation.dart';
+part 'src/com/hydrologis/sfs/operation/valid.dart';
+part 'src/com/hydrologis/sfs/operation/relate.dart';
+part 'src/com/hydrologis/sfs/operation/overlay.dart';
 part "src/com/hydrologis/sfs/ops.dart";
 part "src/com/hydrologis/sfs/math/math.dart";
 part "src/com/hydrologis/sfs/geomgraph/geomgraph.dart";
@@ -35,9 +40,11 @@ part "src/com/hydrologis/sfs/multipolygon.dart";
 part "src/com/hydrologis/sfs/polyhedral_surface.dart";
 part "src/com/hydrologis/sfs/geojson.dart";
 part "src/com/hydrologis/sfs/feature.dart";
-part "src/com/hydrologis/sfs/line_intersection.dart";
 part "src/com/hydrologis/sfs/util/geom.dart";
 part "src/com/hydrologis/sfs/util/geom_impl.dart";
+part "src/com/hydrologis/sfs/util/util.dart";
+part "src/com/hydrologis/sfs/index/index.dart";
+part "src/com/hydrologis/sfs/index/strtree.dart";
 part "src/com/hydrologis/sfs/util/avltree.dart";
 
 

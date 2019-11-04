@@ -32,7 +32,7 @@ void main() {
     });
 
     test("testWritePoint", () {
-      Point point = geometryFactory.createPoint(Coordinate(10, 10));
+      Point point = geometryFactory.createPoint(Coordinate.fromXY(10, 10));
       expect("POINT (10 10)", writer.write(point).toString());
     });
     test("testWriteLineString", () {
@@ -75,8 +75,8 @@ void main() {
       expect("MULTIPOLYGON (((10 10, 10 20, 20 20, 20 15, 10 10)), ((60 60, 70 70, 80 60, 60 60)))", writer.write(multiPolygon));
     });
     test("testWriteGeometryCollection", () {
-      Point point1 = geometryFactory.createPoint(Coordinate(10, 10));
-      Point point2 = geometryFactory.createPoint(Coordinate(30, 30));
+      Point point1 = geometryFactory.createPoint(Coordinate.fromXY(10, 10));
+      Point point2 = geometryFactory.createPoint(Coordinate.fromXY(30, 30));
       List<Coordinate> coordinates = [Coordinate(15, 15, 0), Coordinate(20, 20, 0)];
       LineString lineString1 = geometryFactory.createLineString(coordinates);
       List<Geometry> geometries = [point1, point2, lineString1];
@@ -86,7 +86,7 @@ void main() {
     test("testWriteLargeNumbers1", () {
       PrecisionModel precisionModel = PrecisionModel.fixedPrecision(1E9);
       GeometryFactory geometryFactory = GeometryFactory.withPrecisionModelSrid(precisionModel, 0);
-      Point point1 = geometryFactory.createPoint(Coordinate(123456789012345680, 10E9));
+      Point point1 = geometryFactory.createPoint(Coordinate.fromXY(123456789012345680, 10E9));
       expect("POINT (123456789012345680 10000000000)", point1.toText());
     });
     test("testWrite3D", () {
@@ -99,7 +99,7 @@ void main() {
     });
     test("testWrite3D_withNaN", () {
       GeometryFactory geometryFactory = GeometryFactory.defaultPrecision();
-      List<Coordinate> coordinates = [Coordinate(1, 1), Coordinate(2, 2, 2)];
+      List<Coordinate> coordinates = [Coordinate.fromXY(1, 1), Coordinate(2, 2, 2)];
       LineString line = geometryFactory.createLineString(coordinates);
       String wkt = writer3D.write(line);
       expect("LINESTRING Z(1 1 NaN, 2 2 2)", wkt);

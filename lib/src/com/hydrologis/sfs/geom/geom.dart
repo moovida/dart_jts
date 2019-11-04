@@ -1,5 +1,34 @@
 part of dart_sfs;
 
+/**
+ * Indicates an invalid or inconsistent topological situation encountered during processing
+ *
+ * @version 1.7
+ */
+class TopologyException implements Exception {
+  static String msgWithCoord(String msg, Coordinate pt) {
+    if (pt != null) {
+      return msg + " [ $pt ]";
+    }
+    return msg;
+  }
+
+  Coordinate pt;
+
+  String msg;
+
+  TopologyException(this.msg);
+
+  TopologyException.withCoord(String msg, Coordinate pt) {
+    this.msg = msgWithCoord(msg, pt);
+    this.pt = Coordinate.fromCoordinate(pt);
+  }
+
+  Coordinate getCoordinate() {
+    return pt;
+  }
+}
+
 ///  <code>GeometryCollection</code> classes support the concept of
 ///  applying a <code>GeometryFilter</code> to the <code>Geometry</code>.
 ///  The filter is applied to every element <code>Geometry</code>.

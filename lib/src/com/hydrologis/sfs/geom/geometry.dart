@@ -321,7 +321,7 @@ abstract class Geometry implements Comparable
   /// @see #isValid
   bool isSimple()
   {
-    IsSimpleOp op = new IsSimpleOp(this);
+    IsSimpleOp op = new IsSimpleOp.withGeom(this);
     return op.isSimple();
   }
 
@@ -335,7 +335,7 @@ abstract class Geometry implements Comparable
   /// @see IsValidOp
   bool isValid()
   {
-    return IsValidOp.isValid(this);
+    return IsValidOp.isValidStatic(this);
   }
 
   /// Tests whether the set of points covered by this <code>Geometry</code> is
@@ -353,7 +353,7 @@ abstract class Geometry implements Comparable
   /// @throws IllegalArgumentException if g is null
   double distance(Geometry g)
   {
-    return DistanceOp.distance(this, g);
+    return DistanceOp.distanceStatic(this, g);
   }
 
   /**
@@ -366,7 +366,7 @@ abstract class Geometry implements Comparable
    */
   bool isWithinDistance(Geometry geom, double distance)
   {
-    return DistanceOp.isWithinDistance(this, geom, distance);
+    return DistanceOp.isWithinDistanceStatic(this, geom, distance);
   }
 
   /**
@@ -457,7 +457,7 @@ abstract class Geometry implements Comparable
    *
    *@return the topological dimension of this geometry.
    */
-  abstract int getDimension();
+   int getDimension();
 
   /**
    * Returns the boundary, or an empty geometry of appropriate dimension
@@ -470,7 +470,7 @@ abstract class Geometry implements Comparable
    *
    *@return    the closure of the combinatorial boundary of this <code>Geometry</code>
    */
-  abstract Geometry getBoundary();
+   Geometry getBoundary();
 
   /**
    *  Returns the dimension of this <code>Geometry</code>s inherent boundary.
@@ -479,7 +479,7 @@ abstract class Geometry implements Comparable
    *      interface, whether or not this object is the empty geometry. Returns
    *      <code>Dimension.FALSE</code> if the boundary is the empty geometry.
    */
-  abstract int getBoundaryDimension();
+   int getBoundaryDimension();
 
   /**
    *  Gets a Geometry representing the envelope (bounding box) of
@@ -521,7 +521,7 @@ abstract class Geometry implements Comparable
     if (envelope == null) {
       envelope = computeEnvelopeInternal();
     }
-    return new Envelope(envelope);
+    return  Envelope.fromEnvelope(envelope);
   }
 
   /**
@@ -595,7 +595,7 @@ abstract class Geometry implements Comparable
    */
   bool touches(Geometry g) {
     // short-circuit test
-    if (! getEnvelopeInternal().intersects(g.getEnvelopeInternal()))
+    if (! getEnvelopeInternal().intersectsEnvelope(g.getEnvelopeInternal()))
       return false;
     return relate(g).isTouches(getDimension(), g.getDimension());
   }
@@ -626,7 +626,7 @@ abstract class Geometry implements Comparable
   bool intersects(Geometry g) {
 
     // short-circuit envelope test
-    if (! getEnvelopeInternal().intersects(g.getEnvelopeInternal()))
+    if (! getEnvelopeInternal().intersectsEnvelope(g.getEnvelopeInternal()))
       return false;
 
     /**
@@ -647,10 +647,10 @@ abstract class Geometry implements Comparable
 
     // optimization for rectangle arguments
     if (isRectangle()) {
-      return RectangleIntersects.intersects((Polygon) this, g);
+      return RectangleIntersects.intersects( this as Polygon, g);
     }
     if (g.isRectangle()) {
-      return RectangleIntersects.intersects((Polygon) g, this);
+      return RectangleIntersects.intersects( g as Polygon, this);
     }
     if (isGeometryCollection() || g.isGeometryCollection()) {
       for (int i = 0 ; i < getNumGeometries() ; i++) {
@@ -692,7 +692,7 @@ abstract class Geometry implements Comparable
    */
   bool crosses(Geometry g) {
     // short-circuit test
-    if (! getEnvelopeInternal().intersects(g.getEnvelopeInternal()))
+    if (! getEnvelopeInternal().intersectsEnvelope(g.getEnvelopeInternal()))
       return false;
     return relate(g).isCrosses(getDimension(), g.getDimension());
   }
@@ -768,7 +768,7 @@ abstract class Geometry implements Comparable
       return false;
     }
     // optimization - envelope test
-    if (! getEnvelopeInternal().contains(g.getEnvelopeInternal()))
+    if (! getEnvelopeInternal().containsEnvelope(g.getEnvelopeInternal()))
       return false;
     // optimization for rectangle arguments
     if (isRectangle()) {
@@ -801,7 +801,7 @@ abstract class Geometry implements Comparable
    */
   bool overlaps(Geometry g) {
     // short-circuit test
-    if (! getEnvelopeInternal().intersects(g.getEnvelopeInternal()))
+    if (! getEnvelopeInternal().intersectsEnvelope(g.getEnvelopeInternal()))
       return false;
     return relate(g).isOverlaps(getDimension(), g.getDimension());
   }
@@ -851,7 +851,7 @@ abstract class Geometry implements Comparable
       return false;
     }
     // optimization - envelope test
-    if (! getEnvelopeInternal().covers(g.getEnvelopeInternal()))
+    if (! getEnvelopeInternal().coversEnvelope(g.getEnvelopeInternal()))
       return false;
     // optimization for rectangle arguments
     if (isRectangle()) {
@@ -917,7 +917,7 @@ abstract class Geometry implements Comparable
    *      matrix for the two <code>Geometry</code>s match <code>intersectionPattern</code>
    * @see IntersectionMatrix
    */
-  bool relate(Geometry g, String intersectionPattern) {
+  bool relateWithPattern(Geometry g, String intersectionPattern) {
     return relate(g).matches(intersectionPattern);
   }
 
@@ -1191,7 +1191,7 @@ abstract class Geometry implements Comparable
    *
    * @return a reversed geometry
    */
-  abstract Geometry reverse();
+  Geometry reverse();
 
   /**
    * Computes a <code>Geometry</code> representing the point-set which is

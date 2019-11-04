@@ -1157,8 +1157,8 @@ class RayCrossingCounter {
     Coordinate p1 = new Coordinate.empty2D();
     Coordinate p2 = new Coordinate.empty2D();
     for (int i = 1; i < ring.size(); i++) {
-      ring.getCoordinate(i, p1);
-      ring.getCoordinate(i - 1, p2);
+      ring.getCoordinateInto(i, p1);
+      ring.getCoordinateInto(i - 1, p2);
       counter.countSegment(p1, p2);
       if (counter.isOnSegment()) return counter.getLocation();
     }
@@ -1327,8 +1327,8 @@ class PointLocation {
     Coordinate p1 = new Coordinate.empty2D();
     int n = line.size();
     for (int i = 1; i < n; i++) {
-      line.getCoordinate(i - 1, p0);
-      line.getCoordinate(i, p1);
+      line.getCoordinateInto(i - 1, p0);
+      line.getCoordinateInto(i, p1);
       lineIntersector.computeIntersectionPointLine(p, p0, p1);
       if (lineIntersector.hasIntersection()) {
         return true;
