@@ -1,0 +1,1007 @@
+part of dart_jts;
+
+/**
+ *  Models an OGC-style <code>LineString</code>.
+ *  A LineString consists of a sequence of two or more vertices,
+ *  along with all points along the linearly-interpolated curves
+ *  (line segments) between each
+ *  pair of consecutive vertices.
+ *  Consecutive vertices may be equal.
+ *  The line segments in the line may intersect each other (in other words,
+ *  the linestring may "curl back" in itself and self-intersect.
+ *  Linestrings with exactly two identical points are invalid.
+ *  <p>
+ * A linestring must have either 0 or 2 or more points.
+ * If these conditions are not met, the constructors throw
+ * an {@link IllegalArgumentException}
+ *
+ *@version 1.7
+ */
+class LineString extends Geometry implements Lineal {
+  /**
+   *  The points of this <code>LineString</code>.
+   */
+  CoordinateSequence points;
+
+  /**
+   *  Constructs a <code>LineString</code> with the given points.
+   *
+   *@param  points the points of the linestring, or <code>null</code>
+   *      to create the empty geometry. This array must not contain <code>null</code>
+   *      elements. Consecutive points may be equal.
+   *@param  precisionModel  the specification of the grid of allowable points
+   *      for this <code>LineString</code>
+   *@param  SRID            the ID of the Spatial Reference System used by this
+   *      <code>LineString</code>
+   * @throws IllegalArgumentException if too few points are provided
+   */
+  /** @deprecated Use GeometryFactory instead */
+  LineString(List<Coordinate> points, PrecisionModel precisionModel, int SRID) : super(new GeometryFactory.withPrecisionModelSrid(precisionModel, SRID)) {
+    init(getFactory().getCoordinateSequenceFactory().create(points));
+  }
+
+  /**
+   * Constructs a <code>LineString</code> with the given points.
+   *
+   *@param  points the points of the linestring, or <code>null</code>
+   *      to create the empty geometry.
+   * @throws IllegalArgumentException if too few points are provided
+   */
+  LineString.fromSequence(CoordinateSequence points, GeometryFactory factory) : super(factory) {
+    init(points);
+  }
+
+  void init(CoordinateSequence points) {
+    if (points == null) {
+      points = getFactory().getCoordinateSequenceFactory().create([]);
+    }
+    if (points.size() == 1) {
+      throw new ArgumentError("Invalid number of points in LineString (found ${points.size()} - must be 0 or >= 2)");
+    }
+    this.points = points;
+  }
+
+  List<Coordinate> getCoordinates() {
+    return points.toCoordinateArray();
+  }
+
+  CoordinateSequence getCoordinateSequence() {
+    return points;
+  }
+
+  Coordinate getCoordinateN(int n) {
+    return points.getCoordinate(n);
+  }
+
+  Coordinate getCoordinate() {
+    if (isEmpty()) return null;
+    return points.getCoordinate(0);
+  }
+
+  int getDimension() {
+    return 1;
+  }
+
+  int getBoundaryDimension() {
+    if (isClosed()) {
+      return Dimension.FALSE;
+    }
+    return 0;
+  }
+
+  bool isEmpty() {
+    return points.size() == 0;
+  }
+
+  int getNumPoints() {
+    return points.size();
+  }
+
+  Point getPointN(int n) {
+    return getFactory().createPoint(points.getCoordinate(n));
+  }
+
+  Point getStartPoint() {
+    if (isEmpty()) {
+      return null;
+    }
+    return getPointN(0);
+  }
+
+  Point getEndPoint() {
+    if (isEmpty()) {
+      return null;
+    }
+    return getPointN(getNumPoints() - 1);
+  }
+
+  bool isClosed() {
+    if (isEmpty()) {
+      return false;
+    }
+    return getCoordinateN(0).equals2D(getCoordinateN(getNumPoints() - 1));
+  }
+
+  bool isRing() {
+    return isClosed() && isSimple();
+  }
+
+  String getGeometryType() {
+    return "LineString";
+  }
+
+  /**
+   *  Returns the length of this <code>LineString</code>
+   *
+   *@return the length of the linestring
+   */
+  double getLength() {
+    return Length.ofLine(points);
+  }
+
+  /**
+   * Gets the boundary of this geometry.
+   * The boundary of a lineal geometry is always a zero-dimensional geometry (which may be empty).
+   *
+   * @return the boundary geometry
+   * @see Geometry#getBoundary
+   */
+  Geometry getBoundary() {
+    return (new BoundaryOp(this)).getBoundary();
+  }
+
+  /**
+   * Creates a {@link LineString} whose coordinates are in the reverse
+   * order of this objects
+   *
+   * @return a {@link LineString} with coordinates in the reverse order
+   */
+  Geometry reverse() {
+    CoordinateSequence seq = points.copy();
+    CoordinateSequences.reverse(seq);
+    LineString revLine = getFactory().createLineStringSeq(seq);
+    return revLine;
+  }
+
+  /**
+   *  Returns true if the given point is a vertex of this <code>LineString</code>.
+   *
+   *@param  pt  the <code>Coordinate</code> to check
+   *@return     <code>true</code> if <code>pt</code> is one of this <code>LineString</code>
+   *      's vertices
+   */
+  bool isCoordinate(Coordinate pt) {
+    for (int i = 0; i < points.size(); i++) {
+      if (points.getCoordinate(i).equals(pt)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  Envelope computeEnvelopeInternal() {
+    if (isEmpty()) {
+      return new Envelope.empty();
+    }
+    return points.expandEnvelope(new Envelope.empty());
+  }
+
+  bool equalsExactWithTol(Geometry other, double tolerance) {
+    if (!isEquivalentClass(other)) {
+      return false;
+    }
+    LineString otherLineString = other as LineString;
+    if (points.size() != otherLineString.points.size()) {
+      return false;
+    }
+    for (int i = 0; i < points.size(); i++) {
+      if (!equal(points.getCoordinate(i), otherLineString.points.getCoordinate(i), tolerance)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  void applyCF(CoordinateFilter filter) {
+    for (int i = 0; i < points.size(); i++) {
+      filter(points.getCoordinate(i));
+    }
+  }
+
+  void applyCSF(CoordinateSequenceFilter filter) {
+    if (points.size() == 0) return;
+    for (int i = 0; i < points.size(); i++) {
+      filter.filter(points, i);
+      if (filter.isDone()) break;
+    }
+    if (filter.isGeometryChanged()) geometryChanged();
+  }
+
+  void applyGF(GeometryFilter filter) {
+    filter.filter(this);
+  }
+
+  void applyGCF(GeometryComponentFilter filter) {
+    filter.filter(this);
+  }
+
+  /**
+   * Creates and returns a full copy of this {@link LineString} object.
+   * (including all coordinates contained by it).
+   *
+   * @return a clone of this instance
+   * @deprecated
+   */
+  Object clone() {
+    return copy();
+  }
+
+  LineString copyInternal() {
+    return new LineString.fromSequence(points.copy(), geomFactory);
+  }
+
+  /**
+   * Normalizes a LineString.  A normalized linestring
+   * has the first point which is not equal to it's reflected point
+   * less than the reflected point.
+   */
+  void normalize() {
+    for (int i = 0; i < points.size() / 2; i++) {
+      int j = points.size() - 1 - i;
+      // skip equal points on both ends
+      if (!points.getCoordinate(i).equals(points.getCoordinate(j))) {
+        if (points.getCoordinate(i).compareTo(points.getCoordinate(j)) > 0) {
+          CoordinateSequence copy = points.copy();
+          CoordinateSequences.reverse(copy);
+          points = copy;
+        }
+        return;
+      }
+    }
+  }
+
+  bool isEquivalentClass(Geometry other) {
+    return other is LineString;
+  }
+
+  int compareToSameClass(Object o) {
+    LineString line = o as LineString;
+    // MD - optimized implementation
+    int i = 0;
+    int j = 0;
+    while (i < points.size() && j < line.points.size()) {
+      int comparison = points.getCoordinate(i).compareTo(line.points.getCoordinate(j));
+      if (comparison != 0) {
+        return comparison;
+      }
+      i++;
+      j++;
+    }
+    if (i < points.size()) {
+      return 1;
+    }
+    if (j < line.points.size()) {
+      return -1;
+    }
+    return 0;
+  }
+
+  int compareToSameClassWithComparator(Object o, Comparator<CoordinateSequence> comp) {
+    LineString line = o as LineString;
+    return comp(this.points, line.points);
+  }
+
+  int getSortIndex() {
+    return Geometry.SORTINDEX_LINESTRING;
+  }
+}
+
+/**
+ * Models an OGC SFS <code>LinearRing</code>.
+ * A <code>LinearRing</code> is a {@link LineString} which is both closed and simple.
+ * In other words,
+ * the first and last coordinate in the ring must be equal,
+ * and the interior of the ring must not self-intersect.
+ * Either orientation of the ring is allowed.
+ * <p>
+ * A ring must have either 0 or 4 or more points.
+ * The first and last points must be equal (in 2D).
+ * If these conditions are not met, the constructors throw
+ * an {@link IllegalArgumentException}
+ *
+ * @version 1.7
+ */
+class LinearRing extends LineString {
+  /**
+   * The minimum number of vertices allowed in a valid non-empty ring (= 4).
+   * Empty rings with 0 vertices are also valid.
+   */
+  static final int MINIMUM_VALID_SIZE = 4;
+
+  /**
+   * Constructs a <code>LinearRing</code> with the given points.
+   *
+   *@param  points          points forming a closed and simple linestring, or
+   *      <code>null</code> or an empty array to create the empty geometry.
+   *      This array must not contain <code>null</code> elements.
+   *
+   *@param  precisionModel  the specification of the grid of allowable points
+   *      for this <code>LinearRing</code>
+   *@param  SRID            the ID of the Spatial Reference System used by this
+   *      <code>LinearRing</code>
+   * @throws IllegalArgumentException if the ring is not closed, or has too few points
+   *
+   * @deprecated Use GeometryFactory instead
+   */
+  LinearRing(List<Coordinate> points, PrecisionModel precisionModel, int SRID)
+      : this.withFactory(points, new GeometryFactory.withPrecisionModelSrid(precisionModel, SRID));
+
+//  TODO check this{
+//  validateConstruction();
+//  }
+
+  /**
+   * This method is ONLY used to avoid deprecation warnings.
+   * @param points
+   * @param factory
+   * @throws IllegalArgumentException if the ring is not closed, or has too few points
+   */
+  LinearRing.withFactory(List<Coordinate> points, GeometryFactory factory) : this.fromSequence(factory.getCoordinateSequenceFactory().create(points), factory);
+
+  /**
+   * Constructs a <code>LinearRing</code> with the vertices
+   * specified by the given {@link CoordinateSequence}.
+   *
+   *@param  points  a sequence points forming a closed and simple linestring, or
+   *      <code>null</code> to create the empty geometry.
+   *
+   * @throws IllegalArgumentException if the ring is not closed, or has too few points
+   *
+   */
+  LinearRing.fromSequence(CoordinateSequence points, GeometryFactory factory) : super.fromSequence(points, factory) {
+    validateConstruction();
+  }
+
+  void validateConstruction() {
+    if (!isEmpty() && !super.isClosed()) {
+      throw new ArgumentError("Points of LinearRing do not form a closed linestring");
+    }
+    if (getCoordinateSequence().size() >= 1 && getCoordinateSequence().size() < MINIMUM_VALID_SIZE) {
+      throw new ArgumentError("Invalid number of points in LinearRing (found ${getCoordinateSequence().size()} - must be 0 or >= 4)");
+    }
+  }
+
+  /**
+   * Returns <code>Dimension.FALSE</code>, since by definition LinearRings do
+   * not have a boundary.
+   *
+   * @return Dimension.FALSE
+   */
+  int getBoundaryDimension() {
+    return Dimension.FALSE;
+  }
+
+  /**
+   * Tests whether this ring is closed.
+   * Empty rings are closed by definition.
+   *
+   * @return true if this ring is closed
+   */
+  bool isClosed() {
+    if (isEmpty()) {
+      // empty LinearRings are closed by definition
+      return true;
+    }
+    return super.isClosed();
+  }
+
+  String getGeometryType() {
+    return "LinearRing";
+  }
+
+  int getSortIndex() {
+    return Geometry.SORTINDEX_LINEARRING;
+  }
+
+  LinearRing copyInternal() {
+    return new LinearRing.fromSequence(points.copy(), geomFactory);
+  }
+
+  Geometry reverse() {
+    CoordinateSequence seq = points.copy();
+    CoordinateSequences.reverse(seq);
+    LinearRing rev = getFactory().createLinearRingSeq(seq);
+    return rev;
+  }
+}
+
+/**
+ * Represents a line segment defined by two {@link Coordinate}s.
+ * Provides methods to compute various geometric properties
+ * and relationships of line segments.
+ * <p>
+ * This class is designed to be easily mutable (to the extent of
+ * having its contained points ).
+ * This supports a common pattern of reusing a single LineSegment
+ * object as a way of computing segment properties on the
+ * segments defined by arrays or lists of {@link Coordinate}s.
+ *
+ *@version 1.7
+ */
+class LineSegment implements Comparable {
+  Coordinate p0, p1;
+
+  LineSegment.fromCoordinates(Coordinate p0, Coordinate p1) {
+    this.p0 = p0;
+    this.p1 = p1;
+  }
+
+  LineSegment(double x0, double y0, double x1, double y1) : this.fromCoordinates(new Coordinate(x0, y0), new Coordinate(x1, y1));
+
+  LineSegment.fromSegment(LineSegment ls) : this.fromCoordinates(ls.p0, ls.p1);
+
+  LineSegment.empty() : this.fromCoordinates(new Coordinate.empty2D(), new Coordinate.empty2D());
+
+  Coordinate getCoordinate(int i) {
+    if (i == 0) return p0;
+    return p1;
+  }
+
+  void setCoordinatesFromLinesegment(LineSegment ls) {
+    setCoordinates(ls.p0, ls.p1);
+  }
+
+  void setCoordinates(Coordinate p0, Coordinate p1) {
+    this.p0.x = p0.x;
+    this.p0.y = p0.y;
+    this.p1.x = p1.x;
+    this.p1.y = p1.y;
+  }
+
+  /**
+   * Gets the minimum X ordinate.
+   * @return the minimum X ordinate
+   */
+  double minX() {
+    return math.min(p0.x, p1.x);
+  }
+
+  /**
+   * Gets the maximum X ordinate.
+   * @return the maximum X ordinate
+   */
+  double maxX() {
+    return math.max(p0.x, p1.x);
+  }
+
+  /**
+   * Gets the minimum Y ordinate.
+   * @return the minimum Y ordinate
+   */
+  double minY() {
+    return math.min(p0.y, p1.y);
+  }
+
+  /**
+   * Gets the maximum Y ordinate.
+   * @return the maximum Y ordinate
+   */
+  double maxY() {
+    return math.max(p0.y, p1.y);
+  }
+
+  /**
+   * Computes the length of the line segment.
+   * @return the length of the line segment
+   */
+  double getLength() {
+    return p0.distance(p1);
+  }
+
+  /**
+   * Tests whether the segment is horizontal.
+   *
+   * @return <code>true</code> if the segment is horizontal
+   */
+  bool isHorizontal() {
+    return p0.y == p1.y;
+  }
+
+  /**
+   * Tests whether the segment is vertical.
+   *
+   * @return <code>true</code> if the segment is vertical
+   */
+  bool isVertical() {
+    return p0.x == p1.x;
+  }
+
+  /**
+   * Determines the orientation of a LineSegment relative to this segment.
+   * The concept of orientation is specified as follows:
+   * Given two line segments A and L,
+   * <ul>
+   * <li>A is to the left of a segment L if A lies wholly in the
+   * closed half-plane lying to the left of L
+   * <li>A is to the right of a segment L if A lies wholly in the
+   * closed half-plane lying to the right of L
+   * <li>otherwise, A has indeterminate orientation relative to L. This
+   * happens if A is collinear with L or if A crosses the line determined by L.
+   * </ul>
+   *
+   * @param seg the LineSegment to compare
+   *
+   * @return 1 if <code>seg</code> is to the left of this segment
+   * @return -1 if <code>seg</code> is to the right of this segment
+   * @return 0 if <code>seg</code> is collinear to or crosses this segment
+   */
+  int orientationIndex(LineSegment seg) {
+    int orient0 = Orientation.index(p0, p1, seg.p0);
+    int orient1 = Orientation.index(p0, p1, seg.p1);
+    // this handles the case where the points are L or collinear
+    if (orient0 >= 0 && orient1 >= 0) return math.max(orient0, orient1);
+    // this handles the case where the points are R or collinear
+    if (orient0 <= 0 && orient1 <= 0) return math.max(orient0, orient1);
+    // points lie on opposite sides ==> indeterminate orientation
+    return 0;
+  }
+
+  /**
+   * Determines the orientation index of a {@link Coordinate} relative to this segment.
+   * The orientation index is as defined in {@link Orientation#computeOrientation}.
+   *
+   * @param p the coordinate to compare
+   *
+   * @return 1 (LEFT) if <code>p</code> is to the left of this segment
+   * @return -1 (RIGHT) if <code>p</code> is to the right of this segment
+   * @return 0 (COLLINEAR) if <code>p</code> is collinear with this segment
+   *
+   * @see Orientation#computeOrientation(Coordinate, Coordinate, Coordinate)
+   */
+  int orientationIndexCoord(Coordinate p) {
+    return Orientation.index(p0, p1, p);
+  }
+
+  /**
+   * Reverses the direction of the line segment.
+   */
+  void reverse() {
+    Coordinate temp = p0;
+    p0 = p1;
+    p1 = temp;
+  }
+
+  /**
+   * Puts the line segment into a normalized form.
+   * This is useful for using line segments in maps and indexes when
+   * topological equality rather than exact equality is desired.
+   * A segment in normalized form has the first point smaller
+   * than the second (according to the standard ordering on {@link Coordinate}).
+   */
+  void normalize() {
+    if (p1.compareTo(p0) < 0) reverse();
+  }
+
+  /**
+   * Computes the angle that the vector defined by this segment
+   * makes with the X-axis.
+   * The angle will be in the range [ -PI, PI ] radians.
+   *
+   * @return the angle this segment makes with the X-axis (in radians)
+   */
+  double angle() {
+    return math.atan2(p1.y - p0.y, p1.x - p0.x);
+  }
+
+  /**
+   * Computes the midpoint of the segment
+   *
+   * @return the midpoint of the segment
+   */
+  Coordinate midPoint() {
+    return midPointCoords(p0, p1);
+  }
+
+  /**
+   * Computes the midpoint of a segment
+   *
+   * @return the midpoint of the segment
+   */
+  static Coordinate midPointCoords(Coordinate p0, Coordinate p1) {
+    return new Coordinate((p0.x + p1.x) / 2, (p0.y + p1.y) / 2);
+  }
+
+  /**
+   * Computes the distance between this line segment and another segment.
+   *
+   * @return the distance to the other segment
+   */
+  double distance(LineSegment ls) {
+    return Distance.segmentToSegment(p0, p1, ls.p0, ls.p1);
+  }
+
+  /**
+   * Computes the distance between this line segment and a given point.
+   *
+   * @return the distance from this segment to the given point
+   */
+  double distanceCoord(Coordinate p) {
+    return Distance.pointToSegment(p, p0, p1);
+  }
+
+  /**
+   * Computes the perpendicular distance between the (infinite) line defined
+   * by this line segment and a point.
+   *
+   * @return the perpendicular distance between the defined line and the given point
+   */
+  double distancePerpendicular(Coordinate p) {
+    return Distance.pointToLinePerpendicular(p, p0, p1);
+  }
+
+  /**
+   * Computes the {@link Coordinate} that lies a given
+   * fraction along the line defined by this segment.
+   * A fraction of <code>0.0</code> returns the start point of the segment;
+   * a fraction of <code>1.0</code> returns the end point of the segment.
+   * If the fraction is &lt; 0.0 or &gt; 1.0 the point returned
+   * will lie before the start or beyond the end of the segment.
+   *
+   * @param segmentLengthFraction the fraction of the segment length along the line
+   * @return the point at that distance
+   */
+  Coordinate pointAlong(double segmentLengthFraction) {
+    Coordinate coord = new Coordinate.empty2D();
+    coord.x = p0.x + segmentLengthFraction * (p1.x - p0.x);
+    coord.y = p0.y + segmentLengthFraction * (p1.y - p0.y);
+    return coord;
+  }
+
+  /**
+   * Computes the {@link Coordinate} that lies a given
+   * fraction along the line defined by this segment and offset from
+   * the segment by a given distance.
+   * A fraction of <code>0.0</code> offsets from the start point of the segment;
+   * a fraction of <code>1.0</code> offsets from the end point of the segment.
+   * The computed point is offset to the left of the line if the offset distance is
+   * positive, to the right if negative.
+   *
+   * @param segmentLengthFraction the fraction of the segment length along the line
+   * @param offsetDistance the distance the point is offset from the segment
+   *    (positive is to the left, negative is to the right)
+   * @return the point at that distance and offset
+   *
+   * @throws IllegalStateException if the segment has zero length
+   */
+  Coordinate pointAlongOffset(double segmentLengthFraction, double offsetDistance) {
+    // the point on the segment line
+    double segx = p0.x + segmentLengthFraction * (p1.x - p0.x);
+    double segy = p0.y + segmentLengthFraction * (p1.y - p0.y);
+
+    double dx = p1.x - p0.x;
+    double dy = p1.y - p0.y;
+    double len = math.sqrt(dx * dx + dy * dy);
+    double ux = 0.0;
+    double uy = 0.0;
+    if (offsetDistance != 0.0) {
+      if (len <= 0.0) throw new StateError("Cannot compute offset from zero-length line segment");
+
+      // u is the vector that is the length of the offset, in the direction of the segment
+      ux = offsetDistance * dx / len;
+      uy = offsetDistance * dy / len;
+    }
+
+    // the offset point is the seg point plus the offset vector rotated 90 degrees CCW
+    double offsetx = segx - uy;
+    double offsety = segy + ux;
+
+    Coordinate coord = new Coordinate(offsetx, offsety);
+    return coord;
+  }
+
+  /**
+   * Computes the Projection Factor for the projection of the point p
+   * onto this LineSegment.  The Projection Factor is the constant r
+   * by which the vector for this segment must be multiplied to
+   * equal the vector for the projection of <tt>p</tt> on the line
+   * defined by this segment.
+   * <p>
+   * The projection factor will lie in the range <tt>(-inf, +inf)</tt>,
+   * or be <code>NaN</code> if the line segment has zero length..
+   *
+   * @param p the point to compute the factor for
+   * @return the projection factor for the point
+   */
+  double projectionFactor(Coordinate p) {
+    if (p.equals(p0)) return 0.0;
+    if (p.equals(p1)) return 1.0;
+    // Otherwise, use comp.graphics.algorithms Frequently Asked Questions method
+    /*     	      AC dot AB
+                   r = ---------
+                         ||AB||^2
+                r has the following meaning:
+                r=0 P = A
+                r=1 P = B
+                r<0 P is on the backward extension of AB
+                r>1 P is on the forward extension of AB
+                0<r<1 P is interior to AB
+        */
+    double dx = p1.x - p0.x;
+    double dy = p1.y - p0.y;
+    double len = dx * dx + dy * dy;
+
+    // handle zero-length segments
+    if (len <= 0.0) return double.nan;
+
+    double r = ((p.x - p0.x) * dx + (p.y - p0.y) * dy) / len;
+    return r;
+  }
+
+  /**
+   * Computes the fraction of distance (in <tt>[0.0, 1.0]</tt>)
+   * that the projection of a point occurs along this line segment.
+   * If the point is beyond either ends of the line segment,
+   * the closest fractional value (<tt>0.0</tt> or <tt>1.0</tt>) is returned.
+   * <p>
+   * Essentially, this is the {@link #projectionFactor} clamped to
+   * the range <tt>[0.0, 1.0]</tt>.
+   * If the segment has zero length, 1.0 is returned.
+   *
+   * @param inputPt the point
+   * @return the fraction along the line segment the projection of the point occurs
+   */
+  double segmentFraction(Coordinate inputPt) {
+    double segFrac = projectionFactor(inputPt);
+    if (segFrac < 0.0)
+      segFrac = 0.0;
+    else if (segFrac > 1.0 || segFrac.isNaN) segFrac = 1.0;
+    return segFrac;
+  }
+
+  /**
+   * Compute the projection of a point onto the line determined
+   * by this line segment.
+   * <p>
+   * Note that the projected point
+   * may lie outside the line segment.  If this is the case,
+   * the projection factor will lie outside the range [0.0, 1.0].
+   */
+  Coordinate projectCoord(Coordinate p) {
+    if (p.equals(p0) || p.equals(p1)) return new Coordinate.fromCoordinate(p);
+
+    double r = projectionFactor(p);
+    Coordinate coord = new Coordinate.empty2D();
+    coord.x = p0.x + r * (p1.x - p0.x);
+    coord.y = p0.y + r * (p1.y - p0.y);
+    return coord;
+  }
+
+  /**
+   * Project a line segment onto this line segment and return the resulting
+   * line segment.  The returned line segment will be a subset of
+   * the target line line segment.  This subset may be null, if
+   * the segments are oriented in such a way that there is no projection.
+   * <p>
+   * Note that the returned line may have zero length (i.e. the same endpoints).
+   * This can happen for instance if the lines are perpendicular to one another.
+   *
+   * @param seg the line segment to project
+   * @return the projected line segment, or <code>null</code> if there is no overlap
+   */
+  LineSegment project(LineSegment seg) {
+    double pf0 = projectionFactor(seg.p0);
+    double pf1 = projectionFactor(seg.p1);
+    // check if segment projects at all
+    if (pf0 >= 1.0 && pf1 >= 1.0) return null;
+    if (pf0 <= 0.0 && pf1 <= 0.0) return null;
+
+    Coordinate newp0 = projectCoord(seg.p0);
+    if (pf0 < 0.0) newp0 = p0;
+    if (pf0 > 1.0) newp0 = p1;
+
+    Coordinate newp1 = projectCoord(seg.p1);
+    if (pf1 < 0.0) newp1 = p0;
+    if (pf1 > 1.0) newp1 = p1;
+
+    return new LineSegment.fromCoordinates(newp0, newp1);
+  }
+
+  /**
+   * Computes the closest point on this line segment to another point.
+   * @param p the point to find the closest point to
+   * @return a Coordinate which is the closest point on the line segment to the point p
+   */
+  Coordinate closestPoint(Coordinate p) {
+    double factor = projectionFactor(p);
+    if (factor > 0 && factor < 1) {
+      return projectCoord(p);
+    }
+    double dist0 = p0.distance(p);
+    double dist1 = p1.distance(p);
+    if (dist0 < dist1) return p0;
+    return p1;
+  }
+
+  /**
+   * Computes the closest points on two line segments.
+   *
+   * @param line the segment to find the closest point to
+   * @return a pair of Coordinates which are the closest points on the line segments
+   */
+  List<Coordinate> closestPoints(LineSegment line) {
+    // test for intersection
+    Coordinate intPt = intersection(line);
+    if (intPt != null) {
+      return [intPt, intPt];
+    }
+
+    /**
+     *  if no intersection closest pair contains at least one endpoint.
+     * Test each endpoint in turn.
+     */
+    List<Coordinate> closestPt = List(2);
+    double minDistance = double.maxFinite;
+    double dist;
+
+    Coordinate close00 = closestPoint(line.p0);
+    minDistance = close00.distance(line.p0);
+    closestPt[0] = close00;
+    closestPt[1] = line.p0;
+
+    Coordinate close01 = closestPoint(line.p1);
+    dist = close01.distance(line.p1);
+    if (dist < minDistance) {
+      minDistance = dist;
+      closestPt[0] = close01;
+      closestPt[1] = line.p1;
+    }
+
+    Coordinate close10 = line.closestPoint(p0);
+    dist = close10.distance(p0);
+    if (dist < minDistance) {
+      minDistance = dist;
+      closestPt[0] = p0;
+      closestPt[1] = close10;
+    }
+
+    Coordinate close11 = line.closestPoint(p1);
+    dist = close11.distance(p1);
+    if (dist < minDistance) {
+      minDistance = dist;
+      closestPt[0] = p1;
+      closestPt[1] = close11;
+    }
+
+    return closestPt;
+  }
+
+  /**
+   * Computes an intersection point between two line segments, if there is one.
+   * There may be 0, 1 or many intersection points between two segments.
+   * If there are 0, null is returned. If there is 1 or more,
+   * exactly one of them is returned
+   * (chosen at the discretion of the algorithm).
+   * If more information is required about the details of the intersection,
+   * the {@link RobustLineIntersector} class should be used.
+   *
+   * @param line a line segment
+   * @return an intersection point, or <code>null</code> if there is none
+   *
+   * @see RobustLineIntersector
+   */
+  Coordinate intersection(LineSegment line) {
+    LineIntersector li = new RobustLineIntersector();
+    li.computeIntersection(p0, p1, line.p0, line.p1);
+    if (li.hasIntersection()) return li.getIntersection(0);
+    return null;
+  }
+
+  /**
+   * Computes the intersection point of the lines of infinite extent defined
+   * by two line segments (if there is one).
+   * There may be 0, 1 or an infinite number of intersection points
+   * between two lines.
+   * If there is a unique intersection point, it is returned.
+   * Otherwise, <tt>null</tt> is returned.
+   * If more information is required about the details of the intersection,
+   * the {@link RobustLineIntersector} class should be used.
+   *
+   * @param line a line segment defining an straight line with infinite extent
+   * @return an intersection point,
+   * or <code>null</code> if there is no point of intersection
+   * or an infinite number of intersection points
+   *
+   * @see RobustLineIntersector
+   */
+  Coordinate lineIntersection(LineSegment line) {
+    Coordinate intPt = Intersection.intersection(p0, p1, line.p0, line.p1);
+    return intPt;
+  }
+
+  /**
+   * Creates a LineString with the same coordinates as this segment
+   *
+   * @param geomFactory the geometry factory to use
+   * @return a LineString with the same geometry as this segment
+   */
+  LineString toGeometry(GeometryFactory geomFactory) {
+    return geomFactory.createLineString([p0, p1]);
+  }
+
+  /**
+   *  Returns <code>true</code> if <code>other</code> has the same values for
+   *  its points.
+   *
+   *@param  o  a <code>LineSegment</code> with which to do the comparison.
+   *@return        <code>true</code> if <code>other</code> is a <code>LineSegment</code>
+   *      with the same values for the x and y ordinates.
+   */
+  bool equals(Object o) {
+    if (!(o is LineSegment)) {
+      return false;
+    }
+    LineSegment other = o as LineSegment;
+    return p0.equals(other.p0) && p1.equals(other.p1);
+  }
+
+  int get hashCode {
+    //Algorithm from Effective Java by Joshua Bloch [Jon Aquino]
+    int result = 17;
+    result = 37 * result + p0.x.hashCode;
+    result = 37 * result + p0.y.hashCode;
+    result = 37 * result + p1.x.hashCode;
+    result = 37 * result + p1.y.hashCode;
+    return result;
+  }
+
+//  /**
+//   * Gets a hashcode for this object.
+//   *
+//   * @return a hashcode for this object
+//   */
+//  int hashCode() {
+//    long bits0 = java.lang.Double.doubleToLongBits(p0.x);
+//    bits0 ^= java.lang.Double.doubleToLongBits(p0.y) * 31;
+//    int hash0 = (((int) bits0) ^ ((int)(bits0 >> 32)));
+//
+//    long bits1 = java.lang.Double.doubleToLongBits(p1.x);
+//    bits1 ^= java.lang.Double.doubleToLongBits(p1.y) * 31;
+//    int hash1 = (((int) bits1) ^ ((int)(bits1 >> 32)));
+//
+//    // XOR is supposed to be a good way to combine hashcodes
+//    return hash0 ^ hash1;
+//  }
+
+  /**
+   *  Compares this object with the specified object for order.
+   *  Uses the standard lexicographic ordering for the points in the LineSegment.
+   *
+   *@param  o  the <code>LineSegment</code> with which this <code>LineSegment</code>
+   *      is being compared
+   *@return    a negative integer, zero, or a positive integer as this <code>LineSegment</code>
+   *      is less than, equal to, or greater than the specified <code>LineSegment</code>
+   */
+  int compareTo(Object o) {
+    LineSegment other = o as LineSegment;
+    int comp0 = p0.compareTo(other.p0);
+    if (comp0 != 0) return comp0;
+    return p1.compareTo(other.p1);
+  }
+
+  /**
+   *  Returns <code>true</code> if <code>other</code> is
+   *  topologically equal to this LineSegment (e.g. irrespective
+   *  of orientation).
+   *
+   *@param  other  a <code>LineSegment</code> with which to do the comparison.
+   *@return        <code>true</code> if <code>other</code> is a <code>LineSegment</code>
+   *      with the same values for the x and y ordinates.
+   */
+  bool equalsTopo(LineSegment other) {
+    return p0.equals(other.p0) && p1.equals(other.p1) || p0.equals(other.p1) && p1.equals(other.p0);
+  }
+
+  String toString() {
+    return "LINESTRING( " + p0.x.toString() + " " + p0.y.toString() + ", " + p1.x.toString() + " " + p1.y.toString() + ")";
+  }
+}

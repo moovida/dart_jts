@@ -1,5 +1,5 @@
 import "package:test/test.dart";
-import 'package:dart_sfs/dart_sfs.dart';
+import 'package:dart_jts/dart_jts.dart';
 import "dart:math" as math;
 import 'testing_utilities.dart';
 

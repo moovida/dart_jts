@@ -1,4 +1,4 @@
-import 'package:dart_sfs/dart_sfs.dart';
+import 'package:dart_jts/dart_jts.dart';
 import 'package:test/test.dart';
 
 const String WKT_POINT = "POINT ( 10 10)";
