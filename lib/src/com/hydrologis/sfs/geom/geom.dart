@@ -234,6 +234,18 @@ abstract class GeometryFilter {
   void filter(Geometry geom);
 }
 
+/**
+ * Identifies {@link Geometry} subclasses which
+ * are 0-dimensional and with components which are {@link Point}s.
+ *
+ * @author Martin Davis
+ *
+ */
+abstract class Puntal {
+
+}
+
+
 /// Identifies {@link Geometry} subclasses which
 /// are 2-dimensional
 /// and have components which have {@link Lineal} boundaries.

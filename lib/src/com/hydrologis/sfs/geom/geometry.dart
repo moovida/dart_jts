@@ -131,7 +131,7 @@ abstract class Geometry
   Envelope envelope;
 
   /// The {@link GeometryFactory} used to create this Geometry
-  final GeometryFactory factory;
+  final GeometryFactory geomFactory;
 
   ///  The ID of the Spatial Reference System used by this <code>Geometry</code>
   int SRID;
@@ -143,8 +143,8 @@ abstract class Geometry
   /// Creates a new <code>Geometry</code> via the specified GeometryFactory.
   ///
   /// @param factory
-  Geometry(this.factory) {
-    this.SRID = factory.getSRID();
+  Geometry(this.geomFactory) {
+    this.SRID = geomFactory.getSRID();
   }
 
   /// Returns the name of this Geometry's actual class.
@@ -214,7 +214,7 @@ abstract class Geometry
   ///
   /// @return the factory for this geometry
   GeometryFactory getFactory() {
-    return factory;
+    return geomFactory;
   }
 
   /// Gets the user data object for this geometry, if any.
@@ -260,7 +260,7 @@ abstract class Geometry
   ///@return    the specification of the grid of allowable points, for this
   ///      <code>Geometry</code> and all other <code>Geometry</code>s
   PrecisionModel getPrecisionModel() {
-    return factory.getPrecisionModel();
+    return geomFactory.getPrecisionModel();
   }
 
   ///  Returns a vertex of this <code>Geometry</code>
@@ -1755,7 +1755,7 @@ abstract class Geometry
    *      defined in "Normal Form For Geometry" in the JTS Technical
    *      Specifications
    */
-  int compareToSameClassWithCOmparator(Object o, Comparator<CoordinateSequence> comp);
+  int compareToSameClassWithComparator(Object o, Comparator<CoordinateSequence> comp);
 
   /**
    *  Returns the first non-zero result of <code>compareTo</code> encountered as
