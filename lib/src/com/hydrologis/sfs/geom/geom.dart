@@ -1,10 +1,8 @@
 part of dart_sfs;
 
-/**
- * Indicates an invalid or inconsistent topological situation encountered during processing
- *
- * @version 1.7
- */
+/// Indicates an invalid or inconsistent topological situation encountered during processing
+///
+/// @version 1.7
 class TopologyException implements Exception {
   static String msgWithCoord(String msg, Coordinate pt) {
     if (pt != null) {
@@ -27,6 +25,197 @@ class TopologyException implements Exception {
   Coordinate getCoordinate() {
     return pt;
   }
+}
+
+/**
+ * Compares two {@link CoordinateSequence}s.
+ * For sequences of the same dimension, the ordering is lexicographic.
+ * Otherwise, lower dimensions are sorted before higher.
+ * The dimensions compared can be limited; if this is done
+ * ordinate dimensions above the limit will not be compared.
+ * <p>
+ * If different behaviour is required for comparing size, dimension, or
+ * coordinate values, any or all methods can be overridden.
+ *
+ */
+class CoordinateSequenceComparatorBuilder {
+  static Comparator<CoordinateSequence> regular() {
+    return (cs1, cs2) {
+      return compare(cs1, cs2, NumberUtils.MAX_INT);
+    };
+  }
+
+  static Comparator<CoordinateSequence> withLimit(int dimensionLimit) {
+    return (cs1, cs2) {
+      return compare(cs1, cs2, dimensionLimit);
+    };
+  }
+
+  /**
+   * Compare two <code>double</code>s, allowing for NaN values.
+   * NaN is treated as being less than any valid number.
+   *
+   * @param a a <code>double</code>
+   * @param b a <code>double</code>
+   * @return -1, 0, or 1 depending on whether a is less than, equal to or greater than b
+   */
+  static int compareStatic(double a, double b) {
+    if (a < b) return -1;
+    if (a > b) return 1;
+
+    if (a.isNaN) {
+      if (b.isNaN) return 0;
+      return -1;
+    }
+
+    if (b.isNaN) return 1;
+    return 0;
+  }
+
+  /**
+   * Compares two {@link CoordinateSequence}s for relative order.
+   *
+   * @param o1 a {@link CoordinateSequence}
+   * @param o2 a {@link CoordinateSequence}
+   * @return -1, 0, or 1 depending on whether o1 is less than, equal to, or greater than o2
+   */
+  static int compare(Object o1, Object o2, int dimensionLimit) {
+    CoordinateSequence s1 = o1 as CoordinateSequence;
+    CoordinateSequence s2 = o2 as CoordinateSequence;
+
+    int size1 = s1.size();
+    int size2 = s2.size();
+
+    int dim1 = s1.getDimension();
+    int dim2 = s2.getDimension();
+
+    int minDim = dim1;
+    if (dim2 < minDim) minDim = dim2;
+    bool dimLimited = false;
+    if (dimensionLimit <= minDim) {
+      minDim = dimensionLimit;
+      dimLimited = true;
+    }
+
+    // lower dimension is less than higher
+    if (!dimLimited) {
+      if (dim1 < dim2) return -1;
+      if (dim1 > dim2) return 1;
+    }
+
+    // lexicographic ordering of point sequences
+    int i = 0;
+    while (i < size1 && i < size2) {
+      int ptComp = compareCoordinate(s1, s2, i, minDim);
+      if (ptComp != 0) return ptComp;
+      i++;
+    }
+    if (i < size1) return 1;
+    if (i < size2) return -1;
+
+    return 0;
+  }
+
+  /**
+   * Compares the same coordinate of two {@link CoordinateSequence}s
+   * along the given number of dimensions.
+   *
+   * @param s1 a {@link CoordinateSequence}
+   * @param s2 a {@link CoordinateSequence}
+   * @param i the index of the coordinate to test
+   * @param dimension the number of dimensions to test
+   * @return -1, 0, or 1 depending on whether s1[i] is less than, equal to, or greater than s2[i]
+   */
+  static int compareCoordinate(CoordinateSequence s1, CoordinateSequence s2, int i, int dimension) {
+    for (int d = 0; d < dimension; d++) {
+      double ord1 = s1.getOrdinate(i, d);
+      double ord2 = s2.getOrdinate(i, d);
+      int comp = compare(ord1, ord2, dimension);
+      if (comp != 0) return comp;
+    }
+    return 0;
+  }
+}
+
+///  An interface for classes which process the coordinates in a {@link CoordinateSequence}.
+///  A filter can either record information about each coordinate,
+///  or change the value of the coordinate.
+///  Filters can be
+///  used to implement operations such as coordinate transformations, centroid and
+///  envelope computation, and many other functions.
+///  {@link Geometry} classes support the concept of applying a
+///  <code>CoordinateSequenceFilter</code> to each
+///  {@link CoordinateSequence}s they contain.
+///  <p>
+///  For maximum efficiency, the execution of filters can be short-circuited by using the {@link #isDone} method.
+///  <p>
+///  <code>CoordinateSequenceFilter</code> is
+///  an example of the Gang-of-Four Visitor pattern.
+///  <p>
+/// <b>Note</b>: In general, it is preferable to treat Geometrys as immutable.
+/// Mutation should be performed by creating a new Geometry object (see {@link GeometryEditor}
+/// and {@link GeometryTransformer} for convenient ways to do this).
+/// An exception to this rule is when a new Geometry has been created via {@link Geometry#copy()}.
+/// In this case mutating the Geometry will not cause aliasing issues,
+/// and a filter is a convenient way to implement coordinate transformation.
+///
+/// @see Geometry#apply(CoordinateFilter)
+/// @see GeometryTransformer
+/// @see GeometryEditor
+///
+///@see Geometry#apply(CoordinateSequenceFilter)
+///@author Martin Davis
+///@version 1.7
+abstract class CoordinateSequenceFilter {
+  /// Performs an operation on a coordinate in a {@link CoordinateSequence}.
+  ///
+  ///@param seq  the <code>CoordinateSequence</code> to which the filter is applied
+  ///@param i the index of the coordinate to apply the filter to
+  void filter(CoordinateSequence seq, int i);
+
+  /// Reports whether the application of this filter can be terminated.
+  /// Once this method returns <tt>true</tt>, it must
+  /// continue to return <tt>true</tt> on every subsequent call.
+  ///
+  /// @return true if the application of this filter can be terminated.
+  bool isDone();
+
+  /// Reports whether the execution of this filter
+  /// has modified the coordinates of the geometry.
+  /// If so, {@link Geometry#geometryChanged} will be executed
+  /// after this filter has finished being executed.
+  /// <p>
+  /// Most filters can simply return a constant value reflecting
+  /// whether they are able to change the coordinates.
+  ///
+  /// @return true if this filter has changed the coordinates of the geometry
+  bool isGeometryChanged();
+}
+
+///  An interface for classes which use the values of the coordinates in a {@link Geometry}.
+/// Coordinate filters can be used to implement centroid and
+/// envelope computation, and many other functions.
+/// <p>
+/// <code>CoordinateFilter</code> is
+/// an example of the Gang-of-Four Visitor pattern.
+/// <p>
+/// <b>Note</b>: it is not recommended to use these filters to mutate the coordinates.
+/// There is no guarantee that the coordinate is the actual object stored in the source geometry.
+/// In particular, modified values may not be preserved if the source Geometry uses a non-default {@link CoordinateSequence}.
+/// If in-place mutation is required, use {@link CoordinateSequenceFilter}.
+///
+/// @see Geometry#apply(CoordinateFilter)
+/// @see CoordinateSequenceFilter
+///
+///@version 1.7
+abstract class CoordinateFilter {
+  /// Performs an operation with the provided <code>coord</code>.
+  /// Note that there is no guarantee that the input coordinate
+  /// is the actual object stored in the source geometry,
+  /// so changes to the coordinate object may not be persistent.
+  ///
+  ///@param  coord  a <code>Coordinate</code> to which the filter is applied.
+  void filter(Coordinate coord);
 }
 
 ///  <code>GeometryCollection</code> classes support the concept of
@@ -143,7 +332,7 @@ class GeometryCollectionIterator implements Iterator {
     }
     Geometry obj = parent.getGeometryN(index++);
     if (obj is GeometryCollection) {
-      subcollectionIterator = new GeometryCollectionIterator(obj);
+      subcollectionIterator = GeometryCollectionIterator(obj);
       // there will always be at least one element in the sub-collection
       return subcollectionIterator.next();
     }
@@ -158,6 +347,6 @@ class GeometryCollectionIterator implements Iterator {
   ///
   /// @throws  UnsupportedOperationException  This method is not implemented.
   void remove() {
-    throw new UnsupportedError(this.runtimeType.toString());
+    throw UnsupportedError(this.runtimeType.toString());
   }
 }

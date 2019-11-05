@@ -61,7 +61,6 @@ class CollectionsUtils {
 }
 
 class StringUtils {
-
   static bool isDigit(String s, int idx) => (s.codeUnitAt(idx) ^ 0x30) <= 9;
 
   static bool equalsIgnoreCase(String string1, String string2) {
@@ -163,6 +162,9 @@ class MathUtils {
 }
 
 class NumberUtils {
+  static final int MAX_INT = 2E+53.toInt();
+  static final int MIN_INT = -2E+53.toInt();
+
   static bool equalsWithTolerance(double x1, double x2, double tolerance) {
     return (x1 - x2).abs() <= tolerance;
   }

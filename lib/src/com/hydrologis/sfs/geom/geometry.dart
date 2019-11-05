@@ -114,8 +114,8 @@ part of dart_sfs;
 /// Geometries can be used effectively in Java collections.
 ///
 ///@version 1.7
-abstract class Geometry implements Comparable
-{
+abstract class Geometry
+    implements Comparable {
   static final int SORTINDEX_POINT = 0;
   static final int SORTINDEX_MULTIPOINT = 1;
   static final int SORTINDEX_LINESTRING = 2;
@@ -125,7 +125,7 @@ abstract class Geometry implements Comparable
   static final int SORTINDEX_MULTIPOLYGON = 6;
   static final int SORTINDEX_GEOMETRYCOLLECTION = 7;
 
-  static final  GeometryComponentFilter geometryChangedFilter = GeometryChangedFilter();
+  static final GeometryComponentFilter geometryChangedFilter = GeometryChangedFilter();
 
   ///  The bounding box of this <code>Geometry</code>.
   Envelope envelope;
@@ -159,12 +159,12 @@ abstract class Geometry implements Comparable
   ///@return             <code>true</code> if any of the <code>Geometry</code>s
   ///      <code>isEmpty</code> methods return <code>false</code>
   static bool hasNonEmptyElements(List<Geometry> geometries) {
-  for (int i = 0; i < geometries.length; i++) {
-  if (!geometries[i].isEmpty()) {
-  return true;
-  }
-  }
-  return false;
+    for (int i = 0; i < geometries.length; i++) {
+      if (!geometries[i].isEmpty()) {
+        return true;
+      }
+    }
+    return false;
   }
 
   ///  Returns true if the array contains any <code>null</code> elements.
@@ -173,12 +173,12 @@ abstract class Geometry implements Comparable
   ///@return        <code>true</code> if any of <code>array</code>s elements are
   ///      <code>null</code>
   static bool hasNullElements(List<Object> array) {
-  for (int i = 0; i < array.length; i++) {
-  if (array[i] == null) {
-  return true;
-  }
-  }
-  return false;
+    for (int i = 0; i < array.length; i++) {
+      if (array[i] == null) {
+        return true;
+      }
+    }
+    return false;
   }
 
   ///  Returns the ID of the Spatial Reference System used by the <code>Geometry</code>.
@@ -319,8 +319,7 @@ abstract class Geometry implements Comparable
   ///
   /// @return <code>true</code> if this <code>Geometry</code> is simple
   /// @see #isValid
-  bool isSimple()
-  {
+  bool isSimple() {
     IsSimpleOp op = new IsSimpleOp.withGeom(this);
     return op.isSimple();
   }
@@ -333,8 +332,7 @@ abstract class Geometry implements Comparable
   ///@return <code>true</code> if this <code>Geometry</code> is valid
   ///
   /// @see IsValidOp
-  bool isValid()
-  {
+  bool isValid() {
     return IsValidOp.isValidStatic(this);
   }
 
@@ -351,8 +349,7 @@ abstract class Geometry implements Comparable
   /// @return the distance between the geometries
   /// @return 0 if either input geometry is empty
   /// @throws IllegalArgumentException if g is null
-  double distance(Geometry g)
-  {
+  double distance(Geometry g) {
     return DistanceOp.distanceStatic(this, g);
   }
 
@@ -364,8 +361,7 @@ abstract class Geometry implements Comparable
    * @param distance the distance value to compare
    * @return <code>true</code> if the geometries are less than <code>distance</code> apart.
    */
-  bool isWithinDistance(Geometry geom, double distance)
-  {
+  bool isWithinDistance(Geometry geom, double distance) {
     return DistanceOp.isWithinDistanceStatic(this, geom, distance);
   }
 
@@ -374,8 +370,7 @@ abstract class Geometry implements Comparable
    *
    * @return true if the geometry is a rectangle.
    */
-  bool isRectangle()
-  {
+  bool isRectangle() {
     // Polygon overrides to check for actual rectangle
     return false;
   }
@@ -388,8 +383,7 @@ abstract class Geometry implements Comparable
    *
    *@return the area of the Geometry
    */
-  double getArea()
-  {
+  double getArea() {
     return 0.0;
   }
 
@@ -402,8 +396,7 @@ abstract class Geometry implements Comparable
    *
    *@return the length of the Geometry
    */
-  double getLength()
-  {
+  double getLength() {
     return 0.0;
   }
 
@@ -418,12 +411,12 @@ abstract class Geometry implements Comparable
    *
    * @return a {@link Point} which is the centroid of this Geometry
    */
-  Point getCentroid()
-  {
-    if (isEmpty())
-      return factory.createPoint();
-    Coordinate centPt = Centroid.getCentroid(this);
-    return createPointFromInternalCoord(centPt, this);
+  Point getCentroid() {
+    throw UnimplementedError("not implemented yet");
+//    if (isEmpty())
+//      return factory.createPoint();
+//    Coordinate centPt = Centroid.getCentroid(this);
+//    return createPointFromInternalCoord(centPt, this);
   }
 
   /**
@@ -436,11 +429,11 @@ abstract class Geometry implements Comparable
    *
    * @return a {@link Point} which is in the interior of this Geometry
    */
-  Point getInteriorPoint()
-  {
-    if (isEmpty()) return factory.createPoint();
-    Coordinate pt = InteriorPoint.getInteriorPoint(this);
-    return createPointFromInternalCoord(pt, this);
+  Point getInteriorPoint() {
+    throw UnimplementedError("not implemented yet");
+//    if (isEmpty()) return factory.createPoint();
+//    Coordinate pt = InteriorPoint.getInteriorPoint(this);
+//    return createPointFromInternalCoord(pt, this);
   }
 
   /**
@@ -457,7 +450,7 @@ abstract class Geometry implements Comparable
    *
    *@return the topological dimension of this geometry.
    */
-   int getDimension();
+  int getDimension();
 
   /**
    * Returns the boundary, or an empty geometry of appropriate dimension
@@ -470,7 +463,7 @@ abstract class Geometry implements Comparable
    *
    *@return    the closure of the combinatorial boundary of this <code>Geometry</code>
    */
-   Geometry getBoundary();
+  Geometry getBoundary();
 
   /**
    *  Returns the dimension of this <code>Geometry</code>s inherent boundary.
@@ -479,7 +472,7 @@ abstract class Geometry implements Comparable
    *      interface, whether or not this object is the empty geometry. Returns
    *      <code>Dimension.FALSE</code> if the boundary is the empty geometry.
    */
-   int getBoundaryDimension();
+  int getBoundaryDimension();
 
   /**
    *  Gets a Geometry representing the envelope (bounding box) of
@@ -521,7 +514,7 @@ abstract class Geometry implements Comparable
     if (envelope == null) {
       envelope = computeEnvelopeInternal();
     }
-    return  Envelope.fromEnvelope(envelope);
+    return Envelope.fromEnvelope(envelope);
   }
 
   /**
@@ -532,7 +525,7 @@ abstract class Geometry implements Comparable
    * The operation is applied to all component Geometries.
    */
   void geometryChanged() {
-    apply(geometryChangedFilter);
+    applyGCF(geometryChangedFilter);
   }
 
   /**
@@ -565,7 +558,7 @@ abstract class Geometry implements Comparable
    * @see Geometry#intersects
    */
   bool disjoint(Geometry g) {
-    return ! intersects(g);
+    return !intersects(g);
   }
 
   /**
@@ -595,7 +588,7 @@ abstract class Geometry implements Comparable
    */
   bool touches(Geometry g) {
     // short-circuit test
-    if (! getEnvelopeInternal().intersectsEnvelope(g.getEnvelopeInternal()))
+    if (!getEnvelopeInternal().intersectsEnvelope(g.getEnvelopeInternal()))
       return false;
     return relate(g).isTouches(getDimension(), g.getDimension());
   }
@@ -624,9 +617,8 @@ abstract class Geometry implements Comparable
    * @see Geometry#disjoint
    */
   bool intersects(Geometry g) {
-
     // short-circuit envelope test
-    if (! getEnvelopeInternal().intersectsEnvelope(g.getEnvelopeInternal()))
+    if (!getEnvelopeInternal().intersectsEnvelope(g.getEnvelopeInternal()))
       return false;
 
     /**
@@ -647,14 +639,14 @@ abstract class Geometry implements Comparable
 
     // optimization for rectangle arguments
     if (isRectangle()) {
-      return RectangleIntersects.intersects( this as Polygon, g);
+      return RectangleIntersects.intersectsStatic(this as Polygon, g);
     }
     if (g.isRectangle()) {
-      return RectangleIntersects.intersects( g as Polygon, this);
+      return RectangleIntersects.intersectsStatic(g as Polygon, this);
     }
     if (isGeometryCollection() || g.isGeometryCollection()) {
-      for (int i = 0 ; i < getNumGeometries() ; i++) {
-        for (int j = 0 ; j < g.getNumGeometries() ; j++) {
+      for (int i = 0; i < getNumGeometries(); i++) {
+        for (int j = 0; j < g.getNumGeometries(); j++) {
           if (getGeometryN(i).intersects(g.getGeometryN(j))) {
             return true;
           }
@@ -692,7 +684,7 @@ abstract class Geometry implements Comparable
    */
   bool crosses(Geometry g) {
     // short-circuit test
-    if (! getEnvelopeInternal().intersectsEnvelope(g.getEnvelopeInternal()))
+    if (!getEnvelopeInternal().intersectsEnvelope(g.getEnvelopeInternal()))
       return false;
     return relate(g).isCrosses(getDimension(), g.getDimension());
   }
@@ -768,11 +760,11 @@ abstract class Geometry implements Comparable
       return false;
     }
     // optimization - envelope test
-    if (! getEnvelopeInternal().containsEnvelope(g.getEnvelopeInternal()))
+    if (!getEnvelopeInternal().containsEnvelope(g.getEnvelopeInternal()))
       return false;
     // optimization for rectangle arguments
     if (isRectangle()) {
-      return RectangleContains.contains((Polygon) this, g);
+      return RectangleContains.containsStatic(this as Polygon, g);
     }
     // general case
     return relate(g).isContains();
@@ -801,7 +793,7 @@ abstract class Geometry implements Comparable
    */
   bool overlaps(Geometry g) {
     // short-circuit test
-    if (! getEnvelopeInternal().intersectsEnvelope(g.getEnvelopeInternal()))
+    if (!getEnvelopeInternal().intersectsEnvelope(g.getEnvelopeInternal()))
       return false;
     return relate(g).isOverlaps(getDimension(), g.getDimension());
   }
@@ -851,7 +843,7 @@ abstract class Geometry implements Comparable
       return false;
     }
     // optimization - envelope test
-    if (! getEnvelopeInternal().coversEnvelope(g.getEnvelopeInternal()))
+    if (!getEnvelopeInternal().coversEnvelope(g.getEnvelopeInternal()))
       return false;
     // optimization for rectangle arguments
     if (isRectangle()) {
@@ -929,9 +921,10 @@ abstract class Geometry implements Comparable
    *      boundaries and exteriors of the two <code>Geometry</code>s
    */
   IntersectionMatrix relate(Geometry g) {
-    checkNotGeometryCollection(this);
-    checkNotGeometryCollection(g);
-    return RelateOp.relate(this, g);
+    throw UnimplementedError("Not implemented yet");
+//    checkNotGeometryCollection(this);
+//    checkNotGeometryCollection(g);
+//    return RelateOp.relate(this, g);
   }
 
   /**
@@ -980,10 +973,9 @@ abstract class Geometry implements Comparable
    *
    *@see #equalsExact(Geometry)
    */
-  bool equalsTopo(Geometry g)
-  {
+  bool equalsTopo(Geometry g) {
     // short-circuit test
-    if (! getEnvelopeInternal().equals(g.getEnvelopeInternal()))
+    if (getEnvelopeInternal() != g.getEnvelopeInternal())
       return false;
     return relate(g).isEquals(getDimension(), g.getDimension());
   }
@@ -1017,11 +1009,11 @@ abstract class Geometry implements Comparable
    * @see #norm()
    * @see #normalize()
    */
-  bool equals(Object o)
-  {
-    if (! (o instanceof Geometry)) return false;
-    Geometry g = (Geometry) o;
-    return equalsExact(g);
+  bool equalsObj(Object o) {
+    throw UnimplementedError("Not implemented yet");
+//    if (!(o is Geometry)) return false;
+//    Geometry g = o as Geometry;
+//    return equalsExact(g);
   }
 
   /**
@@ -1029,9 +1021,8 @@ abstract class Geometry implements Comparable
    *
    * @return an integer value suitable for use as a hashcode
    */
-  int hashCode()
-  {
-    return getEnvelopeInternal().hashCode();
+  int get hashCode {
+    return getEnvelopeInternal().hashCode;
   }
 
   String toString() {
@@ -1077,7 +1068,8 @@ abstract class Geometry implements Comparable
    * @see #buffer(double, int, int)
    */
   Geometry buffer(double distance) {
-    return BufferOp.bufferOp(this, distance);
+    throw UnimplementedError("Not implemented yet");
+//    return BufferOp.bufferOp(this, distance);
   }
 
   /**
@@ -1109,8 +1101,9 @@ abstract class Geometry implements Comparable
    * @see #buffer(double)
    * @see #buffer(double, int, int)
    */
-  Geometry buffer(double distance, int quadrantSegments) {
-    return BufferOp.bufferOp(this, distance, quadrantSegments);
+  Geometry buffer2(double distance, int quadrantSegments) {
+    throw UnimplementedError("Not implemented yet");
+//    return BufferOp.bufferOp(this, distance, quadrantSegments);
   }
 
   /**
@@ -1147,8 +1140,9 @@ abstract class Geometry implements Comparable
    * @see #buffer(double, int)
    * @see BufferOp
    */
-  Geometry buffer(double distance, int quadrantSegments, int endCapStyle) {
-    return BufferOp.bufferOp(this, distance, quadrantSegments, endCapStyle);
+  Geometry buffer3(double distance, int quadrantSegments, int endCapStyle) {
+    throw UnimplementedError("Not implemented yet");
+//    return BufferOp.bufferOp(this, distance, quadrantSegments, endCapStyle);
   }
 
   /**
@@ -1182,7 +1176,8 @@ abstract class Geometry implements Comparable
    *      s points
    */
   Geometry convexHull() {
-    return (new ConvexHull(this)).getConvexHull();
+    throw UnimplementedError("Not implemented yet");
+//    return (new ConvexHull(this)).getConvexHull();
   }
 
   /**
@@ -1214,33 +1209,33 @@ abstract class Geometry implements Comparable
    * @throws TopologyException if a robustness error occurs
    * @throws IllegalArgumentException if the argument is a non-empty heterogeneous <code>GeometryCollection</code>
    */
-  Geometry intersection(Geometry other)
-  {
-    /**
-     * TODO: MD - add optimization for P-A case using Point-In-Polygon
-     */
-    // special case: if one input is empty ==> empty
-    if (this.isEmpty() || other.isEmpty())
-      return OverlayOp.createEmptyResult(OverlayOp.INTERSECTION, this, other, factory);
-
-    // compute for GCs
-    // (An inefficient algorithm, but will work)
-    // TODO: improve efficiency of computation for GCs
-    if (this.isGeometryCollection()) {
-      final Geometry g2 = other;
-      return GeometryCollectionMapper.map(
-          (GeometryCollection) this,
-          new GeometryMapper.MapOp() {
-      Geometry map(Geometry g) {
-      return g.intersection(g2);
-      }
-      });
-    }
-
-    // No longer needed since GCs are handled by previous code
-    //checkNotGeometryCollection(this);
-    //checkNotGeometryCollection(other);
-    return SnapIfNeededOverlayOp.overlayOp(this, other, OverlayOp.INTERSECTION);
+  Geometry intersection(Geometry other) {
+    throw UnimplementedError("Not implemented yet");
+//    /**
+//     * TODO: MD - add optimization for P-A case using Point-In-Polygon
+//     */
+//    // special case: if one input is empty ==> empty
+//    if (this.isEmpty() || other.isEmpty())
+//      return OverlayOp.createEmptyResult(OverlayOp.INTERSECTION, this, other, factory);
+//
+//    // compute for GCs
+//    // (An inefficient algorithm, but will work)
+//    // TODO: improve efficiency of computation for GCs
+//    if (this.isGeometryCollection()) {
+//      final Geometry g2 = other;
+//      return GeometryCollectionMapper.map(
+//          (GeometryCollection) this,
+//          new GeometryMapper.MapOp() {
+//      Geometry map(Geometry g) {
+//      return g.intersection(g2);
+//      }
+//      });
+//    }
+//
+//    // No longer needed since GCs are handled by previous code
+//    //checkNotGeometryCollection(this);
+//    //checkNotGeometryCollection(other);
+//    return SnapIfNeededOverlayOp.overlayOp(this, other, OverlayOp.INTERSECTION);
   }
 
   /**
@@ -1277,23 +1272,23 @@ abstract class Geometry implements Comparable
    *           if either input is a non-empty GeometryCollection
    * @see LineMerger
    */
-  Geometry union(Geometry other)
-  {
-    // handle empty geometry cases
-    if (this.isEmpty() || other.isEmpty()) {
-      if (this.isEmpty() && other.isEmpty())
-        return OverlayOp.createEmptyResult(OverlayOp.UNION, this, other, factory);
-
-      // special case: if either input is empty ==> other input
-      if (this.isEmpty()) return other.copy();
-      if (other.isEmpty()) return copy();
-    }
-
-    // TODO: optimize if envelopes of geometries do not intersect
-
-    checkNotGeometryCollection(this);
-    checkNotGeometryCollection(other);
-    return SnapIfNeededOverlayOp.overlayOp(this, other, OverlayOp.UNION);
+  Geometry unionGeom(Geometry other) {
+    throw UnimplementedError("Not implemented yet");
+//    // handle empty geometry cases
+//    if (this.isEmpty() || other.isEmpty()) {
+//      if (this.isEmpty() && other.isEmpty())
+//        return OverlayOp.createEmptyResult(OverlayOp.UNION, this, other, factory);
+//
+//      // special case: if either input is empty ==> other input
+//      if (this.isEmpty()) return other.copy();
+//      if (other.isEmpty()) return copy();
+//    }
+//
+//    // TODO: optimize if envelopes of geometries do not intersect
+//
+//    checkNotGeometryCollection(this);
+//    checkNotGeometryCollection(other);
+//    return SnapIfNeededOverlayOp.overlayOp(this, other, OverlayOp.UNION);
   }
 
   /**
@@ -1313,15 +1308,15 @@ abstract class Geometry implements Comparable
    * @throws TopologyException if a robustness error occurs
    * @throws IllegalArgumentException if either input is a non-empty GeometryCollection
    */
-  Geometry difference(Geometry other)
-  {
-    // special case: if A.isEmpty ==> empty; if B.isEmpty ==> A
-    if (this.isEmpty()) return OverlayOp.createEmptyResult(OverlayOp.DIFFERENCE, this, other, factory);
-    if (other.isEmpty()) return copy();
-
-    checkNotGeometryCollection(this);
-    checkNotGeometryCollection(other);
-    return SnapIfNeededOverlayOp.overlayOp(this, other, OverlayOp.DIFFERENCE);
+  Geometry difference(Geometry other) {
+    throw UnimplementedError("Not implemented yet");
+//    // special case: if A.isEmpty ==> empty; if B.isEmpty ==> A
+//    if (this.isEmpty()) return OverlayOp.createEmptyResult(OverlayOp.DIFFERENCE, this, other, factory);
+//    if (other.isEmpty()) return copy();
+//
+//    checkNotGeometryCollection(this);
+//    checkNotGeometryCollection(other);
+//    return SnapIfNeededOverlayOp.overlayOp(this, other, OverlayOp.DIFFERENCE);
   }
 
   /**
@@ -1342,22 +1337,22 @@ abstract class Geometry implements Comparable
    * @throws TopologyException if a robustness error occurs
    * @throws IllegalArgumentException if either input is a non-empty GeometryCollection
    */
-  Geometry symDifference(Geometry other)
-  {
-    // handle empty geometry cases
-    if (this.isEmpty() || other.isEmpty()) {
-      // both empty - check dimensions
-      if (this.isEmpty() && other.isEmpty())
-        return OverlayOp.createEmptyResult(OverlayOp.SYMDIFFERENCE, this, other, factory);
-
-      // special case: if either input is empty ==> result = other arg
-      if (this.isEmpty()) return other.copy();
-      if (other.isEmpty()) return copy();
-    }
-
-    checkNotGeometryCollection(this);
-    checkNotGeometryCollection(other);
-    return SnapIfNeededOverlayOp.overlayOp(this, other, OverlayOp.SYMDIFFERENCE);
+  Geometry symDifference(Geometry other) {
+    throw UnimplementedError("Not implemented yet");
+//    // handle empty geometry cases
+//    if (this.isEmpty() || other.isEmpty()) {
+//      // both empty - check dimensions
+//      if (this.isEmpty() && other.isEmpty())
+//        return OverlayOp.createEmptyResult(OverlayOp.SYMDIFFERENCE, this, other, factory);
+//
+//      // special case: if either input is empty ==> result = other arg
+//      if (this.isEmpty()) return other.copy();
+//      if (other.isEmpty()) return copy();
+//    }
+//
+//    checkNotGeometryCollection(this);
+//    checkNotGeometryCollection(other);
+//    return SnapIfNeededOverlayOp.overlayOp(this, other, OverlayOp.SYMDIFFERENCE);
   }
 
   /**
@@ -1382,7 +1377,8 @@ abstract class Geometry implements Comparable
    * @see UnaryUnionOp
    */
   Geometry union() {
-    return UnaryUnionOp.union(this);
+    throw UnimplementedError("Not implemented yet");
+//    return UnaryUnionOp.union(this);
   }
 
   /**
@@ -1412,7 +1408,7 @@ abstract class Geometry implements Comparable
    * @see #normalize()
    * @see #norm()
    */
-  abstract bool equalsExact(Geometry other, double tolerance);
+  bool equalsExactWithTol(Geometry other, double tolerance);
 
   /**
    * Returns true if the two <code>Geometry</code>s are exactly equal.
@@ -1442,9 +1438,8 @@ abstract class Geometry implements Comparable
    * @see #normalize()
    * @see #norm()
    */
-  bool equalsExact(Geometry other)
-  {
-    return this == other || equalsExact(other, 0);
+  bool equalsExactGeom(Geometry other) {
+    return this == other || equalsExactWithTol(other, 0);
   }
 
   /**
@@ -1462,10 +1457,9 @@ abstract class Geometry implements Comparable
    * @param g a Geometry
    * @return true if the input geometries are exactly equal in their normalized form
    */
-  bool equalsNorm(Geometry g)
-  {
+  bool equalsNorm(Geometry g) {
     if (g == null) return false;
-    return norm().equalsExact(g.norm());
+    return norm().equalsExactGeom(g.norm());
   }
 
 
@@ -1482,7 +1476,7 @@ abstract class Geometry implements Comparable
    *@param  filter  the filter to apply to this <code>Geometry</code>'s
    *      coordinates
    */
-  abstract void apply(CoordinateFilter filter);
+  void applyCF(CoordinateFilter filter);
 
   /**
    *  Performs an operation on the coordinates in this <code>Geometry</code>'s
@@ -1492,7 +1486,7 @@ abstract class Geometry implements Comparable
    *
    *@param  filter  the filter to apply
    */
-  abstract void apply(CoordinateSequenceFilter filter);
+  void applyCSF(CoordinateSequenceFilter filter);
 
   /**
    *  Performs an operation with or on this <code>Geometry</code> and its
@@ -1526,13 +1520,17 @@ abstract class Geometry implements Comparable
    */
   Object clone() {
     try {
-      Geometry clone = (Geometry) super.clone();
-      if (clone.envelope != null) { clone.envelope = new Envelope(clone.envelope); }
+      Geometry clone = copy(); // TODO check, was clone
+      if (clone.envelope != null) {
+        clone.envelope = new Envelope.fromEnvelope(clone.envelope);
+      }
       return clone;
     }
-    catch (CloneNotSupportedException e) {
-    Assert.shouldNeverReachHere();
-    return null;
+    catch
+    (
+    e) {
+      Assert.shouldNeverReachHere();
+      return null;
     }
   }
 
@@ -1559,7 +1557,7 @@ abstract class Geometry implements Comparable
    *
    * @return a copy of the target geometry object.
    */
-  abstract Geometry copyInternal();
+  Geometry copyInternal();
 
   /**
    *  Converts this <code>Geometry</code> to <b>normal form</b> (or <b>
@@ -1576,7 +1574,7 @@ abstract class Geometry implements Comparable
    *  If this is not safe and/or wanted, the geometry should be
    *  cloned prior to normalization.
    */
-  abstract void normalize();
+  void normalize();
 
   /**
    * Creates a new Geometry which is a normalized
@@ -1585,11 +1583,10 @@ abstract class Geometry implements Comparable
    * @return a normalized copy of this geometry.
    * @see #normalize()
    */
-  Geometry norm()
-  {
-    Geometry copy = copy();
-    copy.normalize();
-    return copy;
+  Geometry norm() {
+    Geometry _copy = copy();
+    _copy.normalize();
+    return _copy;
   }
 
   /**
@@ -1619,7 +1616,7 @@ abstract class Geometry implements Comparable
    *      Specifications
    */
   int compareTo(Object o) {
-    Geometry other = (Geometry) o;
+    Geometry other = o as Geometry;
     if (getSortIndex() != other.getSortIndex()) {
       return getSortIndex() - other.getSortIndex();
     }
@@ -1665,8 +1662,8 @@ abstract class Geometry implements Comparable
    *      defined in "Normal Form For Geometry" in the JTS Technical
    *      Specifications
    */
-  int compareTo(Object o, CoordinateSequenceComparator comp) {
-    Geometry other = (Geometry) o;
+  int compareToWithComparator(Object o, Comparator<CoordinateSequence> comp) {
+    Geometry other = o as Geometry;
     if (getSortIndex() != other.getSortIndex()) {
       return getSortIndex() - other.getSortIndex();
     }
@@ -1679,7 +1676,7 @@ abstract class Geometry implements Comparable
     if (other.isEmpty()) {
       return 1;
     }
-    return compareToSameClass(o, comp);
+    return compareToSameClassWithCOmparator(o, comp);
   }
 
   /**
@@ -1695,7 +1692,7 @@ abstract class Geometry implements Comparable
    *      s are considered to be equal by the <code>equalsExact</code> method.
    */
   bool isEquivalentClass(Geometry other) {
-    return this.getClass().getName().equals(other.getClass().getName());
+    return this.runtimeType == other.runtimeType;
   }
 
   /**
@@ -1708,7 +1705,7 @@ abstract class Geometry implements Comparable
    */
   static void checkNotGeometryCollection(Geometry g) {
     if (g.isGeometryCollection()) {
-      throw new IllegalArgumentException("Operation does not support GeometryCollection arguments");
+      throw new ArgumentError("Operation does not support GeometryCollection arguments");
     }
   }
 
@@ -1718,8 +1715,7 @@ abstract class Geometry implements Comparable
    *
    * @return true if this is a heterogeneous GeometryCollection
    */
-  bool isGeometryCollection()
-  {
+  bool isGeometryCollection() {
     return getSortIndex() == SORTINDEX_GEOMETRYCOLLECTION;
   }
 
@@ -1733,7 +1729,7 @@ abstract class Geometry implements Comparable
    *@return    this <code>Geometry</code>s bounding box; if the <code>Geometry</code>
    *      is empty, <code>Envelope#isNull</code> will return <code>true</code>
    */
-  abstract Envelope computeEnvelopeInternal();
+  Envelope computeEnvelopeInternal();
 
   /**
    *  Returns whether this <code>Geometry</code> is greater than, equal to,
@@ -1745,7 +1741,7 @@ abstract class Geometry implements Comparable
    *      defined in "Normal Form For Geometry" in the JTS Technical
    *      Specifications
    */
-  abstract int compareToSameClass(Object o);
+  int compareToSameClass(Object o);
 
   /**
    *  Returns whether this <code>Geometry</code> is greater than, equal to,
@@ -1759,7 +1755,7 @@ abstract class Geometry implements Comparable
    *      defined in "Normal Form For Geometry" in the JTS Technical
    *      Specifications
    */
-  abstract int compareToSameClass(Object o, CoordinateSequenceComparator comp);
+  int compareToSameClassWithCOmparator(Object o, Comparator<CoordinateSequence> comp);
 
   /**
    *  Returns the first non-zero result of <code>compareTo</code> encountered as
@@ -1774,43 +1770,42 @@ abstract class Geometry implements Comparable
    *@return    the first non-zero <code>compareTo</code> result, if any;
    *      otherwise, zero
    */
-  int compare(Collection a, Collection b) {
-    Iterator i = a.iterator();
-    Iterator j = b.iterator();
-    while (i.hasNext() && j.hasNext()) {
-      Comparable aElement = (Comparable) i.next();
-      Comparable bElement = (Comparable) j.next();
+  int compare(List a, List b) {
+    Iterator i = a.iterator;
+    Iterator j = b.iterator;
+    while (i.moveNext() && j.moveNext()) {
+      Comparable aElement = i.current as Comparable;
+      Comparable bElement = j.current as Comparable;
       int comparison = aElement.compareTo(bElement);
       if (comparison != 0) {
         return comparison;
       }
     }
-    if (i.hasNext()) {
+    if (i.moveNext()) {
       return 1;
     }
-    if (j.hasNext()) {
+    if (j.moveNext()) {
       return -1;
     }
     return 0;
   }
 
   bool equal(Coordinate a, Coordinate b, double tolerance) {
-    if (tolerance == 0) { return a.equals(b); }
+    if (tolerance == 0) {
+      return a.equals(b);
+    }
     return a.distance(b) <= tolerance;
   }
 
-  abstract  int getSortIndex();
+  int getSortIndex();
 
-  Point createPointFromInternalCoord(Coordinate coord, Geometry exemplar)
-  {
-    exemplar.getPrecisionModel().makePrecise(coord);
+  Point createPointFromInternalCoord(Coordinate coord, Geometry exemplar) {
+    exemplar.getPrecisionModel().makeCoordinatePrecise(coord);
     return exemplar.getFactory().createPoint(coord);
   }
 
 
 }
-
-
 
 
 class GeometryFactory {
@@ -1966,21 +1961,21 @@ class GeometryFactory {
 
     // point?
     if (envelope.getMinX() == envelope.getMaxX() && envelope.getMinY() == envelope.getMaxY()) {
-      return createPoint(Coordinate(envelope.getMinX(), envelope.getMinY()));
+      return createPoint(Coordinate.fromXY(envelope.getMinX(), envelope.getMinY()));
     }
 
     // vertical or horizontal line?
     if (envelope.getMinX() == envelope.getMaxX() || envelope.getMinY() == envelope.getMaxY()) {
-      return createLineString([Coordinate(envelope.getMinX(), envelope.getMinY()), Coordinate(envelope.getMaxX(), envelope.getMaxY())]);
+      return createLineString([Coordinate.fromXY(envelope.getMinX(), envelope.getMinY()), Coordinate.fromXY(envelope.getMaxX(), envelope.getMaxY())]);
     }
 
     // create a CW ring for the polygon
     return createPolygon(createLinearRing([
-      Coordinate(envelope.getMinX(), envelope.getMinY()),
-      Coordinate(envelope.getMinX(), envelope.getMaxY()),
-      Coordinate(envelope.getMaxX(), envelope.getMaxY()),
-      Coordinate(envelope.getMaxX(), envelope.getMinY()),
-      Coordinate(envelope.getMinX(), envelope.getMinY())
+      Coordinate.fromXY(envelope.getMinX(), envelope.getMinY()),
+      Coordinate.fromXY(envelope.getMinX(), envelope.getMaxY()),
+      Coordinate.fromXY(envelope.getMaxX(), envelope.getMaxY()),
+      Coordinate.fromXY(envelope.getMaxX(), envelope.getMinY()),
+      Coordinate.fromXY(envelope.getMinX(), envelope.getMinY())
     ]));
   }
 
