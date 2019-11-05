@@ -297,7 +297,7 @@ class CoordinateArrays {
   /// A {@link Comparator} for {@link Coordinate} arrays
   /// in the forward direction of their coordinates,
   /// using lexicographic ordering.
-  Comparator<List<Coordinate>> forwardComparator = (o1, o2) => CoordinateArrays.compare(o1, o2);
+  static Comparator<List<Coordinate>> forwardComparator = (o1, o2) => CoordinateArrays.compare(o1, o2);
 
   /// A {@link Comparator} for {@link Coordinate} arrays
   /// modulo their directionality.
@@ -306,7 +306,7 @@ class CoordinateArrays {
   /// If the arrays are not equal, the ordering returned
   /// is the ordering in the forward direction.
   ///
-  Comparator<List<Coordinate>> bidirectionalComparator = (pts1, pts2) {
+  static Comparator<List<Coordinate>> bidirectionalComparator = (pts1, pts2) {
     if (pts1.length < pts2.length) return -1;
     if (pts1.length > pts2.length) return 1;
 
@@ -320,7 +320,7 @@ class CoordinateArrays {
     return forwardComp;
   };
 
-  CoordinateArrays() {}
+  CoordinateArrays();
 
   /// Determine dimension based on subclass of {@link Coordinate}.
   ///
@@ -1300,7 +1300,7 @@ class Double extends PackedCoordinateSequence {
     }
     else if (dimension == 3 && measures == 0) {
       double z = coords[i * dimension + 2];
-      return new Coordinate(x,y,z);
+      return new Coordinate.fromXYZ(x,y,z);
     }
     else if (dimension == 3 && measures == 1) {
       double m = coords[i * dimension + 2];

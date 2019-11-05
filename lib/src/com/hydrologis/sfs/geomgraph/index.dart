@@ -97,7 +97,7 @@ class SortedPackedIntervalRTree {
     buildRoot();
   }
 
-  void buildRoot()  // TODO check how to make this methos synchronized
+  void buildRoot() // TODO check how to make this methos synchronized
   {
     if (root != null) return;
     root = buildTree();
@@ -142,7 +142,7 @@ class SortedPackedIntervalRTree {
   }
 
   void printNode(IntervalRTreeNode node) {
-    print(WKTWriter.toLineStringFromCoords(new Coordinate.fromXY(node.min, level.toDouble()), new Coordinate.fromXY(node.max, level.toDouble())));
+    print(WKTWriter.toLineStringFromCoords(new Coordinate(node.min, level.toDouble()), new Coordinate(node.max, level.toDouble())));
   }
 
   /**
@@ -183,7 +183,7 @@ abstract class IntervalRTreeNode {
   }
 
   String toString() {
-    return WKTWriter.toLineStringFromCoords(new Coordinate.fromXY(min, 0), new Coordinate.fromXY(max, 0));
+    return WKTWriter.toLineStringFromCoords(new Coordinate(min, 0), new Coordinate(max, 0));
   }
 }
 

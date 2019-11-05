@@ -86,7 +86,7 @@ void main() {
     test("testAsGeometry", () {
       expect(geometryFactory.createPoint(null).getEnvelope().isEmpty(), true);
 
-      Geometry g = geometryFactory.createPoint(Coordinate.fromXY(5, 6)).getEnvelope();
+      Geometry g = geometryFactory.createPoint(Coordinate(5, 6)).getEnvelope();
       expect(!g.isEmpty(), true);
       expect(g is Point, true);
 
@@ -102,11 +102,11 @@ void main() {
       Polygon poly = g2 as Polygon;
       poly.normalize();
       expect(5, poly.getExteriorRing().getNumPoints());
-      expectCoords(Coordinate.fromXY(10, 10), poly.getExteriorRing().getCoordinateN(0));
-      expectCoords(Coordinate.fromXY(10, 40), poly.getExteriorRing().getCoordinateN(1));
-      expectCoords(Coordinate.fromXY(30, 40), poly.getExteriorRing().getCoordinateN(2));
-      expectCoords(Coordinate.fromXY(30, 10), poly.getExteriorRing().getCoordinateN(3));
-      expectCoords(Coordinate.fromXY(10, 10), poly.getExteriorRing().getCoordinateN(4));
+      expectCoords(Coordinate(10, 10), poly.getExteriorRing().getCoordinateN(0));
+      expectCoords(Coordinate(10, 40), poly.getExteriorRing().getCoordinateN(1));
+      expectCoords(Coordinate(30, 40), poly.getExteriorRing().getCoordinateN(2));
+      expectCoords(Coordinate(30, 10), poly.getExteriorRing().getCoordinateN(3));
+      expectCoords(Coordinate(10, 10), poly.getExteriorRing().getCoordinateN(4));
     });
 
     test("testSetToNull", () {
@@ -211,10 +211,10 @@ void checkIntersects(double a1x, double a1y, double a2x, double a2y, double b1x,
   expect(expected, a.intersectsEnvelope(b));
   expect(expected, !a.disjoint(b));
 
-  Coordinate a1 = Coordinate.fromXY(a1x, a1y);
-  Coordinate a2 = Coordinate.fromXY(a2x, a2y);
-  Coordinate b1 = Coordinate.fromXY(b1x, b1y);
-  Coordinate b2 = Coordinate.fromXY(b2x, b2y);
+  Coordinate a1 = Coordinate(a1x, a1y);
+  Coordinate a2 = Coordinate(a2x, a2y);
+  Coordinate b1 = Coordinate(b1x, b1y);
+  Coordinate b2 = Coordinate(b2x, b2y);
   expect(expected, Envelope.intersectsEnvelopeCoords(a1, a2, b1, b2));
 
   expect(expected, a.intersectsEnvelopeCoordinates(b1, b2));

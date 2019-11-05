@@ -32,40 +32,57 @@ void main() {
     });
 
     test("testWritePoint", () {
-      Point point = geometryFactory.createPoint(Coordinate.fromXY(10, 10));
+      Point point = geometryFactory.createPoint(Coordinate(10, 10));
       expect("POINT (10 10)", writer.write(point).toString());
     });
     test("testWriteLineString", () {
-      List<Coordinate> coordinates = [Coordinate(10, 10, 0), Coordinate(20, 20, 0), Coordinate(30, 40, 0)];
+      List<Coordinate> coordinates = [Coordinate.fromXYZ(10, 10, 0), Coordinate.fromXYZ(20, 20, 0), Coordinate.fromXYZ(30, 40, 0)];
       LineString lineString = geometryFactory.createLineString(coordinates);
       String written = writer.write(lineString);
       expect("LINESTRING (10 10, 20 20, 30 40)", written);
     });
     test("testWritePolygon", () {
-      List<Coordinate> coordinates = [Coordinate(10, 10, 0), Coordinate(10, 20, 0), Coordinate(20, 20, 0), Coordinate(20, 15, 0), Coordinate(10, 10, 0)];
+      List<Coordinate> coordinates = [
+        Coordinate.fromXYZ(10, 10, 0),
+        Coordinate.fromXYZ(10, 20, 0),
+        Coordinate.fromXYZ(20, 20, 0),
+        Coordinate.fromXYZ(20, 15, 0),
+        Coordinate.fromXYZ(10, 10, 0)
+      ];
       LinearRing linearRing = geometryFactory.createLinearRing(coordinates);
       Polygon polygon = geometryFactory.createPolygonFromRing(linearRing);
       expect("POLYGON ((10 10, 10 20, 20 20, 20 15, 10 10))", writer.write(polygon));
     });
     test("testWriteMultiPoint", () {
-      List<Point> points = [geometryFactory.createPoint(Coordinate(10, 10, 0)), geometryFactory.createPoint(Coordinate(20, 20, 0))];
+      List<Point> points = [geometryFactory.createPoint(Coordinate.fromXYZ(10, 10, 0)), geometryFactory.createPoint(Coordinate.fromXYZ(20, 20, 0))];
       MultiPoint multiPoint = geometryFactory.createMultiPoint(points);
       expect("MULTIPOINT ((10 10), (20 20))", writer.write(multiPoint));
     });
     test("testWriteMultiLineString", () {
-      List<Coordinate> coordinates1 = [Coordinate(10, 10, 0), Coordinate(20, 20, 0)];
+      List<Coordinate> coordinates1 = [Coordinate.fromXYZ(10, 10, 0), Coordinate.fromXYZ(20, 20, 0)];
       LineString lineString1 = geometryFactory.createLineString(coordinates1);
-      List<Coordinate> coordinates2 = [Coordinate(15, 15, 0), Coordinate(30, 15, 0)];
+      List<Coordinate> coordinates2 = [Coordinate.fromXYZ(15, 15, 0), Coordinate.fromXYZ(30, 15, 0)];
       LineString lineString2 = geometryFactory.createLineString(coordinates2);
       List<LineString> lineStrings = [lineString1, lineString2];
       MultiLineString multiLineString = geometryFactory.createMultiLineString(lineStrings);
       expect("MULTILINESTRING ((10 10, 20 20), (15 15, 30 15))", writer.write(multiLineString));
     });
     test("testWriteMultiPolygon", () {
-      List<Coordinate> coordinates1 = [Coordinate(10, 10, 0), Coordinate(10, 20, 0), Coordinate(20, 20, 0), Coordinate(20, 15, 0), Coordinate(10, 10, 0)];
+      List<Coordinate> coordinates1 = [
+        Coordinate.fromXYZ(10, 10, 0),
+        Coordinate.fromXYZ(10, 20, 0),
+        Coordinate.fromXYZ(20, 20, 0),
+        Coordinate.fromXYZ(20, 15, 0),
+        Coordinate.fromXYZ(10, 10, 0)
+      ];
       LinearRing linearRing1 = geometryFactory.createLinearRing(coordinates1);
       Polygon polygon1 = geometryFactory.createPolygonFromRing(linearRing1);
-      List<Coordinate> coordinates2 = [Coordinate(60, 60, 0), Coordinate(70, 70, 0), Coordinate(80, 60, 0), Coordinate(60, 60, 0)];
+      List<Coordinate> coordinates2 = [
+        Coordinate.fromXYZ(60, 60, 0),
+        Coordinate.fromXYZ(70, 70, 0),
+        Coordinate.fromXYZ(80, 60, 0),
+        Coordinate.fromXYZ(60, 60, 0)
+      ];
       LinearRing linearRing2 = geometryFactory.createLinearRing(coordinates2);
       Polygon polygon2 = geometryFactory.createPolygonFromRing(linearRing2);
       List<Polygon> polygons = [polygon1, polygon2];
@@ -75,9 +92,9 @@ void main() {
       expect("MULTIPOLYGON (((10 10, 10 20, 20 20, 20 15, 10 10)), ((60 60, 70 70, 80 60, 60 60)))", writer.write(multiPolygon));
     });
     test("testWriteGeometryCollection", () {
-      Point point1 = geometryFactory.createPoint(Coordinate.fromXY(10, 10));
-      Point point2 = geometryFactory.createPoint(Coordinate.fromXY(30, 30));
-      List<Coordinate> coordinates = [Coordinate(15, 15, 0), Coordinate(20, 20, 0)];
+      Point point1 = geometryFactory.createPoint(Coordinate(10, 10));
+      Point point2 = geometryFactory.createPoint(Coordinate(30, 30));
+      List<Coordinate> coordinates = [Coordinate.fromXYZ(15, 15, 0), Coordinate.fromXYZ(20, 20, 0)];
       LineString lineString1 = geometryFactory.createLineString(coordinates);
       List<Geometry> geometries = [point1, point2, lineString1];
       GeometryCollection geometryCollection = geometryFactory.createGeometryCollection(geometries);
@@ -86,12 +103,12 @@ void main() {
     test("testWriteLargeNumbers1", () {
       PrecisionModel precisionModel = PrecisionModel.fixedPrecision(1E9);
       GeometryFactory geometryFactory = GeometryFactory.withPrecisionModelSrid(precisionModel, 0);
-      Point point1 = geometryFactory.createPoint(Coordinate.fromXY(123456789012345680, 10E9));
+      Point point1 = geometryFactory.createPoint(Coordinate(123456789012345680, 10E9));
       expect("POINT (123456789012345680 10000000000)", point1.toText());
     });
     test("testWrite3D", () {
       GeometryFactory geometryFactory = GeometryFactory.defaultPrecision();
-      Point point = geometryFactory.createPoint(Coordinate(1, 1, 1));
+      Point point = geometryFactory.createPoint(Coordinate.fromXYZ(1, 1, 1));
       String wkt = writer3D.write(point);
       expect("POINT Z(1 1 1)", wkt);
       wkt = writer2DM.write(point);
@@ -99,7 +116,7 @@ void main() {
     });
     test("testWrite3D_withNaN", () {
       GeometryFactory geometryFactory = GeometryFactory.defaultPrecision();
-      List<Coordinate> coordinates = [Coordinate.fromXY(1, 1), Coordinate(2, 2, 2)];
+      List<Coordinate> coordinates = [Coordinate(1, 1), Coordinate.fromXYZ(2, 2, 2)];
       LineString line = geometryFactory.createLineString(coordinates);
       String wkt = writer3D.write(line);
       expect("LINESTRING Z(1 1 NaN, 2 2 2)", wkt);
@@ -297,7 +314,7 @@ void main() {
       // assert
       expect(checkEqual(csMP2D[0], (mP2D.getGeometryN(0) as Point).getCoordinateSequence()), true);
       expect(checkEqual(csMP2D[1], (mP2D.getGeometryN(1) as Point).getCoordinateSequence()), true);
-      expect(mP2DE.isEmpty, true);
+      expect(mP2DE.isEmpty(), true);
       expect(mP2DE.getNumGeometries() == 0, true);
       expect(checkEqual(csMP3D[0], (mP3D.getGeometryN(0) as Point).getCoordinateSequence()), true);
       expect(checkEqual(csMP3D[1], (mP3D.getGeometryN(1) as Point).getCoordinateSequence()), true);
@@ -332,7 +349,7 @@ void main() {
       // assert
       expect(checkEqual(csMls2D[0], (mLs2D.getGeometryN(0) as LineString).getCoordinateSequence()), true);
       expect(checkEqual(csMls2D[1], (mLs2D.getGeometryN(1) as LineString).getCoordinateSequence()), true);
-      expect(mLs2DE.isEmpty, true);
+      expect(mLs2DE.isEmpty(), true);
       expect(mLs2DE.getNumGeometries() == 0, true);
       expect(checkEqual(csMls3D[0], (mLs3D.getGeometryN(0) as LineString).getCoordinateSequence()), true);
       expect(checkEqual(csMls3D[1], (mLs3D.getGeometryN(1) as LineString).getCoordinateSequence()), true);
@@ -400,7 +417,7 @@ void main() {
       expect(checkEqual(csPoly2D[0], (poly2D[2].getGeometryN(0) as Polygon).getExteriorRing().getCoordinateSequence()), true);
       expect(checkEqual(csPoly2D[1], (poly2D[2].getGeometryN(0) as Polygon).getInteriorRingN(0).getCoordinateSequence()), true);
       expect(checkEqual(csPoly2D[2], (poly2D[2].getGeometryN(1) as Polygon).getExteriorRing().getCoordinateSequence()), true);
-      expect(poly2DE.isEmpty, true);
+      expect(poly2DE.isEmpty(), true);
       expect(poly2DE.getNumGeometries() == 0, true);
 
       expect(checkEqual(csPoly3D[0], (poly3D[2].getGeometryN(0) as Polygon).getExteriorRing().getCoordinateSequence()), true);
@@ -426,9 +443,6 @@ void main() {
 CoordinateSequence createSequence(List<Ordinate> ordinateFlags, List<double> xy) {
 // get the number of dimension to verify size of provided ordinate values array
   int dimension = requiredDimension(ordinateFlags);
-  if (xy.isEmpty) {
-    dimension = 3; // seems to be default for empty
-  }
 
 // inject additional values
   List<double> ordinateValues = injectZM(ordinateFlags, xy);
@@ -439,14 +453,12 @@ CoordinateSequence createSequence(List<Ordinate> ordinateFlags, List<double> xy)
   int size = ordinateValues.length ~/ dimension;
 
 // create a sequence capable of storing all ordinate values.
-  CoordinateSequence res = getCSFactory(ordinateFlags).createSizeDim(size, dimension);
+  CoordinateSequence res = getCSFactory(ordinateFlags).createSizeDim(size, requiredDimension(ordinateFlags));
 
 // fill in values
   int k = 0;
   for (int i = 0; i < ordinateValues.length; i += dimension) {
-    for (int ordinateIndex = 0; ordinateIndex < dimension; ordinateIndex++) {
-      res.setOrdinate(k, ordinateIndex, ordinateValues[i + ordinateIndex]);
-    }
+    for (int j = 0; j < dimension; j++) res.setOrdinate(k, j, ordinateValues[i + j]);
     k++;
   }
 

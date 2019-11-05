@@ -149,7 +149,7 @@ class CGAlgorithmsDD {
       return null;
     }
 
-    return new Coordinate.fromXY(xInt, yInt);
+    return new Coordinate(xInt, yInt);
   }
 }
 
@@ -474,7 +474,7 @@ class Intersection {
       return null;
     }
     // de-condition intersection point
-    return new Coordinate.fromXY(xInt + midx, yInt + midy);
+    return new Coordinate(xInt + midx, yInt + midy);
   }
 }
 
@@ -1564,10 +1564,10 @@ class RectangleLineIntersector {
      * relative to the Left side of the rectangle.
      * Index 0 is the left side, 1 is the right side.
      */
-    diagUp0 = new Coordinate.fromXY(rectEnv.getMinX(), rectEnv.getMinY());
-    diagUp1 = new Coordinate.fromXY(rectEnv.getMaxX(), rectEnv.getMaxY());
-    diagDown0 = new Coordinate.fromXY(rectEnv.getMinX(), rectEnv.getMaxY());
-    diagDown1 = new Coordinate.fromXY(rectEnv.getMaxX(), rectEnv.getMinY());
+    diagUp0 = new Coordinate(rectEnv.getMinX(), rectEnv.getMinY());
+    diagUp1 = new Coordinate(rectEnv.getMaxX(), rectEnv.getMaxY());
+    diagDown0 = new Coordinate(rectEnv.getMinX(), rectEnv.getMaxY());
+    diagDown1 = new Coordinate(rectEnv.getMaxX(), rectEnv.getMinY());
   }
 
   /**

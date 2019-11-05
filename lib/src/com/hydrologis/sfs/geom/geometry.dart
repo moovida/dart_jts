@@ -1867,22 +1867,22 @@ class GeometryFactory {
 
     // point?
     if (envelope.getMinX() == envelope.getMaxX() && envelope.getMinY() == envelope.getMaxY()) {
-      return createPoint(new Coordinate.fromXY(envelope.getMinX(), envelope.getMinY()));
+      return createPoint(new Coordinate(envelope.getMinX(), envelope.getMinY()));
     }
 
     // vertical or horizontal line?
     if (envelope.getMinX() == envelope.getMaxX() || envelope.getMinY() == envelope.getMaxY()) {
-      return createLineString([new Coordinate.fromXY(envelope.getMinX(), envelope.getMinY()), new Coordinate.fromXY(envelope.getMaxX(), envelope.getMaxY())]);
+      return createLineString([new Coordinate(envelope.getMinX(), envelope.getMinY()), new Coordinate(envelope.getMaxX(), envelope.getMaxY())]);
     }
 
     // create a CW ring for the polygon
     return createPolygon(
         createLinearRing([
-          new Coordinate.fromXY(envelope.getMinX(), envelope.getMinY()),
-          new Coordinate.fromXY(envelope.getMinX(), envelope.getMaxY()),
-          new Coordinate.fromXY(envelope.getMaxX(), envelope.getMaxY()),
-          new Coordinate.fromXY(envelope.getMaxX(), envelope.getMinY()),
-          new Coordinate.fromXY(envelope.getMinX(), envelope.getMinY())
+          new Coordinate(envelope.getMinX(), envelope.getMinY()),
+          new Coordinate(envelope.getMinX(), envelope.getMaxY()),
+          new Coordinate(envelope.getMaxX(), envelope.getMaxY()),
+          new Coordinate(envelope.getMaxX(), envelope.getMinY()),
+          new Coordinate(envelope.getMinX(), envelope.getMinY())
         ]),
         null);
   }

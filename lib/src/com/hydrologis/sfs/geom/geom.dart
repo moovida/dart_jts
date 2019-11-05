@@ -388,21 +388,21 @@ class CoordinateXY extends Coordinate {
    * @param x the X ordinate
    * @param y the Y ordinate
    */
-  CoordinateXY.fromXY(double x, double y) : super(x, y, Coordinate.NULL_ORDINATE);
+  CoordinateXY.fromXY(double x, double y) : super.fromXYZ(x, y, Coordinate.NULL_ORDINATE);
 
   /**
    * Constructs a CoordinateXY instance with the x and y ordinates of the given Coordinate.
    *
    * @param coord the Coordinate providing the ordinates
    */
-  CoordinateXY.fromCoordinate(Coordinate coord) : super.fromXY(coord.x, coord.y);
+  CoordinateXY.fromCoordinate(Coordinate coord) : super(coord.x, coord.y);
 
   /**
    * Constructs a CoordinateXY instance with the x and y ordinates of the given CoordinateXY.
    *
    * @param coord the CoordinateXY providing the ordinates
    */
-  CoordinateXY.fromCoordinateXY(CoordinateXY coord) : super.fromXY(coord.x, coord.y);
+  CoordinateXY.fromCoordinateXY(CoordinateXY coord) : super(coord.x, coord.y);
 
   /**
    * Creates a copy of this CoordinateXY.
@@ -496,7 +496,7 @@ class CoordinateXYM extends Coordinate {
    * @param y the Y ordinate
    * @param m the M measure value
    */
-  CoordinateXYM(double x, double y, double m) : super(x, y, Coordinate.NULL_ORDINATE) {
+  CoordinateXYM(double x, double y, double m) : super.fromXYZ(x, y, Coordinate.NULL_ORDINATE) {
     this.m = m;
   }
 
@@ -505,7 +505,7 @@ class CoordinateXYM extends Coordinate {
    *
    * @param coord the coordinate providing the ordinates
    */
-  CoordinateXYM.fromCoordinate(Coordinate coord) : super.fromXY(coord.x, coord.y) {
+  CoordinateXYM.fromCoordinate(Coordinate coord) : super(coord.x, coord.y) {
     m = getM();
   }
 
@@ -514,7 +514,7 @@ class CoordinateXYM extends Coordinate {
    *
    * @param coord the coordinate providing the ordinates
    */
-  CoordinateXYM.fromCoordinateXYM(CoordinateXYM coord) : super.fromXY(coord.x, coord.y) {
+  CoordinateXYM.fromCoordinateXYM(CoordinateXYM coord) : super(coord.x, coord.y) {
     m = coord.m;
   }
 
@@ -610,7 +610,7 @@ class CoordinateXYZM extends Coordinate {
    * @param z the Z ordinate
    * @param m the M measure value
    */
-  CoordinateXYZM(double x, double y, double z, double m) : super(x, y, z) {
+  CoordinateXYZM(double x, double y, double z, double m) : super.fromXYZ(x, y, z) {
     this.m = m;
   }
 

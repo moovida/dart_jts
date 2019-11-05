@@ -1,32 +1,252 @@
-import 'package:dart_sfs/dart_sfs.dart';
 import "package:test/test.dart";
+import 'package:dart_sfs/dart_sfs.dart';
 import "dart:math" as math;
+import 'testing_utilities.dart';
+
+double TOLERANCE = 1E-5;
+
+PrecisionModel precisionModel = PrecisionModel.fixedPrecision(1);
+
+GeometryFactory geometryFactory = GeometryFactory.withPrecisionModelSrid(precisionModel, 0);
+
+WKTReader reader = WKTReader.withFactory(geometryFactory);
 
 void main() {
-  List<Coordinate> COORDS_1 = [Coordinate.fromXY(1, 1), Coordinate.fromXY(2, 2), Coordinate.fromXY(3, 3)];
-  List<Coordinate> COORDS_EMPTY = [];
+  group("CoordinateTest - ", () {
+    test("testConstructor3D", () {
+      Coordinate c = Coordinate.fromXYZ(350.2, 4566.8, 5266.3);
+      assertEquals(c.x, 350.2);
+      assertEquals(c.y, 4566.8);
+      assertEquals(c.getZ(), 5266.3);
+    });
+    test("testConstructor2D", () {
+      Coordinate c = Coordinate(350.2, 4566.8);
+      assertEquals(c.x, 350.2);
+      assertEquals(c.y, 4566.8);
+      assertEquals(c.getZ(), Coordinate.NULL_ORDINATE);
+    });
+    test("testDefaultConstructor", () {
+      Coordinate c = Coordinate.empty2D();
+      assertEquals(c.x, 0.0);
+      assertEquals(c.y, 0.0);
+      assertEquals(c.getZ(), Coordinate.NULL_ORDINATE);
+    });
+    test("testCopyConstructor3D", () {
+      Coordinate orig = Coordinate.fromXYZ(350.2, 4566.8, 5266.3);
+      Coordinate c = Coordinate.fromCoordinate(orig);
+      assertEquals(c.x, 350.2);
+      assertEquals(c.y, 4566.8);
+      assertEquals(c.getZ(), 5266.3);
+    });
+    test("testSetCoordinate", () {
+      Coordinate orig = Coordinate.fromXYZ(350.2, 4566.8, 5266.3);
+      Coordinate c = Coordinate.empty2D();
+      c.setCoordinate(orig);
+      assertEquals(c.x, 350.2);
+      assertEquals(c.y, 4566.8);
+      assertEquals(c.getZ(), 5266.3);
+    });
+    test("testGetOrdinate", () {
+      Coordinate c = Coordinate.fromXYZ(350.2, 4566.8, 5266.3);
+      assertEquals(c.getOrdinate(Coordinate.X), 350.2);
+      assertEquals(c.getOrdinate(Coordinate.Y), 4566.8);
+      assertEquals(c.getOrdinate(Coordinate.Z), 5266.3);
+    });
+    test("testSetOrdinate", () {
+      Coordinate c = Coordinate.empty2D();
+      c.setOrdinate(Coordinate.X, 111);
+      c.setOrdinate(Coordinate.Y, 222);
+      c.setOrdinate(Coordinate.Z, 333);
+      assertEquals(c.getOrdinate(Coordinate.X), 111.0);
+      assertEquals(c.getOrdinate(Coordinate.Y), 222.0);
+      assertEquals(c.getOrdinate(Coordinate.Z), 333.0);
+    });
+    test("testEquals", () {
+      Coordinate c1 = Coordinate.fromXYZ(1, 2, 3);
+      String s = "Not a coordinate";
+      assertTrue(!c1.equals(s));
 
-  group("CoordinateArraysTest - ", () {
-    test("testPtNotInList", () {
-      expect(
-          CoordinateArrays.ptNotInList([Coordinate.fromXY(1, 1), Coordinate.fromXY(2, 2), Coordinate.fromXY(3, 3)], [Coordinate.fromXY(1, 1), Coordinate.fromXY(1, 2), Coordinate.fromXY(1, 3)])
-              .equals2D(Coordinate.fromXY(2, 2)),
-          true);
+      Coordinate c2 = Coordinate.fromXYZ(1, 2, 3);
+      assertTrue(c1.equals2D(c2));
 
+      Coordinate c3 = Coordinate.fromXYZ(1, 22, 3);
+      assertTrue(!c1.equals2D(c3));
+    });
+    test("testEquals2D", () {
+      Coordinate c1 = Coordinate.fromXYZ(1, 2, 3);
+      Coordinate c2 = Coordinate.fromXYZ(1, 2, 3);
+      assertTrue(c1.equals2D(c2));
+
+      Coordinate c3 = Coordinate.fromXYZ(1, 22, 3);
+      assertTrue(!c1.equals2D(c3));
+    });
+    test("testEquals3D", () {
+      Coordinate c1 = Coordinate.fromXYZ(1, 2, 3);
+      Coordinate c2 = Coordinate.fromXYZ(1, 2, 3);
+      assertTrue(c1.equals3D(c2));
+
+      Coordinate c3 = Coordinate.fromXYZ(1, 22, 3);
+      assertTrue(!c1.equals3D(c3));
+    });
+    test("testEquals2DWithinTolerance", () {
+      Coordinate c = Coordinate.fromXYZ(100.0, 200.0, 50.0);
+      Coordinate aBitOff = Coordinate.fromXYZ(100.1, 200.1, 50.0);
+      assertTrue(c.equals2DWithTolerance(aBitOff, 0.2));
+    });
+    test("testEqualsInZ", () {
+      Coordinate c = Coordinate.fromXYZ(100.0, 200.0, 50.0);
+      Coordinate withSameZ = Coordinate.fromXYZ(100.1, 200.1, 50.1);
+      assertTrue(c.equalInZ(withSameZ, 0.2));
+    });
+    test("testCompareTo", () {
+      Coordinate lowest = Coordinate.fromXYZ(10.0, 100.0, 50.0);
+      Coordinate highest = Coordinate.fromXYZ(20.0, 100.0, 50.0);
+      Coordinate equalToHighest = Coordinate.fromXYZ(20.0, 100.0, 50.0);
+      Coordinate higherStill = Coordinate.fromXYZ(20.0, 200.0, 50.0);
+
+      assertEquals(-1, lowest.compareTo(highest));
+      assertEquals(1, highest.compareTo(lowest));
+      assertEquals(-1, highest.compareTo(higherStill));
+      assertEquals(0, highest.compareTo(equalToHighest));
+    });
+    test("testToString", () {
+      String expectedResult = "(100.0, 200.0, 50.0)";
+      String actualResult = Coordinate.fromXYZ(100.0, 200.0, 50.0).toString();
+      assertEquals(expectedResult, actualResult);
+    });
+    test("testClone", () {
+      Coordinate c = Coordinate.fromXYZ(100.0, 200.0, 50.0);
+      Coordinate clone = c.clone();
+      assertTrue(c.equals3D(clone));
+    });
+    test("testDistance", () {
+      Coordinate coord1 = Coordinate.fromXYZ(0.0, 0.0, 0.0);
+      Coordinate coord2 = Coordinate.fromXYZ(100.0, 200.0, 50.0);
+      double distance = coord1.distance(coord2);
+      assertEqualsD(distance, 223.60679774997897, 0.00001);
+    });
+    test("testDistance3D", () {
+      Coordinate coord1 = Coordinate.fromXYZ(0.0, 0.0, 0.0);
+      Coordinate coord2 = Coordinate.fromXYZ(100.0, 200.0, 50.0);
+      double distance = coord1.distance3D(coord2);
+      assertEqualsD(distance, 229.128784747792, 0.000001);
+    });
+    test("testCoordinateXY", () {
+      Coordinate xy = CoordinateXY();
+      checkZUnsupported(xy);
+      checkMUnsupported(xy);
+
+      xy = CoordinateXY.fromXY(1.0, 1.0); // 2D
+      Coordinate coord = Coordinate.fromCoordinate(xy); // copy
+      assertEquals(xy, coord);
+      assertTrue(!xy.equalInZ(coord, 0.000001));
+
+      coord = Coordinate.fromXYZ(1.0, 1.0, 1.0); // 2.5d
+      xy = CoordinateXY.fromCoordinate(coord); // copy
+      assertEquals(xy, coord);
+      assertTrue(!xy.equalInZ(coord, 0.000001));
+    });
+    test("testCoordinateXYM", () {
+      Coordinate xym = CoordinateXYM.empty();
+      checkZUnsupported(xym);
+
+      xym.setM(1.0);
+      assertEquals(1.0, xym.getM());
+
+      Coordinate coord = Coordinate.fromCoordinate(xym); // copy
+      assertEquals(xym, coord);
+      assertTrue(!xym.equalInZ(coord, 0.000001));
+
+      coord = Coordinate.fromXYZ(1.0, 1.0, 1.0); // 2.5d
+      xym = CoordinateXYM.fromCoordinate(coord); // copy
+      assertEquals(xym, coord);
+      assertTrue(!xym.equalInZ(coord, 0.000001));
+    });
+    test("testCoordinateXYZM", () {
+      Coordinate xyzm = CoordinateXYZM.empty();
+      xyzm.setZ(1.0);
+      assertEquals(1.0, xyzm.getZ());
+      xyzm.setM(1.0);
+      assertEquals(1.0, xyzm.getM());
+
+      Coordinate coord = Coordinate.fromCoordinate(xyzm); // copy
+      assertEquals(xyzm, coord);
+      assertTrue(xyzm.equalInZ(coord, 0.000001));
+      assertTrue(coord.getM().isNaN);
+
+      coord = Coordinate.fromXYZ(1.0, 1.0, 1.0); // 2.5d
+      xyzm = CoordinateXYZM.fromCoordinate(coord); // copy
+      assertEquals(xyzm, coord);
+      assertTrue(xyzm.equalInZ(coord, 0.000001));
+    });
+    test("testCoordinateHash", () {
+      doTestCoordinateHash(true, Coordinate(1, 2), Coordinate(1, 2));
+      doTestCoordinateHash(false, Coordinate(1, 2), Coordinate(3, 4));
+      doTestCoordinateHash(false, Coordinate(1, 2), Coordinate(1, 4));
+      doTestCoordinateHash(false, Coordinate(1, 2), Coordinate(3, 2));
+      doTestCoordinateHash(false, Coordinate(1, 2), Coordinate(2, 1));
+    });
+  });
+  group("AreaLengthTest - ", () {
+    test("testLength", () {
+      checkLength("MULTIPOINT (220 140, 180 280)", 0.0);
+      checkLength("LINESTRING (220 140, 180 280)", 145.6021977);
+      checkLength("LINESTRING (0 0, 100 100)", 141.4213562373095);
+      checkLength("POLYGON ((20 20, 40 20, 40 40, 20 40, 20 20))", 80.0);
+      checkLength("POLYGON ((20 20, 40 20, 40 40, 20 40, 20 20), (25 35, 35 35, 35 25, 25 25, 25 35))", 120.0);
+    });
+    test("testArea", () {
+      checkArea("MULTIPOINT (220 140, 180 280)", 0.0);
+      checkArea("LINESTRING (220 140, 180 280)", 0.0);
+      checkArea("POLYGON ((20 20, 40 20, 40 40, 20 40, 20 20))", 400.0);
+      checkArea("POLYGON ((20 20, 40 20, 40 40, 20 40, 20 20), (25 35, 35 35, 35 25, 25 25, 25 35))", 300.0);
+    });
+  });
+  group("BidirectionalComparatorTest - ", () {
+    test("testLineString1", () {
       expect(
-          CoordinateArrays.ptNotInList([Coordinate.fromXY(1, 1), Coordinate.fromXY(2, 2), Coordinate.fromXY(3, 3)], [Coordinate.fromXY(1, 1), Coordinate.fromXY(2, 2), Coordinate.fromXY(3, 3)]) == null,
+          0 ==
+              compareBiDir(
+                  "LINESTRING ( 1388155.775 794886.703, 1388170.712 794887.346, 1388185.425 794892.987, 1388195.167 794898.409, 1388210.091 794899.06, 1388235.117 794900.145, 1388250.276 794895.796, 1388270.174 794896.648, 1388280.138 794897.079, 1388295.063 794897.731, 1388310.348 794893.382, 1388330.479 794889.255, 1388345.617 794884.895, 1388360.778 794880.538, 1388366.184 794870.766, 1388366.62 794860.776, 1388362.086 794850.563, 1388357.761 794835.234, 1388343.474 794819.588, 1388339.151 794804.386, 1388320.114 794783.54, 1388310.597 794773.107, 1388301.155 794757.682, 1388286.452 794751.914, 1388282.129 794736.7, 1388273.037 794716.275, 1388278.444 794706.504, 1388293.603 794702.155, 1388303.994 794692.585, 1388319.278 794688.247, 1388339.4 794684.108, 1388369.486 794680.401, 1388394.513 794681.487, 1388409.429 794682.126, 1388433.884 794693.192, 1388454.204 794698.202 )",
+                  "LINESTRING ( 1388454.204 794698.202, 1388433.884 794693.192, 1388409.429 794682.126, 1388394.513 794681.487, 1388369.486 794680.401, 1388339.4 794684.108, 1388319.278 794688.247, 1388303.994 794692.585, 1388293.603 794702.155, 1388278.444 794706.504, 1388273.037 794716.275, 1388282.129 794736.7, 1388286.452 794751.914, 1388301.155 794757.682, 1388310.597 794773.107, 1388320.114 794783.54, 1388339.151 794804.386, 1388343.474 794819.588, 1388357.761 794835.234, 1388362.086 794850.563, 1388366.62 794860.776, 1388366.184 794870.766, 1388360.778 794880.538, 1388345.617 794884.895, 1388330.479 794889.255, 1388310.348 794893.382, 1388295.063 794897.731, 1388280.138 794897.079, 1388270.174 794896.648, 1388250.276 794895.796, 1388235.117 794900.145, 1388210.091 794899.06, 1388195.167 794898.409, 1388185.425 794892.987, 1388170.712 794887.346, 1388155.775 794886.703 )"),
           true);
     });
+    test("testLineString2", () {
+      expect(0 == compareBiDir("LINESTRING (1389103.293 794193.755, 1389064.931 794188.991)", "LINESTRING (1389064.931 794188.991, 1389103.293 794193.755)"),
+          true);
+    });
+  });
+  group("CoordinateArraysTest - ", () {
+    var COORDS_1 = [Coordinate(1, 1), Coordinate(2, 2), Coordinate(3, 3)];
+    var COORDS_EMPTY = <Coordinate>[];
 
-    test("testEnvelopes", () {
+    test("testPtNotInList1", () {
+      expect(
+          CoordinateArrays.ptNotInList([Coordinate(1, 1), Coordinate(2, 2), Coordinate(3, 3)], [Coordinate(1, 1), Coordinate(1, 2), Coordinate(1, 3)])
+              .equals2D(Coordinate(2, 2)),
+          true);
+    });
+    test("testPtNotInList2", () {
+      expect(
+          CoordinateArrays.ptNotInList([Coordinate(1, 1), Coordinate(2, 2), Coordinate(3, 3)], [Coordinate(1, 1), Coordinate(2, 2), Coordinate(3, 3)]) == null,
+          true);
+    });
+    test("testEnvelope1", () {
       expect(CoordinateArrays.envelope(COORDS_1), Envelope(1, 3, 1, 3));
+    });
+    test("testEnvelopeEmpty", () {
       expect(CoordinateArrays.envelope(COORDS_EMPTY), Envelope.empty());
-      expect(CoordinateArrays.equals(CoordinateArrays.intersection(COORDS_1, Envelope(1, 2, 1, 2)), [Coordinate.fromXY(1, 1), Coordinate.fromXY(2, 2)]), true);
-
+    });
+    test("testIntersection_envelope1", () {
+      expect(CoordinateArrays.equals(CoordinateArrays.intersection(COORDS_1, Envelope(1, 2, 1, 2)), [Coordinate(1, 1), Coordinate(2, 2)]), true);
+    });
+    test("testIntersection_envelopeDisjoint", () {
       expect(CoordinateArrays.equals(CoordinateArrays.intersection(COORDS_1, Envelope(10, 20, 10, 20)), COORDS_EMPTY), true);
-
+    });
+    test("testIntersection_empty_envelope", () {
       expect(CoordinateArrays.equals(CoordinateArrays.intersection(COORDS_EMPTY, Envelope(1, 2, 1, 2)), COORDS_EMPTY), true);
-
+    });
+    test("testIntersection_coords_emptyEnvelope", () {
       expect(CoordinateArrays.equals(CoordinateArrays.intersection(COORDS_1, Envelope.empty()), COORDS_EMPTY), true);
     });
   });
@@ -86,11 +306,26 @@ void main() {
       doTestReverse(PackedCoordinateSequenceFactory.DOUBLE_FACTORY, 5);
     });
   });
+}
 
-//  group("CoordinateArraysTest - ", () {
-//    test("", () {
-//    });
-//  });
+int compareBiDir(String wkt0, String wkt1) {
+  LineString g0 = reader.read(wkt0) as LineString;
+  LineString g1 = reader.read(wkt1) as LineString;
+  var pts0 = g0.getCoordinates();
+  var pts1 = g1.getCoordinates();
+  return CoordinateArrays.bidirectionalComparator(pts0, pts1);
+}
+
+void checkLength(String wkt, double expectedValue) {
+  Geometry g = reader.read(wkt);
+  double len = g.getLength();
+//		//System.out.println(len);
+  expect(NumberUtils.equalsWithTolerance(expectedValue, len, TOLERANCE), true);
+}
+
+void checkArea(String wkt, double expectedValue) {
+  Geometry g = reader.read(wkt);
+  expect(NumberUtils.equalsWithTolerance(expectedValue, g.getArea(), TOLERANCE), true);
 }
 
 void checkValue(List<Coordinate> coordArray, List<double> ords) {
@@ -106,7 +341,7 @@ void checkValue(List<Coordinate> coordArray, List<double> ords) {
 List<Coordinate> coordList(List<double> ords) {
   List<Coordinate> cl = [];
   for (int i = 0; i < ords.length; i += 2) {
-    cl.add(Coordinate.fromXY(ords[i], ords[i + 1]));
+    cl.add(Coordinate(ords[i], ords[i + 1]));
 //    CollectionsUtils.addIfNotEqualToLast(cl, Coordinate(ords[i], ords[i + 1]));
   }
   return cl;
@@ -258,7 +493,7 @@ void doTestMinCoordinateIndex(CoordinateSequenceFactory factory, int dimension) 
 
 void doTestScroll(CoordinateSequenceFactory factory, int dimension) {
   // arrange
-  CoordinateSequence sequence = createCircularString(factory, dimension, Coordinate.fromXY(20, 20), 7.0, 0.1, 22);
+  CoordinateSequence sequence = createCircularString(factory, dimension, Coordinate(20, 20), 7.0, 0.1, 22);
   CoordinateSequence scrolled = sequence.copy();
 
   // act
@@ -276,7 +511,7 @@ void doTestScroll(CoordinateSequenceFactory factory, int dimension) {
 void doTestScrollRing(CoordinateSequenceFactory factory, int dimension) {
   // arrange
   //System.out.println("Testing '" + factory.getClass().getSimpleName() + "' with dim=" +dimension );
-  CoordinateSequence sequence = createCircle(factory, dimension, Coordinate.fromXY(10, 10), 9.0);
+  CoordinateSequence sequence = createCircle(factory, dimension, Coordinate(10, 10), 9.0);
   CoordinateSequence scrolled = sequence.copy();
 
   // act
@@ -371,4 +606,33 @@ CoordinateSequence createCircularString(CoordinateSequenceFactory factory, int d
   }
 
   return sequence;
+}
+
+void doTestCoordinateHash(bool equal, Coordinate a, Coordinate b) {
+  assertEquals(equal, a.equals(b));
+  assertEquals(equal, a.hashCode == b.hashCode);
+}
+
+/**
+ * Confirm the z field is not supported by getZ and setZ.
+ */
+void checkZUnsupported(Coordinate coord) {
+  try {
+    coord.setZ(0.0);
+    fail(coord.runtimeType.toString() + " does not support Z");
+  } catch (expected) {}
+  assertTrue(coord.z.isNaN);
+  coord.z = 0.0; // field still public
+  assertTrueMsg("z field not used", coord.getZ().isNaN); // but not used
+}
+
+/**
+ * Confirm the z field is not supported by getZ and setZ.
+ */
+void checkMUnsupported(Coordinate coord) {
+  try {
+    coord.setM(0.0);
+    fail(coord.runtimeType.toString() + " does not support M");
+  } catch (expected) {}
+  assertTrue(coord.getM().isNaN);
 }

@@ -415,7 +415,6 @@ class LinearRing extends LineString {
   }
 }
 
-
 /**
  * Represents a line segment defined by two {@link Coordinate}s.
  * Provides methods to compute various geometric properties
@@ -429,9 +428,7 @@ class LinearRing extends LineString {
  *
  *@version 1.7
  */
-class LineSegment
-    implements Comparable {
-
+class LineSegment implements Comparable {
   Coordinate p0, p1;
 
   LineSegment.fromCoordinates(Coordinate p0, Coordinate p1) {
@@ -439,12 +436,11 @@ class LineSegment
     this.p1 = p1;
   }
 
-  LineSegment(double x0, double y0, double x1, double y1) :this.fromCoordinates(new Coordinate.fromXY(x0, y0), new Coordinate.fromXY(x1, y1));
+  LineSegment(double x0, double y0, double x1, double y1) : this.fromCoordinates(new Coordinate(x0, y0), new Coordinate(x1, y1));
 
   LineSegment.fromSegment(LineSegment ls) : this.fromCoordinates(ls.p0, ls.p1);
 
   LineSegment.empty() : this.fromCoordinates(new Coordinate.empty2D(), new Coordinate.empty2D());
-
 
   Coordinate getCoordinate(int i) {
     if (i == 0) return p0;
@@ -543,11 +539,9 @@ class LineSegment
     int orient0 = Orientation.index(p0, p1, seg.p0);
     int orient1 = Orientation.index(p0, p1, seg.p1);
     // this handles the case where the points are L or collinear
-    if (orient0 >= 0 && orient1 >= 0)
-      return math.max(orient0, orient1);
+    if (orient0 >= 0 && orient1 >= 0) return math.max(orient0, orient1);
     // this handles the case where the points are R or collinear
-    if (orient0 <= 0 && orient1 <= 0)
-      return math.max(orient0, orient1);
+    if (orient0 <= 0 && orient1 <= 0) return math.max(orient0, orient1);
     // points lie on opposite sides ==> indeterminate orientation
     return 0;
   }
@@ -614,8 +608,7 @@ class LineSegment
    * @return the midpoint of the segment
    */
   static Coordinate midPointCoords(Coordinate p0, Coordinate p1) {
-    return new Coordinate.fromXY((p0.x + p1.x) / 2,
-        (p0.y + p1.y) / 2);
+    return new Coordinate((p0.x + p1.x) / 2, (p0.y + p1.y) / 2);
   }
 
   /**
@@ -691,8 +684,7 @@ class LineSegment
     double ux = 0.0;
     double uy = 0.0;
     if (offsetDistance != 0.0) {
-      if (len <= 0.0)
-        throw new StateError("Cannot compute offset from zero-length line segment");
+      if (len <= 0.0) throw new StateError("Cannot compute offset from zero-length line segment");
 
       // u is the vector that is the length of the offset, in the direction of the segment
       ux = offsetDistance * dx / len;
@@ -703,7 +695,7 @@ class LineSegment
     double offsetx = segx - uy;
     double offsety = segy + ux;
 
-    Coordinate coord = new Coordinate.fromXY(offsetx, offsety);
+    Coordinate coord = new Coordinate(offsetx, offsety);
     return coord;
   }
 
@@ -741,8 +733,7 @@ class LineSegment
     // handle zero-length segments
     if (len <= 0.0) return double.nan;
 
-    double r = ((p.x - p0.x) * dx + (p.y - p0.y) * dy)
-        / len;
+    double r = ((p.x - p0.x) * dx + (p.y - p0.y) * dy) / len;
     return r;
   }
 
@@ -763,8 +754,7 @@ class LineSegment
     double segFrac = projectionFactor(inputPt);
     if (segFrac < 0.0)
       segFrac = 0.0;
-    else if (segFrac > 1.0 || segFrac.isNaN)
-      segFrac = 1.0;
+    else if (segFrac > 1.0 || segFrac.isNaN) segFrac = 1.0;
     return segFrac;
   }
 
@@ -828,8 +818,7 @@ class LineSegment
     }
     double dist0 = p0.distance(p);
     double dist1 = p1.distance(p);
-    if (dist0 < dist1)
-      return p0;
+    if (dist0 < dist1) return p0;
     return p1;
   }
 
@@ -843,9 +832,7 @@ class LineSegment
     // test for intersection
     Coordinate intPt = intersection(line);
     if (intPt != null) {
-      return [
-        intPt
-        , intPt];
+      return [intPt, intPt];
     }
 
     /**
@@ -885,8 +872,7 @@ class LineSegment
       closestPt[1] = close11;
     }
 
-    return
-      closestPt;
+    return closestPt;
   }
 
   /**
@@ -906,8 +892,7 @@ class LineSegment
   Coordinate intersection(LineSegment line) {
     LineIntersector li = new RobustLineIntersector();
     li.computeIntersection(p0, p1, line.p0, line.p1);
-    if (li.hasIntersection())
-      return li.getIntersection(0);
+    if (li.hasIntersection()) return li.getIntersection(0);
     return null;
   }
 
@@ -940,7 +925,7 @@ class LineSegment
    * @return a LineString with the same geometry as this segment
    */
   LineString toGeometry(GeometryFactory geomFactory) {
-    return geomFactory.createLineString([ p0, p1]);
+    return geomFactory.createLineString([p0, p1]);
   }
 
   /**
@@ -958,8 +943,6 @@ class LineSegment
     LineSegment other = o as LineSegment;
     return p0.equals(other.p0) && p1.equals(other.p1);
   }
-
-
 
   int get hashCode {
     //Algorithm from Effective Java by Joshua Bloch [Jon Aquino]
@@ -1015,16 +998,10 @@ class LineSegment
    *      with the same values for the x and y ordinates.
    */
   bool equalsTopo(LineSegment other) {
-    return
-      p0.equals(other.p0) && p1.equals(other.p1)
-          || p0.equals(other.p1) && p1.equals(other.p0);
+    return p0.equals(other.p0) && p1.equals(other.p1) || p0.equals(other.p1) && p1.equals(other.p0);
   }
 
   String toString() {
-    return "LINESTRING( " +
-        p0.x.toString() + " " + p0.y.toString()
-        + ", " +
-        p1.x.toString() + " " + p1.y.toString() + ")";
+    return "LINESTRING( " + p0.x.toString() + " " + p0.y.toString() + ", " + p1.x.toString() + " " + p1.y.toString() + ")";
   }
 }
-
