@@ -1,84 +1,110 @@
 part of dart_sfs;
 
-final _EMPTY_MULTI_LINE_STRING = MultiLineString(null);
+/**
+ * Models a collection of {@link LineString}s.
+ * <p>
+ * Any collection of LineStrings is a valid MultiLineString.
+ *
+ *@version 1.7
+ */
+class MultiLineString extends GeometryCollection implements Lineal {
+  /**
+   *  Constructs a <code>MultiLineString</code>.
+   *
+   *@param  lineStrings     the <code>LineString</code>s for this <code>MultiLineString</code>
+   *      , or <code>null</code> or an empty array to create the empty geometry.
+   *      Elements may be empty <code>LineString</code>s, but not <code>null</code>
+   *      s.
+   *@param  precisionModel  the specification of the grid of allowable points
+   *      for this <code>MultiLineString</code>
+   *@param  SRID            the ID of the Spatial Reference System used by this
+   *      <code>MultiLineString</code>
+   * @deprecated Use GeometryFactory instead
+   */
+  MultiLineString(List<LineString> lineStrings, PrecisionModel precisionModel, int SRID)
+      : super.withFactory(lineStrings, new GeometryFactory.withPrecisionModelSrid(precisionModel, SRID));
 
-/// A MultiLineString is a MultiCurve whose elements are [LineString]s.
-class MultiLineString extends GeometryCollection {
-  /// Creates a multilinestring for a collection of [linestrings].
-  ///
-  /// If [linestrings] is null or empty, an empty [MultiLineString]
-  /// is created.
-  MultiLineString(Iterable<LineString> linestrings) : super(linestrings);
+  /**
+   * @param lineStrings
+   *            the <code>LineString</code>s for this <code>MultiLineString</code>,
+   *            or <code>null</code> or an empty array to create the empty
+   *            geometry. Elements may be empty <code>LineString</code>s,
+   *            but not <code>null</code>s.
+   */
+  MultiLineString.withFactory(List<LineString> lineStrings, GeometryFactory factory) : super.withFactory(lineStrings, factory);
 
-  /// Creates an empty multilinestring.
-  factory MultiLineString.empty() => _EMPTY_MULTI_LINE_STRING;
+  int getDimension() {
+    return 1;
+  }
 
-  /// Creates a new multilinestring from the WKT string [wkt].
-  ///
-  /// Throws a [WKTError] if [wkt] isn't a valid representation of
-  /// a [MultiLineString].
-  factory MultiLineString.wkt(String wkt) {
-    var g = WKTReader().read(wkt);
-    if (g is! MultiLineString) {
-      throw ArgumentError("WKT string doesn't represent a MultiLineString");
+  int getBoundaryDimension() {
+    if (isClosed()) {
+      return Dimension.FALSE;
     }
-    return g;
+    return 0;
   }
 
-  @override
-  int get dimension => 1;
-
-  @override
-  String get geometryType => "MultiLineString";
-
-  /// This multilinestring is closed if all child line strings are
-  /// closed.
-  bool get isClosed => _geometries.every((g) => (g as LineString).isClosed);
-
-  /// Replies the spatial length of this multilinestring.
-  @specification(name: "length()")
-  num get spatialLength {
-    throw UnimplementedError();
+  String getGeometryType() {
+    return "MultiLineString";
   }
 
-  /// The boundary of a [MultiLineString] consists of the boundary
-  /// points of the child geometries which occur an odd number of
-  /// times in the boundaries.
-  @override
-  Geometry get boundary {
-    return BoundaryOp(this).getBoundary();
-  }
-
-  _writeTaggedWKT(writer, {bool withZ: false, bool withM: false}) {
-    writer.write("MULTILINESTRING");
-    writer.blank();
-    if (this.isNotEmpty) {
-      writer.ordinateSpecification(withZ: withZ, withM: withM);
+  bool isClosed() {
+    if (isEmpty()) {
+      return false;
     }
-    if (isEmpty) {
-      writer.empty();
-    } else {
-      writer
-        ..lparen()
-        ..newline();
-      writer
-        ..incIdent()
-        ..ident();
-      for (int i = 0; i < length; i++) {
-        if (i > 0) {
-          writer
-            ..comma()
-            ..newline()
-            ..ident();
-        }
-        (elementAt(i) as LineString)
-            ._writeWKT(writer, withZ: withZ, withM: withM);
+    for (int i = 0; i < geometries.length; i++) {
+      if (!(geometries[i] as LineString).isClosed()) {
+        return false;
       }
-      writer..newline();
-      writer
-        ..decIdent()
-        ..ident()
-        ..rparen();
     }
+    return true;
+  }
+
+  /**
+   * Gets the boundary of this geometry.
+   * The boundary of a lineal geometry is always a zero-dimensional geometry (which may be empty).
+   *
+   * @return the boundary geometry
+   * @see Geometry#getBoundary
+   */
+  Geometry getBoundary() {
+    return (new BoundaryOp(this)).getBoundary();
+  }
+
+  /**
+   * Creates a {@link MultiLineString} in the reverse
+   * order to this object.
+   * Both the order of the component LineStrings
+   * and the order of their coordinate sequences
+   * are reversed.
+   *
+   * @return a {@link MultiLineString} in the reverse order
+   */
+  Geometry reverse() {
+    int nLines = geometries.length;
+    List<LineString> revLines = List(nLines);
+    for (int i = 0; i < geometries.length; i++) {
+      revLines[nLines - 1 - i] = geometries[i].reverse() as LineString;
+    }
+    return getFactory().createMultiLineString(revLines);
+  }
+
+  MultiLineString copyInternal() {
+    List<LineString> lineStrings = List(this.geometries.length);
+    for (int i = 0; i < lineStrings.length; i++) {
+      lineStrings[i] = this.geometries[i].copy() as LineString;
+    }
+    return new MultiLineString.withFactory(lineStrings, geomFactory);
+  }
+
+  bool equalsExact(Geometry other, double tolerance) {
+    if (!isEquivalentClass(other)) {
+      return false;
+    }
+    return super.equalsExactWithTol(other, tolerance);
+  }
+
+  int getSortIndex() {
+    return Geometry.SORTINDEX_MULTILINESTRING;
   }
 }

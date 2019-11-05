@@ -40,8 +40,6 @@ part "src/com/hydrologis/sfs/surface.dart";
 part "src/com/hydrologis/sfs/polygon.dart";
 part "src/com/hydrologis/sfs/multipolygon.dart";
 part "src/com/hydrologis/sfs/polyhedral_surface.dart";
-part "src/com/hydrologis/sfs/geojson.dart";
-part "src/com/hydrologis/sfs/feature.dart";
 part "src/com/hydrologis/sfs/util/geom_impl.dart";
 part "src/com/hydrologis/sfs/util/util.dart";
 part "src/com/hydrologis/sfs/index/index.dart";

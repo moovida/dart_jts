@@ -27,17 +27,15 @@ class TopologyException implements Exception {
   }
 }
 
-/**
- * Compares two {@link CoordinateSequence}s.
- * For sequences of the same dimension, the ordering is lexicographic.
- * Otherwise, lower dimensions are sorted before higher.
- * The dimensions compared can be limited; if this is done
- * ordinate dimensions above the limit will not be compared.
- * <p>
- * If different behaviour is required for comparing size, dimension, or
- * coordinate values, any or all methods can be overridden.
- *
- */
+/// Compares two {@link CoordinateSequence}s.
+/// For sequences of the same dimension, the ordering is lexicographic.
+/// Otherwise, lower dimensions are sorted before higher.
+/// The dimensions compared can be limited; if this is done
+/// ordinate dimensions above the limit will not be compared.
+/// <p>
+/// If different behaviour is required for comparing size, dimension, or
+/// coordinate values, any or all methods can be overridden.
+///
 class CoordinateSequenceComparatorBuilder {
   static Comparator<CoordinateSequence> regular() {
     return (cs1, cs2) {
@@ -51,14 +49,12 @@ class CoordinateSequenceComparatorBuilder {
     };
   }
 
-  /**
-   * Compare two <code>double</code>s, allowing for NaN values.
-   * NaN is treated as being less than any valid number.
-   *
-   * @param a a <code>double</code>
-   * @param b a <code>double</code>
-   * @return -1, 0, or 1 depending on whether a is less than, equal to or greater than b
-   */
+  /// Compare two <code>double</code>s, allowing for NaN values.
+  /// NaN is treated as being less than any valid number.
+  ///
+  /// @param a a <code>double</code>
+  /// @param b a <code>double</code>
+  /// @return -1, 0, or 1 depending on whether a is less than, equal to or greater than b
   static int compareStatic(double a, double b) {
     if (a < b) return -1;
     if (a > b) return 1;
@@ -72,13 +68,11 @@ class CoordinateSequenceComparatorBuilder {
     return 0;
   }
 
-  /**
-   * Compares two {@link CoordinateSequence}s for relative order.
-   *
-   * @param o1 a {@link CoordinateSequence}
-   * @param o2 a {@link CoordinateSequence}
-   * @return -1, 0, or 1 depending on whether o1 is less than, equal to, or greater than o2
-   */
+  /// Compares two {@link CoordinateSequence}s for relative order.
+  ///
+  /// @param o1 a {@link CoordinateSequence}
+  /// @param o2 a {@link CoordinateSequence}
+  /// @return -1, 0, or 1 depending on whether o1 is less than, equal to, or greater than o2
   static int compare(Object o1, Object o2, int dimensionLimit) {
     CoordinateSequence s1 = o1 as CoordinateSequence;
     CoordinateSequence s2 = o2 as CoordinateSequence;
@@ -116,16 +110,14 @@ class CoordinateSequenceComparatorBuilder {
     return 0;
   }
 
-  /**
-   * Compares the same coordinate of two {@link CoordinateSequence}s
-   * along the given number of dimensions.
-   *
-   * @param s1 a {@link CoordinateSequence}
-   * @param s2 a {@link CoordinateSequence}
-   * @param i the index of the coordinate to test
-   * @param dimension the number of dimensions to test
-   * @return -1, 0, or 1 depending on whether s1[i] is less than, equal to, or greater than s2[i]
-   */
+  /// Compares the same coordinate of two {@link CoordinateSequence}s
+  /// along the given number of dimensions.
+  ///
+  /// @param s1 a {@link CoordinateSequence}
+  /// @param s2 a {@link CoordinateSequence}
+  /// @param i the index of the coordinate to test
+  /// @param dimension the number of dimensions to test
+  /// @return -1, 0, or 1 depending on whether s1[i] is less than, equal to, or greater than s2[i]
   static int compareCoordinate(CoordinateSequence s1, CoordinateSequence s2, int i, int dimension) {
     for (int d = 0; d < dimension; d++) {
       double ord1 = s1.getOrdinate(i, d);
@@ -234,16 +226,24 @@ abstract class GeometryFilter {
   void filter(Geometry geom);
 }
 
-/**
- * Identifies {@link Geometry} subclasses which
- * are 0-dimensional and with components which are {@link Point}s.
- *
- * @author Martin Davis
- *
- */
+/// Identifies {@link Geometry} subclasses which
+/// are 0-dimensional and with components which are {@link Point}s.
+///
+/// @author Martin Davis
+///
 abstract class Puntal {
 
 }
+
+/// Identifies {@link Geometry} subclasses which
+/// are 1-dimensional and have components which are {@link LineString}s.
+///
+/// @author Martin Davis
+///
+abstract class Lineal {
+
+}
+
 
 
 /// Identifies {@link Geometry} subclasses which

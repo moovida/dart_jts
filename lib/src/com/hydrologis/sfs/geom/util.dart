@@ -6,29 +6,26 @@ part of dart_sfs;
  *
  * @version 1.7
  */
- abstract class ShortCircuitedGeometryVisitor
-{
-   bool _isDone = false;
+abstract class ShortCircuitedGeometryVisitor {
+  bool _isDone = false;
 
-   ShortCircuitedGeometryVisitor() {
-  }
+  ShortCircuitedGeometryVisitor() {}
 
-   void applyTo(Geometry geom) {
-    for (int i = 0; i < geom.getNumGeometries() && ! _isDone; i++) {
+  void applyTo(Geometry geom) {
+    for (int i = 0; i < geom.getNumGeometries() && !_isDone; i++) {
       Geometry element = geom.getGeometryN(i);
-      if (! (element is GeometryCollection)) {
+      if (!(element is GeometryCollection)) {
         visit(element);
         if (isDone()) {
           _isDone = true;
           return;
         }
-      }
-      else
+      } else
         applyTo(element);
     }
   }
 
-    void visit(Geometry element);
+  void visit(Geometry element);
 
   /**
    * Reports whether visiting components can be terminated.
@@ -37,7 +34,7 @@ part of dart_sfs;
    *
    * @return true if visiting can be terminated.
    */
-    bool isDone();
+  bool isDone();
 }
 
 /*
@@ -1331,140 +1328,170 @@ class GeometryChangedFilter implements GeometryComponentFilter {
   }
 }
 
-/// Extracts all the 1-dimensional ({@link LineString}) components from a {@link Geometry}.
-/// For polygonal geometries, this will extract all the component {@link LinearRing}s.
-/// If desired, <code>LinearRing</code>s can be forced to be returned as <code>LineString</code>s.
-///
-/// @version 1.7
+/**
+ * Extracts all the 1-dimensional ({@link LineString}) components from a {@link Geometry}.
+ * For polygonal geometries, this will extract all the component {@link LinearRing}s.
+ * If desired, <code>LinearRing</code>s can be forced to be returned as <code>LineString</code>s.
+ *
+ * @version 1.7
+ */
 class LinearComponentExtracter implements GeometryComponentFilter {
-  List<LineString> _lines;
-  bool _isForcedToLineString = false;
-
-  /// Extracts the linear components from a single {@link Geometry}
-  /// and adds them to the provided {@link Collection}.
-  ///
-  /// @param geoms the collection of geometries from which to extract linear components
-  /// @param lines the collection to add the extracted linear components to
-  /// @return the collection of linear components (LineStrings or LinearRings)
-  static List<LineString> getLinesFromListAndList(List<Geometry> geoms, List<LineString> lines) {
-    geoms.forEach((g) => getLinesFromGeomAndList(g, lines));
+  /**
+   * Extracts the linear components from a single {@link Geometry}
+   * and adds them to the provided {@link Collection}.
+   *
+   * @param geoms the collection of geometries from which to extract linear components
+   * @param lines the collection to add the extracted linear components to
+   * @return the collection of linear components (LineStrings or LinearRings)
+   */
+  static List getLinesLL(List geoms, List lines) {
+    for (Iterator i = geoms.iterator; i.moveNext();) {
+      Geometry g = i.current as Geometry;
+      getLinesGL(g, lines);
+    }
     return lines;
   }
 
-  /// Extracts the linear components from a single {@link Geometry}
-  /// and adds them to the provided {@link Collection}.
-  ///
-  /// @param geoms the Collection of geometries from which to extract linear components
-  /// @param lines the collection to add the extracted linear components to
-  /// @param forceToLineString true if LinearRings should be converted to LineStrings
-  /// @return the collection of linear components (LineStrings or LinearRings)
-  static List<LineString> getLinesFromListAndListForce(List<Geometry> geoms, List<LineString> lines, bool forceToLineString) {
-    geoms.forEach((g) => getLinesFromGeomAndListForce(g, lines, forceToLineString));
+  /**
+   * Extracts the linear components from a single {@link Geometry}
+   * and adds them to the provided {@link List}.
+   *
+   * @param geoms the List of geometries from which to extract linear components
+   * @param lines the collection to add the extracted linear components to
+   * @param forceToLineString true if LinearRings should be converted to LineStrings
+   * @return the collection of linear components (LineStrings or LinearRings)
+   */
+  static List getLinesLLF(List geoms, List lines, bool forceToLineString) {
+    for (Iterator i = geoms.iterator; i.moveNext();) {
+      Geometry g = i.current as Geometry;
+      getLinesGLF(g, lines, forceToLineString);
+    }
     return lines;
   }
 
-  /// Extracts the linear components from a single {@link Geometry}
-  /// and adds them to the provided {@link Collection}.
-  ///
-  /// @param geom the geometry from which to extract linear components
-  /// @param lines the Collection to add the extracted linear components to
-  /// @return the Collection of linear components (LineStrings or LinearRings)
-  static List<LineString> getLinesFromGeomAndList(Geometry geom, List<LineString> lines) {
+  /**
+   * Extracts the linear components from a single {@link Geometry}
+   * and adds them to the provided {@link List}.
+   *
+   * @param geom the geometry from which to extract linear components
+   * @param lines the List to add the extracted linear components to
+   * @return the List of linear components (LineStrings or LinearRings)
+   */
+  static List getLinesGL(Geometry geom, List lines) {
     if (geom is LineString) {
       lines.add(geom);
     } else {
-      geom.applyGCF(LinearComponentExtracter(lines));
+      geom.applyGCF(new LinearComponentExtracter(lines));
     }
     return lines;
   }
 
-  /// Extracts the linear components from a single {@link Geometry}
-  /// and adds them to the provided {@link Collection}.
-  ///
-  /// @param geom the geometry from which to extract linear components
-  /// @param lines the Collection to add the extracted linear components to
-  /// @param forceToLineString true if LinearRings should be converted to LineStrings
-  /// @return the Collection of linear components (LineStrings or LinearRings)
-  static List<LineString> getLinesFromGeomAndListForce(Geometry geom, List<LineString> lines, bool forceToLineString) {
-    geom.applyGCF(LinearComponentExtracter.forceLineString(lines, forceToLineString));
+  /**
+   * Extracts the linear components from a single {@link Geometry}
+   * and adds them to the provided {@link List}.
+   *
+   * @param geom the geometry from which to extract linear components
+   * @param lines the List to add the extracted linear components to
+   * @param forceToLineString true if LinearRings should be converted to LineStrings
+   * @return the List of linear components (LineStrings or LinearRings)
+   */
+  static List getLinesGLF(Geometry geom, List lines, bool forceToLineString) {
+    geom.applyGCF(new LinearComponentExtracter.withForced(lines, forceToLineString));
     return lines;
   }
 
-  /// Extracts the linear components from a single geometry.
-  /// If more than one geometry is to be processed, it is more
-  /// efficient to create a single {@link LinearComponentExtracter} instance
-  /// and pass it to multiple geometries.
-  ///
-  /// @param geom the geometry from which to extract linear components
-  /// @return the list of linear components
-  static List<LineString> getLines(Geometry geom) {
-    return getLinesFromGeomForce(geom, false);
+  /**
+   * Extracts the linear components from a single geometry.
+   * If more than one geometry is to be processed, it is more
+   * efficient to create a single {@link LinearComponentExtracter} instance
+   * and pass it to multiple geometries.
+   *
+   * @param geom the geometry from which to extract linear components
+   * @return the list of linear components
+   */
+  static List getLines(Geometry geom) {
+    return getLinesGF(geom, false);
   }
 
-  /// Extracts the linear components from a single geometry.
-  /// If more than one geometry is to be processed, it is more
-  /// efficient to create a single {@link LinearComponentExtracter} instance
-  /// and pass it to multiple geometries.
-  ///
-  /// @param geom the geometry from which to extract linear components
-  /// @param forceToLineString true if LinearRings should be converted to LineStrings
-  /// @return the list of linear components
-  static List<LineString> getLinesFromGeomForce(Geometry geom, bool forceToLineString) {
-    List<LineString> lines = [];
-    geom.applyGCF(LinearComponentExtracter.forceLineString(lines, forceToLineString));
+  /**
+   * Extracts the linear components from a single geometry.
+   * If more than one geometry is to be processed, it is more
+   * efficient to create a single {@link LinearComponentExtracter} instance
+   * and pass it to multiple geometries.
+   *
+   * @param geom the geometry from which to extract linear components
+   * @param forceToLineString true if LinearRings should be converted to LineStrings
+   * @return the list of linear components
+   */
+  static List getLinesGF(Geometry geom, bool forceToLineString) {
+    List lines = [];
+    geom.applyGCF(new LinearComponentExtracter.withForced(lines, forceToLineString));
     return lines;
   }
 
-  /// Extracts the linear components from a single {@link Geometry}
-  /// and returns them as either a {@link LineString} or {@link MultiLineString}.
-  ///
-  /// @param geom the geometry from which to extract
-  /// @return a linear geometry
+  /**
+   * Extracts the linear components from a single {@link Geometry}
+   * and returns them as either a {@link LineString} or {@link MultiLineString}.
+   *
+   * @param geom the geometry from which to extract
+   * @return a linear geometry
+   */
   static Geometry getGeometry(Geometry geom) {
-    return MultiLineString(getLines(geom));
+    return geom.getFactory().buildGeometry(getLines(geom));
   }
 
-  /// Extracts the linear components from a single {@link Geometry}
-  /// and returns them as either a {@link LineString} or {@link MultiLineString}.
-  ///
-  /// @param geom the geometry from which to extract
-  /// @param forceToLineString true if LinearRings should be converted to LineStrings
-  /// @return a linear geometry
-  static Geometry getGeometryForce(Geometry geom, bool forceToLineString) {
-    return MultiLineString(getLinesFromGeomForce(geom, forceToLineString));
+  /**
+   * Extracts the linear components from a single {@link Geometry}
+   * and returns them as either a {@link LineString} or {@link MultiLineString}.
+   *
+   * @param geom the geometry from which to extract
+   * @param forceToLineString true if LinearRings should be converted to LineStrings
+   * @return a linear geometry
+   */
+  static Geometry getGeometryWithForce(Geometry geom, bool forceToLineString) {
+    return geom.getFactory().buildGeometry(getLinesGF(geom, forceToLineString));
   }
 
-  /// Constructs a LineExtracterFilter with a list in which to store LineStrings found.
-  LinearComponentExtracter(List<LineString> lines) {
-    this._lines = lines;
+  List lines;
+  bool isForcedToLineString = false;
+
+  /**
+   * Constructs a LineExtracterFilter with a list in which to store LineStrings found.
+   */
+  LinearComponentExtracter(List lines) {
+    this.lines = lines;
   }
 
-  /// Constructs a LineExtracterFilter with a list in which to store LineStrings found.
-  LinearComponentExtracter.forceLineString(List<LineString> lines, bool isForcedToLineString) {
-    this._lines = lines;
-    this._isForcedToLineString = isForcedToLineString;
+  /**
+   * Constructs a LineExtracterFilter with a list in which to store LineStrings found.
+   */
+  LinearComponentExtracter.withForced(List lines, bool isForcedToLineString) {
+    this.lines = lines;
+    this.isForcedToLineString = isForcedToLineString;
   }
 
-  /// Indicates that LinearRing components should be
-  /// converted to pure LineStrings.
-  ///
-  /// @param isForcedToLineString true if LinearRings should be converted to LineStrings
+  /**
+   * Indicates that LinearRing components should be
+   * converted to pure LineStrings.
+   *
+   * @param isForcedToLineString true if LinearRings should be converted to LineStrings
+   */
   void setForceToLineString(bool isForcedToLineString) {
-    this._isForcedToLineString = isForcedToLineString;
+    this.isForcedToLineString = isForcedToLineString;
   }
 
   void filter(Geometry geom) {
-    if (_isForcedToLineString && geom is LinearRing) {
-      LineString line = LineString.fromCoordinates(geom.getCoordinates());
-      _lines.add(line);
+    if (isForcedToLineString && geom is LinearRing) {
+      LineString line = geom.getFactory().createLineStringSeq((geom as LinearRing).getCoordinateSequence());
+      lines.add(line);
       return;
     }
     // if not being forced, and this is a linear component
-    if (geom is LineString) _lines.add(geom);
+    if (geom is LineString) lines.add(geom);
+
     // else this is not a linear component, so skip it
   }
 }
-
 
 /// Extracts all the 0-dimensional ({@link Point}) components from a {@link Geometry}.
 ///
@@ -1549,4 +1576,292 @@ class PolygonExtracter implements GeometryFilter {
   void filter(Geometry geom) {
     if (geom is Polygon) comps.add(geom);
   }
+}
+
+/**
+ * A class which supports creating new {@link Geometry}s
+ * which are modifications of existing ones,
+ * maintaining the same type structure.
+ * Geometry objects are intended to be treated as immutable.
+ * This class "modifies" Geometrys
+ * by traversing them, applying a user-defined
+ * {@link GeometryEditorOperation}, {@link CoordinateSequenceOperation} or {@link CoordinateOperation}
+ * and creating new Geometrys with the same structure but
+ * (possibly) modified components.
+ * <p>
+ * Examples of the kinds of modifications which can be made are:
+ * <ul>
+ * <li>the values of the coordinates may be changed.
+ *     The editor does not check whether changing coordinate values makes the result Geometry invalid
+ * <li>the coordinate lists may be changed
+ *     (e.g. by adding, deleting or modifying coordinates).
+ *     The modified coordinate lists must be consistent with their original parent component
+ *     (e.g. a <tt>LinearRing</tt> must always have at least 4 coordinates, and the first and last
+ *     coordinate must be equal)
+ * <li>components of the original geometry may be deleted
+ *    (e.g. holes may be removed from a Polygon, or LineStrings removed from a MultiLineString).
+ *     Deletions will be propagated up the component tree appropriately.
+ * </ul>
+ * All changes must be consistent with the original Geometry's structure
+ * (e.g. a <tt>Polygon</tt> cannot be collapsed into a <tt>LineString</tt>).
+ * If changing the structure is required, use a {@link GeometryTransformer}.
+ * <p>
+ * This class supports creating an edited Geometry
+ * using a different <code>GeometryFactory</code> via the {@link #GeometryEditor(GeometryFactory)}
+ * constructor.
+ * Examples of situations where this is required is if the geometry is
+ * transformed to a new SRID and/or a new PrecisionModel.
+ * <p>
+ * <b>Usage Notes</b>
+ * <ul>
+ * <li>The resulting Geometry is not checked for validity.
+ * If validity needs to be enforced, the new Geometry's
+ * {@link Geometry#isValid} method should be called.
+ * <li>By default the UserData of the input geometry is not copied to the result.
+ * </ul>
+ *
+ * @see GeometryTransformer
+ * @see Geometry#isValid
+ *
+ * @version 1.7
+ */
+class GeometryEditor {
+  /**
+   * The factory used to create the modified Geometry.
+   * If <tt>null</tt> the GeometryFactory of the input is used.
+   */
+  GeometryFactory _geomFactory = null;
+  bool isUserDataCopied = false;
+
+  /**
+   * Creates a new GeometryEditor object which will create
+   * edited {@link Geometry}s with the same {@link GeometryFactory} as the input Geometry.
+   */
+  GeometryEditor.empty() {}
+
+  /**
+   * Creates a new GeometryEditor object which will create
+   * edited {@link Geometry}s with the given {@link GeometryFactory}.
+   *
+   * @param factory the GeometryFactory to create  edited Geometrys with
+   */
+  GeometryEditor(GeometryFactory factory) {
+    this._geomFactory = factory;
+  }
+
+  /**
+   * Sets whether the User Data is copied to the edit result.
+   * Only the object reference is copied.
+   *
+   * @param isUserDataCopied true if the input user data should be copied.
+   */
+  void setCopyUserData(bool isUserDataCopied) {
+    this.isUserDataCopied = isUserDataCopied;
+  }
+
+  /**
+   * Edit the input {@link Geometry} with the given edit operation.
+   * Clients can create subclasses of {@link GeometryEditorOperation} or
+   * {@link CoordinateOperation} to perform required modifications.
+   *
+   * @param geometry the Geometry to edit
+   * @param operation the edit operation to carry out
+   * @return a new {@link Geometry} which is the result of the editing (which may be empty)
+   */
+  Geometry edit(Geometry geometry, GeometryEditorOperation operation) {
+    // nothing to do
+    if (geometry == null) return null;
+
+    Geometry result = editInternal(geometry, operation);
+    if (isUserDataCopied) {
+      result.setUserData(geometry.getUserData());
+    }
+    return result;
+  }
+
+  Geometry editInternal(Geometry geometry, GeometryEditorOperation operation) {
+    // if client did not supply a GeometryFactory, use the one from the input Geometry
+    if (_geomFactory == null) _geomFactory = geometry.getFactory();
+
+    if (geometry is GeometryCollection) {
+      return editGeometryCollection(geometry as GeometryCollection, operation);
+    }
+
+    if (geometry is Polygon) {
+      return editPolygon(geometry as Polygon, operation);
+    }
+
+    if (geometry is Point) {
+      return operation.edit(geometry, _geomFactory);
+    }
+
+    if (geometry is LineString) {
+      return operation.edit(geometry, _geomFactory);
+    }
+
+    Assert.shouldNeverReachHereWithMsg("Unsupported Geometry class: ${geometry.runtimeType.toString()}");
+    return null;
+  }
+
+  Polygon editPolygon(Polygon polygon, GeometryEditorOperation operation) {
+    Polygon newPolygon = operation.edit(polygon, _geomFactory) as Polygon;
+    // create one if needed
+    if (newPolygon == null) newPolygon = _geomFactory.createPolygonEmpty();
+    if (newPolygon.isEmpty()) {
+      //RemoveSelectedPlugIn relies on this behaviour. [Jon Aquino]
+      return newPolygon;
+    }
+
+    LinearRing shell = edit(newPolygon.getExteriorRing(), operation) as LinearRing;
+    if (shell == null || shell.isEmpty()) {
+      //RemoveSelectedPlugIn relies on this behaviour. [Jon Aquino]
+      return _geomFactory.createPolygonEmpty();
+    }
+
+    List<LinearRing> holes = [];
+    for (int i = 0; i < newPolygon.getNumInteriorRing(); i++) {
+      LinearRing hole = edit(newPolygon.getInteriorRingN(i), operation) as LinearRing;
+      if (hole == null || hole.isEmpty()) {
+        continue;
+      }
+      holes.add(hole);
+    }
+
+    return _geomFactory.createPolygon(shell, holes);
+  }
+
+  GeometryCollection editGeometryCollection(GeometryCollection collection, GeometryEditorOperation operation) {
+    // first edit the entire collection
+    // MD - not sure why this is done - could just check original collection?
+    GeometryCollection collectionForType = operation.edit(collection, _geomFactory) as GeometryCollection;
+
+    // edit the component geometries
+    List geometries = [];
+    for (int i = 0; i < collectionForType.getNumGeometries(); i++) {
+      Geometry geometry = edit(collectionForType.getGeometryN(i), operation);
+      if (geometry == null || geometry.isEmpty()) {
+        continue;
+      }
+      geometries.add(geometry);
+    }
+
+    if (collectionForType is MultiPoint) {
+      return _geomFactory.createMultiPoint(geometries as List<Point>);
+    }
+    if (collectionForType is MultiLineString) {
+      return _geomFactory.createMultiLineString(geometries as List<LineString>);
+    }
+    if (collectionForType is MultiPolygon) {
+      return _geomFactory.createMultiPolygon(geometries as List<Polygon>);
+    }
+    return _geomFactory.createGeometryCollection(geometries);
+  }
+}
+
+/**
+ * A interface which specifies an edit operation for Geometries.
+ *
+ * @version 1.7
+ */
+abstract class GeometryEditorOperation {
+  /**
+   * Edits a Geometry by returning a new Geometry with a modification.
+   * The returned geometry may be:
+   * <ul>
+   * <li>the input geometry itself.
+   * The returned Geometry might be the same as the Geometry passed in.
+   * <li><code>null</code> if the geometry is to be deleted.
+   * </ul>
+   *
+   * @param geometry the Geometry to modify
+   * @param factory the factory with which to construct the modified Geometry
+   * (may be different to the factory of the input geometry)
+   * @return a new Geometry which is a modification of the input Geometry
+   * @return null if the Geometry is to be deleted completely
+   */
+  Geometry edit(Geometry geometry, GeometryFactory gfactory);
+}
+
+/**
+ * A GeometryEditorOperation which does not modify
+ * the input geometry.
+ * This can be used for simple changes of
+ * GeometryFactory (including PrecisionModel and SRID).
+ *
+ * @author mbdavis
+ *
+ */
+class NoOpGeometryOperation implements GeometryEditorOperation {
+  Geometry edit(Geometry geometry, GeometryFactory gfactory) {
+    return geometry;
+  }
+}
+
+/**
+ * A {@link GeometryEditorOperation} which edits the coordinate list of a {@link Geometry}.
+ * Operates on Geometry subclasses which contains a single coordinate list.
+ */
+abstract class CoordinateOperation implements GeometryEditorOperation {
+  Geometry edit(Geometry geometry, GeometryFactory gfactory) {
+    if (geometry is LinearRing) {
+      return gfactory.createLinearRing(editCoords(geometry.getCoordinates(), geometry));
+    }
+
+    if (geometry is LineString) {
+      return gfactory.createLineString(editCoords(geometry.getCoordinates(), geometry));
+    }
+
+    if (geometry is Point) {
+      List<Coordinate> newCoordinates = editCoords(geometry.getCoordinates(), geometry);
+
+      return gfactory.createPoint((newCoordinates.length > 0) ? newCoordinates[0] : null);
+    }
+
+    return geometry;
+  }
+
+  /**
+   * Edits the array of {@link Coordinate}s from a {@link Geometry}.
+   * <p>
+   * If it is desired to preserve the immutability of Geometrys,
+   * if the coordinates are changed a new array should be created
+   * and returned.
+   *
+   * @param coordinates the coordinate array to operate on
+   * @param geometry the geometry containing the coordinate list
+   * @return an edited coordinate array (which may be the same as the input)
+   */
+  List<Coordinate> editCoords(List<Coordinate> coordinates, Geometry geometry);
+}
+
+/**
+ * A {@link GeometryEditorOperation} which edits the {@link CoordinateSequence}
+ * of a {@link Geometry}.
+ * Operates on Geometry subclasses which contains a single coordinate list.
+ */
+abstract class CoordinateSequenceOperation implements GeometryEditorOperation {
+  Geometry edit(Geometry geometry, GeometryFactory gfactory) {
+    if (geometry is LinearRing) {
+      return gfactory.createLinearRingSeq(editSeq((geometry as LinearRing).getCoordinateSequence(), geometry));
+    }
+
+    if (geometry is LineString) {
+      return gfactory.createLineStringSeq(editSeq((geometry as LineString).getCoordinateSequence(), geometry));
+    }
+
+    if (geometry is Point) {
+      return gfactory.createPointFromSeq(editSeq((geometry as Point).getCoordinateSequence(), geometry));
+    }
+
+    return geometry;
+  }
+
+  /**
+   * Edits a {@link CoordinateSequence} from a {@link Geometry}.
+   *
+   * @param coordSeq the coordinate array to operate on
+   * @param geometry the geometry containing the coordinate list
+   * @return an edited coordinate sequence (which may be the same as the input)
+   */
+  CoordinateSequence editSeq(CoordinateSequence coordSeq, Geometry geometry);
 }

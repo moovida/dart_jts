@@ -1,125 +1,90 @@
 part of dart_sfs;
 
-final _EMPTY_MULTIPOINT = MultiPoint(null);
+/**
+ * Models a collection of {@link Point}s.
+ * <p>
+ * Any collection of Points is a valid MultiPoint.
+ *
+ *@version 1.7
+ */
+class MultiPoint extends GeometryCollection implements Puntal {
+  /**
+   *  Constructs a <code>MultiPoint</code>.
+   *
+   *@param  points          the <code>Point</code>s for this <code>MultiPoint</code>
+   *      , or <code>null</code> or an empty array to create the empty geometry.
+   *      Elements may be empty <code>Point</code>s, but not <code>null</code>s.
+   *@param  precisionModel  the specification of the grid of allowable points
+   *      for this <code>MultiPoint</code>
+   *@param  SRID            the ID of the Spatial Reference System used by this
+   *      <code>MultiPoint</code>
+   * @deprecated Use GeometryFactory instead
+   */
+  MultiPoint(List<Point> points, PrecisionModel precisionModel, int SRID)
+      : super.withFactory(points, new GeometryFactory.withPrecisionModelSrid(precisionModel, SRID));
 
-/// A MultiPoint is a 0-dimensional GeometryCollection. The elements of a
-/// MultiPoint are restricted to Points. The Points are not connected or
-/// ordered in any semantically important way.
-class MultiPoint extends GeometryCollection {
-  /// Creates a new multipoint object [points].
-  ///
-  /// [points] must not include null values, otherwise throws an
-  /// [ArgumentError].
-  ///
-  /// if [points] is null or empty, then an empty multipoint object
-  /// is created.
-  ///
-  /// [points] don't have to be homogeneous with respect to the z- and
-  /// m-coordinate. You can mix xy-, and xy{z,m}-points in a multipoint.
-  /// However, [is3D] only returns true, iff all points have a z-coordinate.
-  /// Similary, [isMeasured] only returns true, iff all points have an
-  /// m-value.
-  MultiPoint(List<Point> points) : super(points);
+  /**
+   *@param  points          the <code>Point</code>s for this <code>MultiPoint</code>
+   *      , or <code>null</code> or an empty array to create the empty geometry.
+   *      Elements may be empty <code>Point</code>s, but not <code>null</code>s.
+   */
+  MultiPoint.withFactory(List<Point> points, GeometryFactory factory) : super.withFactory(points, factory);
 
-  /// Creates an empty multipoint object.
-  factory MultiPoint.empty() => _EMPTY_MULTIPOINT;
-
-  /// Creates a new multipoint from the WKT string [wkt].
-  ///
-  /// Throws a [WKTError] if [wkt] isn't a valid representation of
-  /// a [MultiPoint].
-  factory MultiPoint.wkt(String wkt) {
-    var g = WKTReader().read(wkt);
-    if (g is! MultiPoint) {
-      throw ArgumentError("WKT string doesn't represent a MultiPoint");
-    }
-    return g;
+  int getDimension() {
+    return 0;
   }
 
-  @override
-  int get dimension => 0;
-
-  @override
-  String get geometryType => "MultiPoint";
-
-  @override
-  bool get isValid => true;
-
-  bool _isSimple;
-
-  _computeIsSimple() {
-    compare(Geometry p, Geometry q) {
-      int c = (p as Point).x.compareTo((q as Point).x);
-      return c != 0 ? c : (p as Point).y.compareTo((q as Point).y);
-    }
-
-    checkDuplicate(last, that) {
-      if (last == null) return that; // that is the first element
-      if (last == false) return false; // we already have a duplicate
-      if (last.x == that.x && last.y == that.y) {
-        // now we have a duplicate
-        return false;
-      }
-      // no duplicate -> that becomes last in the next step
-      return that;
-    }
-
-    if (this.isEmpty) {
-      _isSimple = true;
-      return;
-    }
-    _geometries.sort(compare);
-    var ret = _geometries.fold(null, checkDuplicate);
-    _isSimple = !(ret == false);
+  int getBoundaryDimension() {
+    return Dimension.FALSE;
   }
 
-  /// A MultiPoint is simple if no two points are identical.
-  ///
-  /// The value of this property is computed upon first access
-  /// and then cached. Subsequent reads of the property
-  /// efficiently reply the cached value.
-  @override
-  bool get isSimple {
-    if (_isSimple == null) _computeIsSimple();
-    return _isSimple;
+  String getGeometryType() {
+    return "MultiPoint";
   }
 
-  /// The boundary of a [MultiPoint] is an empty [GeometryCollection]
-  @override
-  Geometry get boundary => GeometryCollection.empty();
+  /**
+   * Gets the boundary of this geometry.
+   * Zero-dimensional geometries have no boundary by definition,
+   * so an empty GeometryCollection is returned.
+   *
+   * @return an empty GeometryCollection
+   * @see Geometry#getBoundary
+   */
+  Geometry getBoundary() {
+    return getFactory().createGeometryCollectionEmpty();
+  }
 
-  _writeTaggedWKT(writer, {bool withZ: false, bool withM: false}) {
-    writer.write("MULTIPOINT");
-    writer.blank();
-    if (this.isNotEmpty) {
-      writer.ordinateSpecification(withZ: withZ, withM: withM);
+  bool isValid() {
+    return true;
+  }
+
+  bool equalsExactWithTol(Geometry other, double tolerance) {
+    if (!isEquivalentClass(other)) {
+      return false;
     }
-    if (this.isEmpty) {
-      writer.empty();
-    } else {
-      writer
-        ..lparen()
-        ..newline();
-      writer
-        ..incIdent()
-        ..ident();
-      for (int i = 0; i < length; i++) {
-        if (i > 0) writer..comma();
-        if (i % 10 == 0) {
-          writer
-            ..newline()
-            ..ident();
-        }
-        writer.lparen();
-        (elementAt(i) as Point)
-            ._writeCoordinates(writer, withZ: withZ, withM: withM);
-        writer.rparen();
-      }
-      writer..newline();
-      writer
-        ..decIdent()
-        ..ident()
-        ..rparen();
+    return super.equalsExactWithTol(other, tolerance);
+  }
+
+  /**
+   *  Returns the <code>Coordinate</code> at the given position.
+   *
+   *@param  n  the index of the <code>Coordinate</code> to retrieve, beginning
+   *      at 0
+   *@return    the <code>n</code>th <code>Coordinate</code>
+   */
+  Coordinate getCoordinateAt(int n) {
+    return (geometries[n] as Point).getCoordinate();
+  }
+
+  MultiPoint copyInternal() {
+    List<Point> points = List(this.geometries.length);
+    for (int i = 0; i < points.length; i++) {
+      points[i] = this.geometries[i].copy() as Point;
     }
+    return new MultiPoint.withFactory(points, geomFactory);
+  }
+
+  int getSortIndex() {
+    return Geometry.SORTINDEX_MULTIPOINT;
   }
 }

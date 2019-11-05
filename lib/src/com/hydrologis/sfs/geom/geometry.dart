@@ -114,8 +114,7 @@ part of dart_sfs;
 /// Geometries can be used effectively in Java collections.
 ///
 ///@version 1.7
-abstract class Geometry
-    implements Comparable {
+abstract class Geometry implements Comparable {
   static final int SORTINDEX_POINT = 0;
   static final int SORTINDEX_MULTIPOINT = 1;
   static final int SORTINDEX_LINESTRING = 2;
@@ -241,7 +240,6 @@ abstract class Geometry
     return this;
   }
 
-
   /// A simple scheme for applications to add their own custom data to a Geometry.
   /// An example use might be to add an object representing a Coordinate Reference System.
   /// <p>
@@ -253,7 +251,6 @@ abstract class Geometry
   void setUserData(Object userData) {
     this.userData = userData;
   }
-
 
   ///  Returns the <code>PrecisionModel</code> used by the <code>Geometry</code>.
   ///
@@ -588,8 +585,7 @@ abstract class Geometry
    */
   bool touches(Geometry g) {
     // short-circuit test
-    if (!getEnvelopeInternal().intersectsEnvelope(g.getEnvelopeInternal()))
-      return false;
+    if (!getEnvelopeInternal().intersectsEnvelope(g.getEnvelopeInternal())) return false;
     return relate(g).isTouches(getDimension(), g.getDimension());
   }
 
@@ -618,8 +614,7 @@ abstract class Geometry
    */
   bool intersects(Geometry g) {
     // short-circuit envelope test
-    if (!getEnvelopeInternal().intersectsEnvelope(g.getEnvelopeInternal()))
-      return false;
+    if (!getEnvelopeInternal().intersectsEnvelope(g.getEnvelopeInternal())) return false;
 
     /**
      * TODO: (MD) Add optimizations:
@@ -684,8 +679,7 @@ abstract class Geometry
    */
   bool crosses(Geometry g) {
     // short-circuit test
-    if (!getEnvelopeInternal().intersectsEnvelope(g.getEnvelopeInternal()))
-      return false;
+    if (!getEnvelopeInternal().intersectsEnvelope(g.getEnvelopeInternal())) return false;
     return relate(g).isCrosses(getDimension(), g.getDimension());
   }
 
@@ -760,8 +754,7 @@ abstract class Geometry
       return false;
     }
     // optimization - envelope test
-    if (!getEnvelopeInternal().containsEnvelope(g.getEnvelopeInternal()))
-      return false;
+    if (!getEnvelopeInternal().containsEnvelope(g.getEnvelopeInternal())) return false;
     // optimization for rectangle arguments
     if (isRectangle()) {
       return RectangleContains.containsStatic(this as Polygon, g);
@@ -793,8 +786,7 @@ abstract class Geometry
    */
   bool overlaps(Geometry g) {
     // short-circuit test
-    if (!getEnvelopeInternal().intersectsEnvelope(g.getEnvelopeInternal()))
-      return false;
+    if (!getEnvelopeInternal().intersectsEnvelope(g.getEnvelopeInternal())) return false;
     return relate(g).isOverlaps(getDimension(), g.getDimension());
   }
 
@@ -843,8 +835,7 @@ abstract class Geometry
       return false;
     }
     // optimization - envelope test
-    if (!getEnvelopeInternal().coversEnvelope(g.getEnvelopeInternal()))
-      return false;
+    if (!getEnvelopeInternal().coversEnvelope(g.getEnvelopeInternal())) return false;
     // optimization for rectangle arguments
     if (isRectangle()) {
       // since we have already tested that the test envelope is covered
@@ -975,8 +966,7 @@ abstract class Geometry
    */
   bool equalsTopo(Geometry g) {
     // short-circuit test
-    if (getEnvelopeInternal() != g.getEnvelopeInternal())
-      return false;
+    if (getEnvelopeInternal() != g.getEnvelopeInternal()) return false;
     return relate(g).isEquals(getDimension(), g.getDimension());
   }
 
@@ -1462,7 +1452,6 @@ abstract class Geometry
     return norm().equalsExactGeom(g.norm());
   }
 
-
   /**
    *  Performs an operation with or on this <code>Geometry</code>'s
    *  coordinates.
@@ -1525,10 +1514,7 @@ abstract class Geometry
         clone.envelope = new Envelope.fromEnvelope(clone.envelope);
       }
       return clone;
-    }
-    catch
-    (
-    e) {
+    } catch (e) {
       Assert.shouldNeverReachHere();
       return null;
     }
@@ -1676,7 +1662,7 @@ abstract class Geometry
     if (other.isEmpty()) {
       return 1;
     }
-    return compareToSameClassWithCOmparator(o, comp);
+    return compareToSameClassWithComparator(o, comp);
   }
 
   /**
@@ -1803,10 +1789,7 @@ abstract class Geometry
     exemplar.getPrecisionModel().makeCoordinatePrecise(coord);
     return exemplar.getFactory().createPoint(coord);
   }
-
-
 }
-
 
 class GeometryFactory {
   CoordinateSequenceFactory _coordinateSequenceFactory;
@@ -1857,153 +1840,470 @@ class GeometryFactory {
     return CoordinateArraySequenceFactory();
   }
 
-  /// Creates a {@link MultiPoint} using the given {@link Point}s.
-  /// A null or empty array will create an empty MultiPoint.
-  ///
-  /// @param point an array of Points (without null elements) or an empty array, or <code>null</code>
-  /// @return a MultiPoint object
-  MultiPoint createMultiPoint([List<Point> points]) {
-    if (points == null || points.isEmpty) return MultiPoint.empty();
-    return MultiPoint(points);
-  }
-
-  MultiPoint createMultiPointFromCoords([List<Coordinate> coords]) {
-    if (coords == null || coords.isEmpty) return MultiPoint.empty();
-    return MultiPoint(coords.map((c) => Point(c.x, c.y, z: c.z)));
-  }
-
-  MultiPoint createMultiPointFromSequence(CoordinateSequence seq) {
-    if (seq == null || seq.size() == 0) return MultiPoint.empty();
-    List<Point> points = [];
-    for (int i = 0; i < seq.size(); i++) {
-      var c = seq.getCoordinate(i);
-      points.add(Point(c.x, c.y, z: c.z, m: c.getM()));
-    }
-    return MultiPoint(points);
-  }
-
-  LineString createLineString(List<Coordinate> coordinates) {
-    return LineString.fromCoordinates(coordinates);
-  }
-
-  LineString createLineStringFromSequence(CoordinateSequence seq) {
-    if (seq == null || seq.size() == 0) return LineString.empty();
-    return LineString.fromCoordinates(seq.toCoordinateArray());
-  }
-
-  LinearRing createLinearRing(List<Coordinate> coordinates) {
-    return LinearRing.fromCoordinates(coordinates);
-  }
-
-  LinearRing createLinearRingFromSequence(CoordinateSequence seq) {
-    if (seq == null || seq.size() == 0) return LinearRing.empty();
-    return LinearRing.fromCoordinates(seq.toCoordinateArray());
-  }
-
-  MultiLineString createMultiLineString(List<LineString> lines) {
-    return MultiLineString(lines);
-  }
-
-  MultiLineString createMultiLineStringEmpty() {
-    return MultiLineString.empty();
-  }
-
-  /// Creates a Point using the given Coordinate.
-  /// A null Coordinate creates an empty Geometry.
-  ///
-  /// @param coordinate a Coordinate, or null
-  /// @return the created Point
-  Point createPoint(Coordinate coordinate) {
-    if (coordinate == null) return Point.empty();
-    return Point(coordinate.x, coordinate.y, z: coordinate.z, m: coordinate.getM());
-  }
-
-  Point createPointFromSequence(CoordinateSequence seq) {
-    if (seq == null || seq.size() == 0) return Point.empty();
-    var coordinate = seq.getCoordinate(0);
-    return Point(coordinate.x, coordinate.y, z: coordinate.z, m: coordinate.getM());
-  }
-
-  Polygon createPolygon(LinearRing ring) {
-    return Polygon(ring, null);
-  }
-
-  Polygon createPolygonWithHoles(LinearRing ring, List<LinearRing> holes) {
-    return Polygon(ring, holes);
-  }
-
-  Polygon createPolygonEmpty() {
-    return Polygon.empty();
-  }
-
-  /// Creates a {@link Geometry} with the same extent as the given envelope.
-  /// The Geometry returned is guaranteed to be valid.
-  /// To provide this behaviour, the following cases occur:
-  /// <p>
-  /// If the <code>Envelope</code> is:
-  /// <ul>
-  /// <li>null : returns an empty {@link Point}
-  /// <li>a point : returns a non-empty {@link Point}
-  /// <li>a line : returns a two-point {@link LineString}
-  /// <li>a rectangle : returns a {@link Polygon} whose points are (minx, miny),
-  ///  (minx, maxy), (maxx, maxy), (maxx, miny), (minx, miny).
-  /// </ul>
-  ///
-  ///@param  envelope the <code>Envelope</code> to convert
-  ///@return an empty <code>Point</code> (for null <code>Envelope</code>s),
-  ///	a <code>Point</code> (when min x = max x and min y = max y) or a
-  ///      <code>Polygon</code> (in all other cases)
+  /**
+   * Creates a {@link Geometry} with the same extent as the given envelope.
+   * The Geometry returned is guaranteed to be valid.
+   * To provide this behaviour, the following cases occur:
+   * <p>
+   * If the <code>Envelope</code> is:
+   * <ul>
+   * <li>null : returns an empty {@link Point}
+   * <li>a point : returns a non-empty {@link Point}
+   * <li>a line : returns a two-point {@link LineString}
+   * <li>a rectangle : returns a {@link Polygon} whose points are (minx, miny),
+   *  (minx, maxy), (maxx, maxy), (maxx, miny), (minx, miny).
+   * </ul>
+   *
+   *@param  envelope the <code>Envelope</code> to convert
+   *@return an empty <code>Point</code> (for null <code>Envelope</code>s),
+   *	a <code>Point</code> (when min x = max x and min y = max y) or a
+   *      <code>Polygon</code> (in all other cases)
+   */
   Geometry toGeometry(Envelope envelope) {
     // null envelope - return empty point geometry
     if (envelope.isNull()) {
-      return Point.empty();
+      return createPointEmpty();
     }
 
     // point?
     if (envelope.getMinX() == envelope.getMaxX() && envelope.getMinY() == envelope.getMaxY()) {
-      return createPoint(Coordinate.fromXY(envelope.getMinX(), envelope.getMinY()));
+      return createPoint(new Coordinate.fromXY(envelope.getMinX(), envelope.getMinY()));
     }
 
     // vertical or horizontal line?
     if (envelope.getMinX() == envelope.getMaxX() || envelope.getMinY() == envelope.getMaxY()) {
-      return createLineString([Coordinate.fromXY(envelope.getMinX(), envelope.getMinY()), Coordinate.fromXY(envelope.getMaxX(), envelope.getMaxY())]);
+      return createLineString([new Coordinate.fromXY(envelope.getMinX(), envelope.getMinY()), new Coordinate.fromXY(envelope.getMaxX(), envelope.getMaxY())]);
     }
 
     // create a CW ring for the polygon
-    return createPolygon(createLinearRing([
-      Coordinate.fromXY(envelope.getMinX(), envelope.getMinY()),
-      Coordinate.fromXY(envelope.getMinX(), envelope.getMaxY()),
-      Coordinate.fromXY(envelope.getMaxX(), envelope.getMaxY()),
-      Coordinate.fromXY(envelope.getMaxX(), envelope.getMinY()),
-      Coordinate.fromXY(envelope.getMinX(), envelope.getMinY())
-    ]));
+    return createPolygon(
+        createLinearRing([
+          new Coordinate.fromXY(envelope.getMinX(), envelope.getMinY()),
+          new Coordinate.fromXY(envelope.getMinX(), envelope.getMaxY()),
+          new Coordinate.fromXY(envelope.getMaxX(), envelope.getMaxY()),
+          new Coordinate.fromXY(envelope.getMaxX(), envelope.getMinY()),
+          new Coordinate.fromXY(envelope.getMinX(), envelope.getMinY())
+        ]),
+        null);
+  }
+
+  /**
+   * Returns the PrecisionModel that Geometries created by this factory
+   * will be associated with.
+   *
+   * @return the PrecisionModel for this factory
+   */
+  PrecisionModel getPrecisionModel() {
+    return _precisionModel;
+  }
+
+  /**
+   * Constructs an empty {@link Point} geometry.
+   *
+   * @return an empty Point
+   */
+  Point createPointEmpty() {
+    return createPointFromSeq(getCoordinateSequenceFactory().create(<Coordinate>[]));
+  }
+
+  /**
+   * Creates a Point using the given Coordinate.
+   * A null Coordinate creates an empty Geometry.
+   *
+   * @param coordinate a Coordinate, or null
+   * @return the created Point
+   */
+  Point createPoint(Coordinate coordinate) {
+    return createPointFromSeq(coordinate != null ? getCoordinateSequenceFactory().create([coordinate]) : null);
+  }
+
+  /**
+   * Creates a Point using the given CoordinateSequence; a null or empty
+   * CoordinateSequence will create an empty Point.
+   *
+   * @param coordinates a CoordinateSequence (possibly empty), or null
+   * @return the created Point
+   */
+  Point createPointFromSeq(CoordinateSequence coordinates) {
+    return new Point.fromSequence(coordinates, this);
+  }
+
+  /**
+   * Constructs an empty {@link MultiLineString} geometry.
+   *
+   * @return an empty MultiLineString
+   */
+  MultiLineString createMultiLineStringEmpty() {
+    return new MultiLineString.withFactory(null, this);
+  }
+
+  /**
+   * Creates a MultiLineString using the given LineStrings; a null or empty
+   * array will create an empty MultiLineString.
+   *
+   * @param lineStrings LineStrings, each of which may be empty but not null
+   * @return the created MultiLineString
+   */
+  MultiLineString createMultiLineString(List<LineString> lineStrings) {
+    return new MultiLineString.withFactory(lineStrings, this);
+  }
+
+  /**
+   * Constructs an empty {@link GeometryCollection} geometry.
+   *
+   * @return an empty GeometryCollection
+   */
+  GeometryCollection createGeometryCollectionEmpty() {
+    return new GeometryCollection.withFactory(null, this);
+  }
+
+  /**
+   * Creates a GeometryCollection using the given Geometries; a null or empty
+   * array will create an empty GeometryCollection.
+   *
+   * @param geometries an array of Geometries, each of which may be empty but not null, or null
+   * @return the created GeometryCollection
+   */
+  GeometryCollection createGeometryCollection(List<Geometry> geometries) {
+    return new GeometryCollection.withFactory(geometries, this);
+  }
+
+  /**
+   * Constructs an empty {@link MultiPolygon} geometry.
+   *
+   * @return an empty MultiPolygon
+   */
+  MultiPolygon createMultiPolygon() {
+    return new MultiPolygon(null, this);
+  }
+
+  /**
+   * Creates a MultiPolygon using the given Polygons; a null or empty array
+   * will create an empty Polygon. The polygons must conform to the
+   * assertions specified in the <A
+   * HREF="http://www.opengis.org/techno/specs.htm">OpenGIS Simple Features
+   * Specification for SQL</A>.
+   *
+   * @param polygons
+   *            Polygons, each of which may be empty but not null
+   * @return the created MultiPolygon
+   */
+  MultiPolygon createMultiPolygon(List<Polygon> polygons) {
+    return new MultiPolygon(polygons, this);
+  }
+
+  /**
+   * Constructs an empty {@link LinearRing} geometry.
+   *
+   * @return an empty LinearRing
+   */
+  LinearRing createLinearRingEmpty() {
+    return createLinearRingSeq(getCoordinateSequenceFactory().create(<Coordinate>[]));
+  }
+
+  /**
+   * Creates a {@link LinearRing} using the given {@link Coordinate}s.
+   * A null or empty array creates an empty LinearRing.
+   * The points must form a closed and simple linestring.
+   * @param coordinates an array without null elements, or an empty array, or null
+   * @return the created LinearRing
+   * @throws IllegalArgumentException if the ring is not closed, or has too few points
+   */
+  LinearRing createLinearRing(List<Coordinate> coordinates) {
+    return createLinearRingSeq(coordinates != null ? getCoordinateSequenceFactory().create(coordinates) : null);
+  }
+
+  /**
+   * Creates a {@link LinearRing} using the given {@link CoordinateSequence}.
+   * A null or empty array creates an empty LinearRing.
+   * The points must form a closed and simple linestring.
+   *
+   * @param coordinates a CoordinateSequence (possibly empty), or null
+   * @return the created LinearRing
+   * @throws IllegalArgumentException if the ring is not closed, or has too few points
+   */
+  LinearRing createLinearRingSeq(CoordinateSequence coordinates) {
+    return new LinearRing.fromSequence(coordinates, this);
+  }
+
+  /**
+   * Constructs an empty {@link MultiPoint} geometry.
+   *
+   * @return an empty MultiPoint
+   */
+  MultiPoint createMultiPointEmpty() {
+    return new MultiPoint.withFactory(null, this);
+  }
+
+  /**
+   * Creates a {@link MultiPoint} using the given {@link Point}s.
+   * A null or empty array will create an empty MultiPoint.
+   *
+   * @param point an array of Points (without null elements), or an empty array, or <code>null</code>
+   * @return a MultiPoint object
+   */
+  MultiPoint createMultiPoint(List<Point> point) {
+    return new MultiPoint.withFactory(point, this);
+  }
+
+  /**
+   * Creates a {@link MultiPoint} using the given {@link Coordinate}s.
+   * A null or empty array will create an empty MultiPoint.
+   *
+   * @param coordinates an array (without null elements), or an empty array, or <code>null</code>
+   * @return a MultiPoint object
+   */
+  MultiPoint createMultiPointFromCoords(List<Coordinate> coordinates) {
+    return createMultiPointSeq(coordinates != null ? getCoordinateSequenceFactory().create(coordinates) : null);
+  }
+
+  /**
+   * Creates a {@link MultiPoint} using the
+   * points in the given {@link CoordinateSequence}.
+   * A <code>null</code> or empty CoordinateSequence creates an empty MultiPoint.
+   *
+   * @param coordinates a CoordinateSequence (possibly empty), or <code>null</code>
+   * @return a MultiPoint geometry
+   */
+  MultiPoint createMultiPointSeq(CoordinateSequence coordinates) {
+    if (coordinates == null) {
+      return createMultiPoint(<Point>[]);
+    }
+    List<Point> points = List(coordinates.size());
+    for (int i = 0; i < coordinates.size(); i++) {
+      CoordinateSequence ptSeq = getCoordinateSequenceFactory().createSizeDimMeas(1, coordinates.getDimension(), coordinates.getMeasures());
+      CoordinateSequences.copy(coordinates, i, ptSeq, 0, 1);
+      points[i] = createPointFromSeq(ptSeq);
+    }
+    return createMultiPoint(points);
+  }
+
+  /**
+   * Constructs a <code>Polygon</code> with the given exterior boundary and
+   * interior boundaries.
+   *
+   * @param shell
+   *            the outer boundary of the new <code>Polygon</code>, or
+   *            <code>null</code> or an empty <code>LinearRing</code> if
+   *            the empty geometry is to be created.
+   * @param holes
+   *            the inner boundaries of the new <code>Polygon</code>, or
+   *            <code>null</code> or empty <code>LinearRing</code> s if
+   *            the empty geometry is to be created.
+   * @throws IllegalArgumentException if a ring is invalid
+   */
+  Polygon createPolygon(LinearRing shell, List<LinearRing> holes) {
+    return new Polygon.withFactory(shell, holes, this);
+  }
+
+  /**
+   * Constructs a <code>Polygon</code> with the given exterior boundary.
+   *
+   * @param shell
+   *            the outer boundary of the new <code>Polygon</code>, or
+   *            <code>null</code> or an empty <code>LinearRing</code> if
+   *            the empty geometry is to be created.
+   * @throws IllegalArgumentException if the boundary ring is invalid
+   */
+  Polygon createPolygonSeq(CoordinateSequence shell) {
+    return createPolygonFromRing(createLinearRingSeq(shell));
+  }
+
+  /**
+   * Constructs a <code>Polygon</code> with the given exterior boundary.
+   *
+   * @param shell
+   *            the outer boundary of the new <code>Polygon</code>, or
+   *            <code>null</code> or an empty <code>LinearRing</code> if
+   *            the empty geometry is to be created.
+   * @throws IllegalArgumentException if the boundary ring is invalid
+   */
+  Polygon createPolygonFromCoords(List<Coordinate> shell) {
+    return createPolygonFromRing(createLinearRing(shell));
+  }
+
+  /**
+   * Constructs a <code>Polygon</code> with the given exterior boundary.
+   *
+   * @param shell
+   *            the outer boundary of the new <code>Polygon</code>, or
+   *            <code>null</code> or an empty <code>LinearRing</code> if
+   *            the empty geometry is to be created.
+   * @throws IllegalArgumentException if the boundary ring is invalid
+   */
+  Polygon createPolygonFromRing(LinearRing shell) {
+    return createPolygon(shell, null);
+  }
+
+  /**
+   * Constructs an empty {@link Polygon} geometry.
+   *
+   * @return an empty polygon
+   */
+  Polygon createPolygonEmpty() {
+    return createPolygon(null, null);
+  }
+
+  /**
+   *  Build an appropriate <code>Geometry</code>, <code>MultiGeometry</code>, or
+   *  <code>GeometryCollection</code> to contain the <code>Geometry</code>s in
+   *  it.
+   * For example:<br>
+   *
+   *  <ul>
+   *    <li> If <code>geomList</code> contains a single <code>Polygon</code>,
+   *    the <code>Polygon</code> is returned.
+   *    <li> If <code>geomList</code> contains several <code>Polygon</code>s, a
+   *    <code>MultiPolygon</code> is returned.
+   *    <li> If <code>geomList</code> contains some <code>Polygon</code>s and
+   *    some <code>LineString</code>s, a <code>GeometryCollection</code> is
+   *    returned.
+   *    <li> If <code>geomList</code> is empty, an empty <code>GeometryCollection</code>
+   *    is returned
+   *  </ul>
+   *
+   * Note that this method does not "flatten" Geometries in the input, and hence if
+   * any MultiGeometries are contained in the input a GeometryCollection containing
+   * them will be returned.
+   *
+   *@param  geomList  the <code>Geometry</code>s to combine
+   *@return           a <code>Geometry</code> of the "smallest", "most
+   *      type-specific" class that can contain the elements of <code>geomList</code>
+   *      .
+   */
+  Geometry buildGeometry(List geomList) {
+    /**
+     * Determine some facts about the geometries in the list
+     */
+    var geomClass = null;
+    bool isHeterogeneous = false;
+    bool hasGeometryCollection = false;
+    for (Iterator i = geomList.iterator; i.moveNext();) {
+      Geometry geom = i.current as Geometry;
+      var partClass = geom.runtimeType;
+      if (geomClass == null) {
+        geomClass = partClass;
+      }
+      if (partClass != geomClass) {
+        isHeterogeneous = true;
+      }
+      if (geom is GeometryCollection) hasGeometryCollection = true;
+    }
+
+    /**
+     * Now construct an appropriate geometry to return
+     */
+    // for the empty geometry, return an empty GeometryCollection
+    if (geomClass == null) {
+      return createGeometryCollectionEmpty();
+    }
+    if (isHeterogeneous || hasGeometryCollection) {
+      return createGeometryCollection(geomList);
+    }
+    // at this point we know the collection is hetereogenous.
+    // Determine the type of the result from the first Geometry in the list
+    // this should always return a geometry, since otherwise an empty collection would have already been returned
+    Geometry geom0 = geomList[0]; //.iterator().next();
+    bool isCollection = geomList.length > 1;
+    if (isCollection) {
+      if (geom0 is Polygon) {
+        return createMultiPolygon(geomList);
+      } else if (geom0 is LineString) {
+        return createMultiLineString(geomList);
+      } else if (geom0 is Point) {
+        return createMultiPoint(geomList);
+      }
+      Assert.shouldNeverReachHereWithMsg("Unhandled class: ${geom0.runtimeType}");
+    }
+    return geom0;
+  }
+
+  /**
+   * Constructs an empty {@link LineString} geometry.
+   *
+   * @return an empty LineString
+   */
+  LineString createLineStringEmpty() {
+    return createLineStringSeq(getCoordinateSequenceFactory().create(<Coordinate>[]));
+  }
+
+  /**
+   * Creates a LineString using the given Coordinates.
+   * A null or empty array creates an empty LineString.
+   *
+   * @param coordinates an array without null elements, or an empty array, or null
+   */
+  LineString createLineString(List<Coordinate> coordinates) {
+    return createLineStringSeq(coordinates != null ? getCoordinateSequenceFactory().create(coordinates) : null);
+  }
+
+  /**
+   * Creates a LineString using the given CoordinateSequence.
+   * A null or empty CoordinateSequence creates an empty LineString.
+   *
+   * @param coordinates a CoordinateSequence (possibly empty), or null
+   */
+  LineString createLineStringSeq(CoordinateSequence coordinates) {
+    return new LineString.fromSequence(coordinates, this);
+  }
+
+  /**
+   * Creates an empty atomic geometry of the given dimension.
+   * If passed a dimension of -1 will create an empty {@link GeometryCollection}.
+   *
+   * @param dimension the required dimension (-1, 0, 1 or 2)
+   * @return an empty atomic geometry of given dimension
+   */
+  Geometry createEmpty(int dimension) {
+    switch (dimension) {
+      case -1:
+        return createGeometryCollectionEmpty();
+      case 0:
+        return createPointEmpty();
+      case 1:
+        return createLineStringEmpty();
+      case 2:
+        return createPolygonEmpty();
+      default:
+        throw new ArgumentError("Invalid dimension: $dimension");
+    }
+  }
+
+  /**
+   * Creates a deep copy of the input {@link Geometry}.
+   * The {@link CoordinateSequenceFactory} defined for this factory
+   * is used to copy the {@link CoordinateSequence}s
+   * of the input geometry.
+   * <p>
+   * This is a convenient way to change the <tt>CoordinateSequence</tt>
+   * used to represent a geometry, or to change the
+   * factory used for a geometry.
+   * <p>
+   * {@link Geometry#copy()} can also be used to make a deep copy,
+   * but it does not allow changing the CoordinateSequence type.
+   *
+   * @return a deep copy of the input geometry, using the CoordinateSequence type of this factory
+   *
+   * @see Geometry#copy()
+   */
+  Geometry createGeometry(Geometry g) {
+    GeometryEditor editor = new GeometryEditor(this);
+    return editor.edit(g, new CoordSeqCloneOp(_coordinateSequenceFactory));
   }
 
   CoordinateSequenceFactory getCoordinateSequenceFactory() {
     return _coordinateSequenceFactory;
   }
+}
 
-  /// Returns the PrecisionModel that Geometries created by this factory
-  /// will be associated with.
-  ///
-  /// @return the PrecisionModel for this factory
-  PrecisionModel getPrecisionModel() {
-    return _precisionModel;
+class CoordSeqCloneOp extends CoordinateSequenceOperation {
+  CoordinateSequenceFactory coordinateSequenceFactory;
+
+  CoordSeqCloneOp(CoordinateSequenceFactory coordinateSequenceFactory) {
+    this.coordinateSequenceFactory = coordinateSequenceFactory;
   }
 
-  MultiPolygon createMultiPolygon(List<Polygon> polygons) {
-    return MultiPolygon(polygons);
-  }
-
-  MultiPolygon createMultiPolygonEmpty() {
-    return MultiPolygon.empty();
-  }
-
-  GeometryCollection createGeometryCollection(List<Geometry> geometries) {
-    return GeometryCollection(geometries);
-  }
-
-  GeometryCollection createGeometryCollectionEmpty() {
-    return GeometryCollection.empty();
+  CoordinateSequence editSeq(CoordinateSequence coordSeq, Geometry geometry) {
+    return coordinateSequenceFactory.createFromSequence(coordSeq);
   }
 }

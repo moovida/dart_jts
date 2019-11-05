@@ -1,72 +1,165 @@
 part of dart_sfs;
 
-/// the singleton empty geometry collection
-final _EMPTY_GEOMETRY_COLLECTION = GeometryCollection(null);
+/**
+ * Models a collection of {@link Geometry}s of
+ * arbitrary type and dimension.
+ *
+ *
+ *@version 1.7
+ */
+class GeometryCollection extends Geometry {
+//  With contributions from Markus Schaber [schabios@logi-track.com] 2004-03-26
+  /**
+   *  Internal representation of this <code>GeometryCollection</code>.
+   */
+  List<Geometry> geometries;
 
-/// A [GeometryCollection] is a geometric object that is a collection of
-/// some number of geometric objects.
-///
-/// It implements the accesor methods [numGeometries] and [getGeometryN]
-/// which are specified in the SFS. In addition, it provides the more
-/// Dart'ish [length] property and an overloaded index operator. It also
-/// implements the [Iterable] interface.
-///
-class GeometryCollection extends Geometry with IterableMixin<Geometry>, _GeometryContainerMixin {
-  List<Geometry> _geometries;
+  /** @deprecated Use GeometryFactory instead */
+  GeometryCollection(List<Geometry> geometries, PrecisionModel precisionModel, int SRID)
+      : this.withFactory(geometries, new GeometryFactory.withPrecisionModelSrid(precisionModel, SRID));
 
-  /// Creates a geometry collection given a collection of
-  /// [geometries].
-  GeometryCollection(Iterable<Geometry> geometries) {
-    if (geometries == null || geometries.isEmpty) {
-      _geometries = null;
-    } else {
-      _geometries = List<Geometry>.from(geometries, growable: false);
-      _require(this.every((p) => p != null));
+  /**
+   * @param geometries
+   *            the <code>Geometry</code>s for this <code>GeometryCollection</code>,
+   *            or <code>null</code> or an empty array to create the empty
+   *            geometry. Elements may be empty <code>Geometry</code>s,
+   *            but not <code>null</code>s.
+   */
+  GeometryCollection.withFactory(List<Geometry> geometries, GeometryFactory factory) : super(factory) {
+    if (geometries == null) {
+      geometries = [];
     }
+    if (Geometry.hasNullElements(geometries)) {
+      throw new ArgumentError("geometries must not contain null elements");
+    }
+    this.geometries = geometries;
   }
 
-  /// Creates an empty geometry collection.
-  factory GeometryCollection.empty() => _EMPTY_GEOMETRY_COLLECTION;
-
-  /// Creates a new geometry collection from the WKT string [wkt].
-  ///
-  /// Throws a [WKTError] if [wkt] isn't a valid representation of
-  /// a [GeometryCollection].
-  factory GeometryCollection.wkt(String wkt) {
-    var g = WKTReader().read(wkt);
-    if (g is! GeometryCollection) {
-      throw ArgumentError("WKT string doesn't represent a GeometryCollection");
-    }
-    return g;
-  }
-
-  @override
   Coordinate getCoordinate() {
-    return _geometries.isEmpty ? null : _geometries[0].getCoordinate();
+    if (isEmpty()) return null;
+    return geometries[0].getCoordinate();
   }
 
-  @override
+  /**
+   * Collects all coordinates of all subgeometries into an Array.
+   *
+   * Note that while changes to the coordinate objects themselves
+   * may modify the Geometries in place, the returned Array as such
+   * is only a temporary container which is not synchronized back.
+   *
+   * @return the collected coordinates
+   *    */
   List<Coordinate> getCoordinates() {
-    return _geometries.isEmpty ? [] : _geometries.map((g) => g.getCoordinates()).expand((i) => i).toList();
+    List<Coordinate> coordinates = List(getNumPoints());
+    int k = -1;
+    for (int i = 0; i < geometries.length; i++) {
+      List<Coordinate> childCoordinates = geometries[i].getCoordinates();
+      for (int j = 0; j < childCoordinates.length; j++) {
+        k++;
+        coordinates[k] = childCoordinates[j];
+      }
+    }
+    return coordinates;
+  }
+
+  bool isEmpty() {
+    for (int i = 0; i < geometries.length; i++) {
+      if (!geometries[i].isEmpty()) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  int getDimension() {
+    int dimension = Dimension.FALSE;
+    for (int i = 0; i < geometries.length; i++) {
+      dimension = math.max(dimension, geometries[i].getDimension());
+    }
+    return dimension;
+  }
+
+  int getBoundaryDimension() {
+    int dimension = Dimension.FALSE;
+    for (int i = 0; i < geometries.length; i++) {
+      dimension = math.max(dimension, (geometries[i] as Geometry).getBoundaryDimension());
+    }
+    return dimension;
   }
 
   int getNumGeometries() {
-    return length;
+    return geometries.length;
   }
 
-  /// Replies the <em>n</em>-th geometry in this collection.
-  @specification(name: "getGeometryN")
-  Geometry getGeometryN(int n) => elementAt(n);
+  Geometry getGeometryN(int n) {
+    return geometries[n];
+  }
 
-  void applyGCF(GeometryComponentFilter filter) {
-    filter.filter(this);
-    _geometries.forEach((g) => g.applyGCF(filter));
+  int getNumPoints() {
+    int numPoints = 0;
+    for (int i = 0; i < geometries.length; i++) {
+      numPoints += (geometries[i] as Geometry).getNumPoints();
+    }
+    return numPoints;
+  }
+
+  String getGeometryType() {
+    return "GeometryCollection";
+  }
+
+  Geometry getBoundary() {
+    Geometry.checkNotGeometryCollection(this);
+    Assert.shouldNeverReachHere();
+    return null;
+  }
+
+  /**
+   *  Returns the area of this <code>GeometryCollection</code>
+   *
+   * @return the area of the polygon
+   */
+  double getArea() {
+    double area = 0.0;
+    for (int i = 0; i < geometries.length; i++) {
+      area += geometries[i].getArea();
+    }
+    return area;
+  }
+
+  double getLength() {
+    double sum = 0.0;
+    for (int i = 0; i < geometries.length; i++) {
+      sum += (geometries[i]).getLength();
+    }
+    return sum;
+  }
+
+  bool equalsExactWithTol(Geometry other, double tolerance) {
+    if (!isEquivalentClass(other)) {
+      return false;
+    }
+    GeometryCollection otherCollection = other as GeometryCollection;
+    if (geometries.length != otherCollection.geometries.length) {
+      return false;
+    }
+    for (int i = 0; i < geometries.length; i++) {
+      if (!(geometries[i] as Geometry).equalsExactWithTol(otherCollection.geometries[i], tolerance)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  void applyCF(CoordinateFilter filter) {
+    for (int i = 0; i < geometries.length; i++) {
+      geometries[i].applyCF(filter);
+    }
   }
 
   void applyCSF(CoordinateSequenceFilter filter) {
-    if (_geometries.isEmpty) return;
-    for (int i = 0; i < _geometries.length; i++) {
-      _geometries[i].applyCSF(filter);
+    if (geometries.length == 0) return;
+    for (int i = 0; i < geometries.length; i++) {
+      geometries[i].applyCSF(filter);
       if (filter.isDone()) {
         break;
       }
@@ -74,121 +167,95 @@ class GeometryCollection extends Geometry with IterableMixin<Geometry>, _Geometr
     if (filter.isGeometryChanged()) geometryChanged();
   }
 
-  /// Replies the <em>n</em>-th geometry in this collection.
-  ///
-  /// This is the Dart'ish implemenation of `getGeometryN()` using
-  /// operator overloading.
-  @specification(name: "getGeometryN")
-  operator [](int n) => elementAt(n);
-
-  /// the iterator to access the geometry objects
-  Iterator<Geometry> get iterator {
-    if (_geometries == null) {
-      return <Geometry>[].iterator;
-    } else {
-      return _geometries.iterator;
+  void applyGF(GeometryFilter filter) {
+    filter.filter(this);
+    for (int i = 0; i < geometries.length; i++) {
+      geometries[i].applyGF(filter);
     }
   }
 
-  /// A geometry collection is simple if all its child geometries are
-  /// simple.
-  @override
-  bool get isSimple => every((g) => g.isSimple);
-
-  @override
-  _writeTaggedWKT(writer, {bool withZ: false, bool withM: false}) {
-    writer.write("GEOMETRYCOLLECTION");
-    writer.blank();
-    if (!isEmpty) {
-      writer.ordinateSpecification(withZ: withZ, withM: withM);
-    }
-    if (isEmpty) {
-      writer.empty();
-    } else {
-      writer
-        ..lparen()
-        ..newline();
-      writer
-        ..incIdent()
-        ..ident();
-      for (int i = 0; i < length; i++) {
-        if (i > 0) {
-          writer
-            ..comma()
-            ..newline()
-            ..ident();
-        }
-        elementAt(i)._writeTaggedWKT(writer, withZ: withZ, withM: withM);
-      }
-      writer..newline();
-      writer
-        ..decIdent()
-        ..ident()
-        ..rparen();
+  void applyGCF(GeometryComponentFilter filter) {
+    filter.filter(this);
+    for (int i = 0; i < geometries.length; i++) {
+      geometries[i].applyGCF(filter);
     }
   }
 
-  @override
-  String get geometryType => "GeometryCollection";
+  /**
+   * Creates and returns a full copy of this {@link GeometryCollection} object.
+   * (including all coordinates contained by it).
+   *
+   * @return a clone of this instance
+   * @deprecated
+   */
+  Object clone() {
+    return copy();
+  }
 
-  @override
-  int get dimension => fold(0, (prev, g) => math.max(prev, g.dimension));
-
-  @override
-  Geometry get boundary => throw UnsupportedError("Operation does not support GeometryCollection arguments");
-}
-
-mixin _GeometryContainerMixin<E extends Geometry> on Iterable<E> {
-  bool _is3D;
-
-  _computeIs3D() {
-    if (this.isEmpty) {
-      _is3D = false;
-    } else {
-      _is3D = every((g) => g.is3D);
+  GeometryCollection copyInternal() {
+    List<Geometry> geometries = List(this.geometries.length);
+    for (int i = 0; i < geometries.length; i++) {
+      geometries[i] = this.geometries[i].copy();
     }
+    return new GeometryCollection.withFactory(geometries, geomFactory);
   }
 
-  /// A collection of geometries is considered 3D if *every* child geometry
-  /// has a non-null z-component.
-  ///
-  /// The value of this property is computed upon first access and then
-  /// cached. Subsequent reads of the property efficiently reply the cached
-  /// value.
-  @override
-  bool get is3D {
-    if (_is3D == null) _computeIs3D();
-    return _is3D;
-  }
-
-  bool _isMeasured;
-
-  _computeIsMeasured() {
-    if (this.isEmpty) {
-      _isMeasured = false;
-    } else {
-      _isMeasured = every((g) => g.isMeasured);
+  void normalize() {
+    for (int i = 0; i < geometries.length; i++) {
+      geometries[i].normalize();
     }
+    geometries.sort();
   }
 
-  /// A collection of geometries is considered *measured* if *every* child
-  /// geometry has an m-component.
-  ///
-  /// The value of this property is computed upon first access and then
-  /// cached. Subsequent reads of the property efficiently reply the cached
-  /// value.
-  @override
-  bool get isMeasured {
-    if (_isMeasured == null) _computeIsMeasured();
-    return _isMeasured;
+  Envelope computeEnvelopeInternal() {
+    Envelope envelope = new Envelope.empty();
+    for (int i = 0; i < geometries.length; i++) {
+      envelope.expandToIncludeEnvelope(geometries[i].getEnvelopeInternal());
+    }
+    return envelope;
   }
 
-  Envelope _computeEnvelope() {
-    if (this.isEmpty) return Envelope.empty();
-    Envelope e = Envelope.empty();
-    forEach((p) => e.expandToIncludeEnvelope(p.envelope));
-    return e;
+  int compareToSameClass(Object o) {
+    Set theseElements = SplayTreeSet.from(geometries);
+    Set otherElements = SplayTreeSet.from((o as GeometryCollection).geometries);
+    return compare(theseElements.toList(), otherElements.toList());
   }
 
-  operator [](int n) => this.elementAt(n);
+  int compareToSameClassWithComparator(Object o, Comparator<CoordinateSequence> comp) {
+    GeometryCollection gc = o as GeometryCollection;
+
+    int n1 = getNumGeometries();
+    int n2 = gc.getNumGeometries();
+    int i = 0;
+    while (i < n1 && i < n2) {
+      Geometry thisGeom = getGeometryN(i);
+      Geometry otherGeom = gc.getGeometryN(i);
+      int holeComp = thisGeom.compareToSameClassWithComparator(otherGeom, comp);
+      if (holeComp != 0) return holeComp;
+      i++;
+    }
+    if (i < n1) return 1;
+    if (i < n2) return -1;
+    return 0;
+  }
+
+  int getSortIndex() {
+    return Geometry.SORTINDEX_GEOMETRYCOLLECTION;
+  }
+
+  /**
+   * Creates a {@link GeometryCollection} with
+   * every component reversed.
+   * The order of the components in the collection are not reversed.
+   *
+   * @return a {@link GeometryCollection} in the reverse order
+   */
+  Geometry reverse() {
+    int n = geometries.length;
+    List<Geometry> revGeoms = List(n);
+    for (int i = 0; i < geometries.length; i++) {
+      revGeoms[i] = geometries[i].reverse();
+    }
+    return getFactory().createGeometryCollection(revGeoms);
+  }
 }

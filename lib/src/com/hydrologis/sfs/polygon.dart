@@ -1,271 +1,392 @@
 part of dart_sfs;
 
-/// A Polygon is a planar Surface defined by 1 exterior boundary and 0 or
-/// more interior boundaries. Each interior boundary defines a hole in the
-/// Polygon.
-class Polygon extends Surface {
-  LineString _exterior;
-  List<LineString> _interiors;
+/**
+ * Represents a polygon with linear edges, which may include holes.
+ * The outer boundary (shell)
+ * and inner boundaries (holes) of the polygon are represented by {@link LinearRing}s.
+ * The boundary rings of the polygon may have any orientation.
+ * Polygons are closed, simple geometries by definition.
+ * <p>
+ * The polygon model conforms to the assertions specified in the
+ * <A HREF="http://www.opengis.org/techno/specs.htm">OpenGIS Simple Features
+ * Specification for SQL</A>.
+ * <p>
+ * A <code>Polygon</code> is topologically valid if and only if:
+ * <ul>
+ * <li>the coordinates which define it are valid coordinates
+ * <li>the linear rings for the shell and holes are valid
+ * (i.e. are closed and do not self-intersect)
+ * <li>holes touch the shell or another hole at at most one point
+ * (which implies that the rings of the shell and holes must not cross)
+ * <li>the interior of the polygon is connected,
+ * or equivalently no sequence of touching holes
+ * makes the interior of the polygon disconnected
+ * (i.e. effectively split the polygon into two pieces).
+ * </ul>
+ *
+ *@version 1.7
+ */
+class Polygon extends Geometry implements Polygonal {
+  /**
+   *  The exterior boundary,
+   * or <code>null</code> if this <code>Polygon</code>
+   *  is empty.
+   */
+  LinearRing shell = null;
 
-  /// Creates a new polygon.
-  ///
-  /// [exteriorRing] must not be null. If [exteriorRing] is empty,
-  /// [interiorRings] must be null, the empty list, or consist of
-  /// empty [LinearRing]s only.
-  ///
-  /// [interiorRings] can be null. If it is a non-empty list, then it
-  /// must not contain null values.
-  ///
-  /// Note: According to the SFS, both the exterior and the interior must
-  /// be valid [LinearRing]s, i.e. they must be simple, closed [LineString]s.
-  /// Exterior and interior rings must not cross and a polygon must not have
-  /// cuts, spikes, punctures (see the SFS for examples). These restrictions
-  /// are currently not enforced when a [Polygon] is created.
-  ///
-  /// Throws [ArgumentError] if one of the preconditions is violated.
-  Polygon(LineString exteriorRing, Iterable<LineString> interiorRings) {
-    _require(exteriorRing != null);
-    //TODO: valdiate that exteriorRing is indeed a ring
-    if (interiorRings == null) interiorRings = [];
-    _require(interiorRings.every((r) => r != null), "interior rings must not be null");
-    if (exteriorRing.isEmpty) {
-      _require(interiorRings.every((r) => r.isEmpty), "exterior ring is empty => all interior rings must be empty");
-      _exterior = null;
-      _interiors = null;
-      return;
+  /**
+   * The interior boundaries, if any.
+   * This instance var is never null.
+   * If there are no holes, the array is of zero length.
+   */
+  List<LinearRing> holes;
+
+  /**
+   *  Constructs a <code>Polygon</code> with the given exterior boundary.
+   *
+   *@param  shell           the outer boundary of the new <code>Polygon</code>,
+   *      or <code>null</code> or an empty <code>LinearRing</code> if the empty
+   *      geometry is to be created.
+   *@param  precisionModel  the specification of the grid of allowable points
+   *      for this <code>Polygon</code>
+   *@param  SRID            the ID of the Spatial Reference System used by this
+   *      <code>Polygon</code>
+   * @deprecated Use GeometryFactory instead
+   */
+  Polygon(LinearRing shell, PrecisionModel precisionModel, int SRID)
+      : this.withFactory(shell, <LinearRing>[], new GeometryFactory.withPrecisionModelSrid(precisionModel, SRID));
+
+  /**
+   *  Constructs a <code>Polygon</code> with the given exterior boundary and
+   *  interior boundaries.
+   *
+   *@param  shell           the outer boundary of the new <code>Polygon</code>,
+   *      or <code>null</code> or an empty <code>LinearRing</code> if the empty
+   *      geometry is to be created.
+   *@param  holes           the inner boundaries of the new <code>Polygon</code>
+   *      , or <code>null</code> or empty <code>LinearRing</code>s if the empty
+   *      geometry is to be created.
+   *@param  precisionModel  the specification of the grid of allowable points
+   *      for this <code>Polygon</code>
+   *@param  SRID            the ID of the Spatial Reference System used by this
+   *      <code>Polygon</code>
+   * @deprecated Use GeometryFactory instead
+   */
+  Polygon.withPrecisionModelSrid(LinearRing shell, List<LinearRing> holes, PrecisionModel precisionModel, int SRID)
+      : this.withFactory(shell, holes, new GeometryFactory.withPrecisionModelSrid(precisionModel, SRID));
+
+  /**
+   *  Constructs a <code>Polygon</code> with the given exterior boundary and
+   *  interior boundaries.
+   *
+   *@param  shell           the outer boundary of the new <code>Polygon</code>,
+   *      or <code>null</code> or an empty <code>LinearRing</code> if the empty
+   *      geometry is to be created.
+   *@param  holes           the inner boundaries of the new <code>Polygon</code>
+   *      , or <code>null</code> or empty <code>LinearRing</code>s if the empty
+   *      geometry is to be created.
+   */
+  Polygon.withFactory(LinearRing shell, List<LinearRing> holes, GeometryFactory factory) : super(factory) {
+    if (shell == null) {
+      shell = getFactory().createLinearRingEmpty();
     }
-    _exterior = exteriorRing;
-    _interiors = List.from(interiorRings, growable: false);
-    //TODO: check geometry of interiors. Must be valid rings, mutually not
-    // intersection
-    //TODO: check geometry of overall polygon. SFS mentions a set of edge
-    // cases like spikes, cuts or punctures which are not allowed
-  }
-
-  /// Creates a new empty polygon.
-  Polygon.empty()
-      : _exterior = null,
-        _interiors = null;
-
-  /// Creates a new point from the WKT string [wkt].
-  ///
-  /// Throws a [WKTError] if [wkt] isn't a valid representation of
-  /// a [Polygon].
-  factory Polygon.wkt(String wkt) {
-    var g = WKTReader().read(wkt);
-    if (g is! Polygon) {
-      throw ArgumentError("WKT string doesn't represent a Polygon");
+    if (holes == null) {
+      holes = <LinearRing>[];
     }
-    return g;
+    if (Geometry.hasNullElements(holes)) {
+      throw new ArgumentError("holes must not contain null elements");
+    }
+    if (shell.isEmpty() && Geometry.hasNonEmptyElements(holes)) {
+      throw new ArgumentError("shell is empty but holes are not");
+    }
+    this.shell = shell;
+    this.holes = holes;
   }
 
-  /// Creates a triangle with the [exterior].
-  ///
-  /// [exterior] must be a non-null, closed linestring with exactly three
-  /// distinct, non-colienar points.
-  ///
-  /// Throws [ArgumentError] if the preconditions aren't met.
-  Polygon.triangle(LineString exterior) {
-    _require(exterior != null);
-    _require(exterior.map((p) => Coordinate(p.x, p.y)).toSet().length == 3, "a triangle must consist of three non-colinear nodes");
-    _require(exterior.isClosed, "the exterior of a triangle must be closed");
-    //TODO: check for colienarity of the three points
-
-    _exterior = exterior;
-  }
-
-  @override
   Coordinate getCoordinate() {
-    return _exterior.isEmpty ? null : _exterior.getCoordinate();
+    return shell.getCoordinate();
   }
 
-  @override
   List<Coordinate> getCoordinates() {
-    List<Coordinate> coords = [];
-    coords.addAll(_exterior.getCoordinates());
-    _interiors.forEach((inter) {
-      coords.addAll(inter.getCoordinates());
-    });
-    return coords;
+    if (isEmpty()) {
+      return <Coordinate>[];
+    }
+    List<Coordinate> coordinates = List(getNumPoints());
+    int k = -1;
+    List<Coordinate> shellCoordinates = shell.getCoordinates();
+    for (int x = 0; x < shellCoordinates.length; x++) {
+      k++;
+      coordinates[k] = shellCoordinates[x];
+    }
+    for (int i = 0; i < holes.length; i++) {
+      List<Coordinate> childCoordinates = holes[i].getCoordinates();
+      for (int j = 0; j < childCoordinates.length; j++) {
+        k++;
+        coordinates[k] = childCoordinates[j];
+      }
+    }
+    return coordinates;
   }
 
-  int getNumGeometries() {
+  int getNumPoints() {
+    int numPoints = shell.getNumPoints();
+    for (int i = 0; i < holes.length; i++) {
+      numPoints += holes[i].getNumPoints();
+    }
+    return numPoints;
+  }
+
+  int getDimension() {
+    return 2;
+  }
+
+  int getBoundaryDimension() {
     return 1;
   }
 
-  Geometry getGeometryN(int n) {
-    return this;
+  bool isEmpty() {
+    return shell.isEmpty();
   }
 
-  LineString getExteriorRing() {
-    if (_exterior == null) return LineString.empty();
-    return _exterior;
+  bool isRectangle() {
+    if (getNumInteriorRing() != 0) return false;
+    if (shell == null) return false;
+    if (shell.getNumPoints() != 5) return false;
+
+    CoordinateSequence seq = shell.getCoordinateSequence();
+
+    // check vertices have correct values
+    Envelope env = getEnvelopeInternal();
+    for (int i = 0; i < 5; i++) {
+      double x = seq.getX(i);
+      if (!(x == env.getMinX() || x == env.getMaxX())) return false;
+      double y = seq.getY(i);
+      if (!(y == env.getMinY() || y == env.getMaxY())) return false;
+    }
+
+    // check vertices are in right order
+    double prevX = seq.getX(0);
+    double prevY = seq.getY(0);
+    for (int i = 1; i <= 4; i++) {
+      double x = seq.getX(i);
+      double y = seq.getY(i);
+      bool xChanged = x != prevX;
+      bool yChanged = y != prevY;
+      if (xChanged == yChanged) return false;
+      prevX = x;
+      prevY = y;
+    }
+    return true;
+  }
+
+  LinearRing getExteriorRing() {
+    return shell;
   }
 
   int getNumInteriorRing() {
-    if (_interiors == null) return 0;
-    return _interiors.length;
+    return holes.length;
   }
 
-  LineString getInteriorRingN(int n) {
-    if (_interiors == null) return null;
-    return _interiors[n];
+  LinearRing getInteriorRingN(int n) {
+    return holes[n];
+  }
+
+  String getGeometryType() {
+    return "Polygon";
+  }
+
+  /**
+   *  Returns the area of this <code>Polygon</code>
+   *
+   *@return the area of the polygon
+   */
+  double getArea() {
+    double area = 0.0;
+    area += Area.ofRingSeq(shell.getCoordinateSequence());
+    for (int i = 0; i < holes.length; i++) {
+      area -= Area.ofRingSeq(holes[i].getCoordinateSequence());
+    }
+    return area;
+  }
+
+  /**
+   *  Returns the perimeter of this <code>Polygon</code>
+   *
+   *@return the perimeter of the polygon
+   */
+  double getLength() {
+    double len = 0.0;
+    len += shell.getLength();
+    for (int i = 0; i < holes.length; i++) {
+      len += holes[i].getLength();
+    }
+    return len;
+  }
+
+  /**
+   * Computes the boundary of this geometry
+   *
+   * @return a lineal geometry (which may be empty)
+   * @see Geometry#getBoundary
+   */
+  Geometry getBoundary() {
+    if (isEmpty()) {
+      return getFactory().createMultiLineStringEmpty();
+    }
+    List<LinearRing> rings = List(holes.length + 1);
+    rings[0] = shell;
+    for (int i = 0; i < holes.length; i++) {
+      rings[i + 1] = holes[i];
+    }
+    // create LineString or MultiLineString as appropriate
+    if (rings.length <= 1) return getFactory().createLinearRingSeq(rings[0].getCoordinateSequence());
+    return getFactory().createMultiLineString(rings);
+  }
+
+  Envelope computeEnvelopeInternal() {
+    return shell.getEnvelopeInternal();
+  }
+
+  bool equalsExactWithTol(Geometry other, double tolerance) {
+    if (!isEquivalentClass(other)) {
+      return false;
+    }
+    Polygon otherPolygon = other as Polygon;
+    Geometry thisShell = shell;
+    Geometry otherPolygonShell = otherPolygon.shell;
+    if (!thisShell.equalsExactWithTol(otherPolygonShell, tolerance)) {
+      return false;
+    }
+    if (holes.length != otherPolygon.holes.length) {
+      return false;
+    }
+    for (int i = 0; i < holes.length; i++) {
+      if (!(holes[i] as Geometry).equalsExactWithTol(otherPolygon.holes[i], tolerance)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  void applyCF(CoordinateFilter filter) {
+    shell.applyCF(filter);
+    for (int i = 0; i < holes.length; i++) {
+      holes[i].applyCF(filter);
+    }
+  }
+
+  void applyCSF(CoordinateSequenceFilter filter) {
+    shell.applyCSF(filter);
+    if (!filter.isDone()) {
+      for (int i = 0; i < holes.length; i++) {
+        holes[i].applyCSF(filter);
+        if (filter.isDone()) break;
+      }
+    }
+    if (filter.isGeometryChanged()) geometryChanged();
+  }
+
+  void applyGF(GeometryFilter filter) {
+    filter.filter(this);
   }
 
   void applyGCF(GeometryComponentFilter filter) {
     filter.filter(this);
-    _exterior.applyGCF(filter);
-    _interiors.forEach((g) => g.applyGCF(filter));
-  }
-
-  void applyCSF(CoordinateSequenceFilter filter) {
-    _exterior.applyCSF(filter);
-    if (!filter.isDone()) {
-      for (int i = 0; i < _interiors.length; i++) {
-        _interiors[i].applyCSF(filter);
-        if (filter.isDone()) {
-          break;
-        }
-      }
-    }
-    if (filter.isGeometryChanged()) {
-      geometryChanged();
+    shell.applyGCF(filter);
+    for (int i = 0; i < holes.length; i++) {
+      holes[i].applyGCF(filter);
     }
   }
 
-  /// The exterior ring of this polygon.
-  ///
-  /// Replies an empty linestring if this polygon is empty.
-  @specification(name: "exteriorRing()")
-  LineString get exteriorRing => _exterior == null ? LineString.empty() : _exterior;
-
-  /// The interior rings. Replies an empty iterable, if
-  /// this polygon doesn't have interior rings.
-  Iterable<LineString> get interiorRings => _interiors == null ? [] : _interiors;
-
-  /// the number of interior rings
-  @specification(name: "numInteriorRing()")
-  int get numInteriorRing => _interiors == null ? 0 : _interiors.length;
-
-  /// Replies the n-th interior ring.
-  ///
-  /// Throws a [RangeError] if [n] is out of range
-  @specification(name: "interiorRingN()")
-  LineString interiorRingN(int n) => interiorRings.elementAt(n);
-
-  @override
-  String get geometryType => "Polygon";
-
-  /// Replies true if this polygon isn't empty and if both the
-  /// exterior and each of the interior rings are 3D.
-  @override
-  bool get is3D {
-    bool ret = _exterior == null ? false : _exterior.is3D;
-    if (interiorRings.isEmpty) return ret;
-    ret = ret && interiorRings.every((r) => r.is3D);
-    return ret;
+  /**
+   * Creates and returns a full copy of this {@link Polygon} object.
+   * (including all coordinates contained by it).
+   *
+   * @return a clone of this instance
+   * @deprecated
+   */
+  Object clone() {
+    return copy();
   }
 
-  /// Replies true if this polygon isn't empty and if both the
-  /// exterior and each of the interior rings are measured.
-  @override
-  bool get isMeasured {
-    bool ret = _exterior == null ? false : _exterior.isMeasured;
-    if (interiorRings.isEmpty) return ret;
-    ret = ret && interiorRings.every((r) => r.isMeasured);
-    return ret;
-  }
-
-  @override
-  bool get isEmpty => _exterior == null;
-
-  @override
-  Geometry get boundary {
-    if (isEmpty) return MultiLineString.empty();
-    if (interiorRings.isEmpty) return exteriorRing;
-    List<LineString> rings = [];
-    rings.add(exteriorRing);
-    rings.addAll(interiorRings);
-    return MultiLineString(rings);
-  }
-
-  @override
-  _writeTaggedWKT(writer, {bool withZ = false, bool withM = false}) {
-    writer.write("POLYGON");
-    writer.blank();
-    if (!isEmpty) {
-      writer.ordinateSpecification(withZ: is3D, withM: isMeasured);
+  Polygon copyInternal() {
+    LinearRing shellCopy = shell.copy() as LinearRing;
+    List<LinearRing> holeCopies = List(this.holes.length);
+    for (int i = 0; i < holes.length; i++) {
+      holeCopies[i] = holes[i].copy() as LinearRing;
     }
-    _writeWKT(writer, withZ: withZ, withM: withM);
+    return new Polygon.withFactory(shellCopy, holeCopies, geomFactory);
   }
 
-  _writeWKT(writer, {bool withZ = false, bool withM = false}) {
-    if (this.isEmpty) {
-      writer.empty();
-    } else {
-      writer
-        ..lparen()
-        ..newline();
-      writer
-        ..incIdent()
-        ..ident();
-      _exterior._writeWKT(writer, withZ: withZ, withM: withM);
-      if (_interiors.isNotEmpty) {
-        writer
-          ..comma()
-          ..newline();
-      }
-      for (int i = 0; i < _interiors.length; i++) {
-        if (i > 0) {
-          writer
-            ..comma()
-            ..newline()
-            ..ident();
-        }
-        _interiors[i]._writeWKT(writer, withZ: withZ, withM: withM);
-      }
-      writer..newline();
-      writer
-        ..decIdent()
-        ..ident()
-        ..rparen();
+  Geometry convexHull() {
+    return getExteriorRing().convexHull();
+  }
+
+  void normalize() {
+    shell = normalized(shell, true);
+    for (int i = 0; i < holes.length; i++) {
+      holes[i] = normalized(holes[i], false);
     }
+    holes.sort();
   }
 
-  @override
-  Envelope _computeEnvelope() {
-    if (this.isEmpty) return Envelope.empty();
-    Envelope e = Envelope.empty();
-    e.expandToIncludeEnvelope(_exterior.envelope);
-    return e;
+  int compareToSameClass(Object o) {
+    LinearRing thisShell = shell;
+    LinearRing otherShell = (o as Polygon).shell;
+    return thisShell.compareToSameClass(otherShell);
   }
 
-  @override
-  // TODO: implement area
-  double get area => null;
+  int compareToSameClassWithComparator(Object o, Comparator<CoordinateSequence> comp) {
+    Polygon poly = o as Polygon;
 
-  @override
-  // TODO: implement centroid
-  Point get centroid => null;
+    LinearRing thisShell = shell;
+    LinearRing otherShell = poly.shell;
+    int shellComp = thisShell.compareToSameClassWithComparator(otherShell, comp);
+    if (shellComp != 0) return shellComp;
 
-  @override
-  // TODO: implement isSimple
-  bool get isSimple => null;
+    int nHole1 = getNumInteriorRing();
+    int nHole2 = poly.getNumInteriorRing();
+    int i = 0;
+    while (i < nHole1 && i < nHole2) {
+      LinearRing thisHole = getInteriorRingN(i) as LinearRing;
+      LinearRing otherHole = poly.getInteriorRingN(i) as LinearRing;
+      int holeComp = thisHole.compareToSameClassWithComparator(otherHole, comp);
+      if (holeComp != 0) return holeComp;
+      i++;
+    }
+    if (i < nHole1) return 1;
+    if (i < nHole2) return -1;
+    return 0;
+  }
 
-  @override
-  // TODO: implement pointOnSurface
-  Point get pointOnSurface => null;
-}
+  int getSortIndex() {
+    return Geometry.SORTINDEX_POLYGON;
+  }
 
-/// A Triangle is a polygon with 3 distinct, non-collinear vertices and no
-/// interior boundary.
-///
-class Triangle extends Polygon {
-  /// Creates a triangle with the [exterior].
-  ///
-  /// [exterior] must be a non-null, closed linestring with exactly three
-  /// distinct, non-colienar points.
-  ///
-  /// Throws [ArgumentError] if the preconditions aren't met.
-  Triangle(LineString exterior) : super.triangle(exterior);
+  LinearRing normalized(LinearRing ring, bool clockwise) {
+    LinearRing res = ring.copy() as LinearRing;
+    normalizeRing(res, clockwise);
+    return res;
+  }
+
+  void normalizeRing(LinearRing ring, bool clockwise) {
+    if (ring.isEmpty()) {
+      return;
+    }
+
+    CoordinateSequence seq = ring.getCoordinateSequence();
+    int minCoordinateIndex = CoordinateSequences.minCoordinateIndexWithRange(seq, 0, seq.size() - 2);
+    CoordinateSequences.scrollWithIndexAndRingcheck(seq, minCoordinateIndex, true);
+    if (Orientation.isCCWFromSeq(seq) == clockwise) CoordinateSequences.reverse(seq);
+  }
+
+  Geometry reverse() {
+    Polygon poly = copy() as Polygon;
+    poly.shell = shell.copy().reverse() as LinearRing;
+    poly.holes = List(holes.length);
+    for (int i = 0; i < holes.length; i++) {
+      poly.holes[i] = holes[i].copy().reverse() as LinearRing;
+    }
+    return poly; // return the clone
+  }
 }

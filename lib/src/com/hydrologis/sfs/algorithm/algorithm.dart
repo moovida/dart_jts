@@ -1643,3 +1643,136 @@ class RectangleLineIntersector {
     return false;
   }
 }
+
+/**
+ * Functions for computing length.
+ *
+ * @author Martin Davis
+ *
+ */
+class Length {
+  /**
+   * Computes the length of a linestring specified by a sequence of points.
+   *
+   * @param pts the points specifying the linestring
+   * @return the length of the linestring
+   */
+  static double ofLine(CoordinateSequence pts) {
+    // optimized for processing CoordinateSequences
+    int n = pts.size();
+    if (n <= 1) return 0.0;
+
+    double len = 0.0;
+
+    Coordinate p = new Coordinate.empty2D();
+    pts.getCoordinateInto(0, p);
+    double x0 = p.x;
+    double y0 = p.y;
+
+    for (int i = 1; i < n; i++) {
+      pts.getCoordinateInto(i, p);
+      double x1 = p.x;
+      double y1 = p.y;
+      double dx = x1 - x0;
+      double dy = y1 - y0;
+
+      len += math.sqrt(dx * dx + dy * dy);
+
+      x0 = x1;
+      y0 = y1;
+    }
+    return len;
+  }
+}
+
+/**
+ * Functions for computing area.
+ *
+ * @author Martin Davis
+ *
+ */
+class Area {
+  /**
+   * Computes the area for a ring.
+   *
+   * @param ring the coordinates forming the ring
+   * @return the area of the ring
+   */
+  static double ofRing(List<Coordinate> ring) {
+    return ofRingSigned(ring).abs();
+  }
+
+  /**
+   * Computes the area for a ring.
+   *
+   * @param ring the coordinates forming the ring
+   * @return the area of the ring
+   */
+  static double ofRingSeq(CoordinateSequence ring) {
+    return ofRingSignedSeq(ring).abs();
+  }
+
+  /**
+   * Computes the signed area for a ring. The signed area is positive if the
+   * ring is oriented CW, negative if the ring is oriented CCW, and zero if the
+   * ring is degenerate or flat.
+   *
+   * @param ring
+   *          the coordinates forming the ring
+   * @return the signed area of the ring
+   */
+  static double ofRingSigned(List<Coordinate> ring) {
+    if (ring.length < 3) return 0.0;
+    double sum = 0.0;
+    /**
+     * Based on the Shoelace formula.
+     * http://en.wikipedia.org/wiki/Shoelace_formula
+     */
+    double x0 = ring[0].x;
+    for (int i = 1; i < ring.length - 1; i++) {
+      double x = ring[i].x - x0;
+      double y1 = ring[i + 1].y;
+      double y2 = ring[i - 1].y;
+      sum += x * (y2 - y1);
+    }
+    return sum / 2.0;
+  }
+
+  /**
+   * Computes the signed area for a ring. The signed area is:
+   * <ul>
+   * <li>positive if the ring is oriented CW
+   * <li>negative if the ring is oriented CCW
+   * <li>zero if the ring is degenerate or flat
+   * </ul>
+   *
+   * @param ring
+   *          the coordinates forming the ring
+   * @return the signed area of the ring
+   */
+  static double ofRingSignedSeq(CoordinateSequence ring) {
+    int n = ring.size();
+    if (n < 3) return 0.0;
+    /**
+     * Based on the Shoelace formula.
+     * http://en.wikipedia.org/wiki/Shoelace_formula
+     */
+    Coordinate p0 = new Coordinate.empty2D();
+    Coordinate p1 = new Coordinate.empty2D();
+    Coordinate p2 = new Coordinate.empty2D();
+    ring.getCoordinateInto(0, p1);
+    ring.getCoordinateInto(1, p2);
+    double x0 = p1.x;
+    p2.x -= x0;
+    double sum = 0.0;
+    for (int i = 1; i < n - 1; i++) {
+      p0.y = p1.y;
+      p1.x = p2.x;
+      p1.y = p2.y;
+      ring.getCoordinateInto(i + 1, p2);
+      p2.x -= x0;
+      sum += p1.x * (p0.y - p2.y);
+    }
+    return sum / 2.0;
+  }
+}
