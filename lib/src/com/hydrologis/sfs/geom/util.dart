@@ -1746,15 +1746,15 @@ class GeometryEditor {
     }
 
     if (collectionForType is MultiPoint) {
-      return _geomFactory.createMultiPoint(geometries as List<Point>);
+      return _geomFactory.createMultiPoint(geometries.cast<Point>());
     }
     if (collectionForType is MultiLineString) {
-      return _geomFactory.createMultiLineString(geometries as List<LineString>);
+      return _geomFactory.createMultiLineString(geometries.cast<LineString>());
     }
     if (collectionForType is MultiPolygon) {
-      return _geomFactory.createMultiPolygon(geometries as List<Polygon>);
+      return _geomFactory.createMultiPolygon(geometries.cast<Polygon>());
     }
-    return _geomFactory.createGeometryCollection(geometries);
+    return _geomFactory.createGeometryCollection(geometries.cast<Geometry>());
   }
 }
 

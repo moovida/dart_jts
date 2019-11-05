@@ -204,7 +204,7 @@ class LineString extends Geometry implements Lineal {
 
   void applyCF(CoordinateFilter filter) {
     for (int i = 0; i < points.size(); i++) {
-      filter.filter(points.getCoordinate(i));
+      filter(points.getCoordinate(i));
     }
   }
 

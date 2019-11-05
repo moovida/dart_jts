@@ -200,15 +200,17 @@ abstract class CoordinateSequenceFilter {
 /// @see CoordinateSequenceFilter
 ///
 ///@version 1.7
-abstract class CoordinateFilter {
-  /// Performs an operation with the provided <code>coord</code>.
-  /// Note that there is no guarantee that the input coordinate
-  /// is the actual object stored in the source geometry,
-  /// so changes to the coordinate object may not be persistent.
-  ///
-  ///@param  coord  a <code>Coordinate</code> to which the filter is applied.
-  void filter(Coordinate coord);
-}
+//abstract class CoordinateFilter {
+//  /// Performs an operation with the provided <code>coord</code>.
+//  /// Note that there is no guarantee that the input coordinate
+//  /// is the actual object stored in the source geometry,
+//  /// so changes to the coordinate object may not be persistent.
+//  ///
+//  ///@param  coord  a <code>Coordinate</code> to which the filter is applied.
+//  void filter(Coordinate coord);
+//}
+
+typedef CoordinateFilter<Coordinate> = void Function(Coordinate coordinate);
 
 ///  <code>GeometryCollection</code> classes support the concept of
 ///  applying a <code>GeometryFilter</code> to the <code>Geometry</code>.

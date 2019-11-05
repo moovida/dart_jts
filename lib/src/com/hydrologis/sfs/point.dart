@@ -132,7 +132,7 @@ class Point extends Geometry implements Puntal {
     if (isEmpty()) {
       return;
     }
-    filter.filter(getCoordinate());
+    filter(getCoordinate());
   }
 
   void applyCSF(CoordinateSequenceFilter filter) {

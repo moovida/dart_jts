@@ -12,6 +12,131 @@ GeometryFactory geometryFactory = GeometryFactory.withPrecisionModelSrid(precisi
 WKTReader reader = WKTReader.withFactory(geometryFactory);
 
 void main() {
+  group("GeometryFactoryTest - ", () {
+    PrecisionModel precisionModel = new PrecisionModel();
+    GeometryFactory geometryFactory = new GeometryFactory.withPrecisionModelSrid(precisionModel, 0);
+    WKTReader reader = new WKTReader.withFactory(geometryFactory);
+
+    test("testCreateGeometry", () {
+      checkCreateGeometryExact("POINT EMPTY");
+      checkCreateGeometryExact("POINT ( 10 20 )");
+      checkCreateGeometryExact("LINESTRING EMPTY");
+      checkCreateGeometryExact("LINESTRING(0 0, 10 10)");
+      checkCreateGeometryExact("MULTILINESTRING ((50 100, 100 200), (100 100, 150 200))");
+      checkCreateGeometryExact("POLYGON ((100 200, 200 200, 200 100, 100 100, 100 200))");
+      checkCreateGeometryExact("MULTIPOLYGON (((100 200, 200 200, 200 100, 100 100, 100 200)), ((300 200, 400 200, 400 100, 300 100, 300 200)))");
+      checkCreateGeometryExact("GEOMETRYCOLLECTION (POLYGON ((100 200, 200 200, 200 100, 100 100, 100 200)), LINESTRING (250 100, 350 200), POINT (350 150))");
+    });
+    test("testCreateEmpty", () {
+      checkEmpty(geometryFactory.createEmpty(0), geometryFactory.createPointEmpty().runtimeType.toString());
+      checkEmpty(geometryFactory.createEmpty(1), geometryFactory.createLineStringEmpty().runtimeType.toString());
+      checkEmpty(geometryFactory.createEmpty(2), geometryFactory.createPolygonEmpty().runtimeType.toString());
+
+      checkEmpty(geometryFactory.createPointEmpty(), geometryFactory.createPointEmpty().runtimeType.toString());
+      checkEmpty(geometryFactory.createLineStringEmpty(), geometryFactory.createLineStringEmpty().runtimeType.toString());
+      checkEmpty(geometryFactory.createPolygonEmpty(), geometryFactory.createPolygonEmpty().runtimeType.toString());
+
+      checkEmpty(geometryFactory.createMultiPointEmpty(), geometryFactory.createMultiPointEmpty().runtimeType.toString());
+      checkEmpty(geometryFactory.createMultiLineStringEmpty(), geometryFactory.createMultiLineStringEmpty().runtimeType.toString());
+      checkEmpty(geometryFactory.createMultiPolygonEmpty(), geometryFactory.createMultiPolygonEmpty().runtimeType.toString());
+      checkEmpty(geometryFactory.createGeometryCollectionEmpty(), geometryFactory.createGeometryCollectionEmpty().runtimeType.toString());
+    });
+    test("testDeepCopy", () {
+      Point g = read("POINT ( 10 10) ");
+      Geometry g2 = geometryFactory.createGeometry(g);
+      g.getCoordinateSequence().setOrdinate(0, 0, 99);
+      assertTrue(!g.equalsExactGeom(g2));
+    });
+    test("testMultiPointCS", () {
+      GeometryFactory gf = GeometryFactory.withCoordinateSequenceFactory(PackedCoordinateSequenceFactory());
+      CoordinateSequence mpSeq = gf.getCoordinateSequenceFactory().createSizeDim(1, 4);
+      mpSeq.setOrdinate(0, 0, 50);
+      mpSeq.setOrdinate(0, 1, -2);
+      mpSeq.setOrdinate(0, 2, 10);
+      mpSeq.setOrdinate(0, 3, 20);
+
+      MultiPoint mp = gf.createMultiPointSeq(mpSeq);
+      CoordinateSequence pSeq = (mp.getGeometryN(0) as Point).getCoordinateSequence();
+      assertEquals(4, pSeq.getDimension());
+      for (int i = 0; i < 4; i++) assertEquals(mpSeq.getOrdinate(0, i), pSeq.getOrdinate(0, i));
+    });
+    test("testCopyGeometryWithNonDefaultDimension", () {
+      GeometryFactory gf = GeometryFactory.withCoordinateSequenceFactory(CoordinateArraySequenceFactory());
+      CoordinateSequence mpSeq = gf.getCoordinateSequenceFactory().createSizeDim(1, 2);
+      mpSeq.setOrdinate(0, 0, 50);
+      mpSeq.setOrdinate(0, 1, -2);
+
+      Point g = gf.createPointSeq(mpSeq);
+      CoordinateSequence pSeq = (g.getGeometryN(0) as Point).getCoordinateSequence();
+      assertEquals(2, pSeq.getDimension());
+
+      Point g2 = geometryFactory.createGeometry(g);
+      assertEquals(2, g2.getCoordinateSequence().getDimension());
+    });
+  });
+  group("GeometryCopyTest - ", () {
+    test("testCopy", () {
+      checkCopy(read(WKT_POINT));
+      checkCopy(read(WKT_LINESTRING));
+      checkCopy(read(WKT_LINEARRING));
+      checkCopy(read(WKT_POLY));
+      checkCopy(read(WKT_MULTIPOINT));
+      checkCopy(read(WKT_MULTILINESTRING));
+      checkCopy(read(WKT_MULTIPOLYGON));
+      checkCopy(read(WKT_GC));
+    });
+  });
+  group("GeometryCollectionIteratorTest - ", () {
+    test("testGeometryCollection", () {
+      GeometryCollection g = read("GEOMETRYCOLLECTION (GEOMETRYCOLLECTION (POINT (10 10)))");
+      GeometryCollectionIterator i = GeometryCollectionIterator(g);
+      assertTrue(i.hasNext());
+      assertTrue(i.next() is GeometryCollection);
+      assertTrue(i.hasNext());
+      assertTrue(i.next() is GeometryCollection);
+      assertTrue(i.hasNext());
+      assertTrue(i.next() is Point);
+      assertTrue(!i.hasNext());
+    });
+    test("testAtomic", () {
+      Polygon g = read("POLYGON ((1 9, 9 9, 9 1, 1 1, 1 9))");
+      GeometryCollectionIterator i = GeometryCollectionIterator(g);
+      assertTrue(i.hasNext());
+      assertTrue(i.next() is Polygon);
+      assertTrue(!i.hasNext());
+    });
+  });
+  group("GeometryCollectionImplTest - ", () {
+    PrecisionModel precisionModel1 = PrecisionModel.fixedPrecision(1000);
+    GeometryFactory geometryFactory1 = GeometryFactory.withPrecisionModelSrid(precisionModel1, 0);
+    WKTReader reader1 = WKTReader.withFactory(geometryFactory1);
+    test("testGetDimension", () {
+      GeometryCollection g = reader1.read("GEOMETRYCOLLECTION (POINT (10 10), POINT (30 30), LINESTRING (15 15, 20 20))");
+      assertEquals(1, g.getDimension());
+    });
+    test("testGetCoordinates", () {
+      GeometryCollection g = reader1.read("GEOMETRYCOLLECTION (POINT (10 10), POINT (30 30), LINESTRING (15 15, 20 20))");
+      var coordinates = g.getCoordinates();
+      assertEquals(4, g.getNumPoints());
+      assertEquals(4, coordinates.length);
+      assertEquals(new Coordinate(10, 10), coordinates[0]);
+      assertEquals(new Coordinate(20, 20), coordinates[3]);
+    });
+    test("testGeometryCollectionIterator", () {
+      GeometryCollection g = reader1.read("GEOMETRYCOLLECTION (GEOMETRYCOLLECTION (POINT (10 10)))");
+      GeometryCollectionIterator i = GeometryCollectionIterator(g);
+      assertTrue(i.hasNext());
+      assertTrue(i.next() is GeometryCollection);
+      assertTrue(i.next() is GeometryCollection);
+      assertTrue(i.next() is Point);
+    });
+    test("testGetLength", () {
+      GeometryCollection g = WKTReader().read("MULTIPOLYGON(" +
+          "((0 0, 10 0, 10 10, 0 10, 0 0), (3 3, 3 7, 7 7, 7 3, 3 3))," +
+          "((100 100, 110 100, 110 110, 100 110, 100 100), (103 103, 103 107, 107 107, 107 103, 103 103)))");
+      assertEqualsD(112, g.getLength(), 1E-15);
+    });
+  });
   group("CoordinateTest - ", () {
     test("testConstructor3D", () {
       Coordinate c = Coordinate.fromXYZ(350.2, 4566.8, 5266.3);
@@ -321,6 +446,22 @@ void checkLength(String wkt, double expectedValue) {
   double len = g.getLength();
 //		//System.out.println(len);
   expect(NumberUtils.equalsWithTolerance(expectedValue, len, TOLERANCE), true);
+}
+
+void checkCopy(final Geometry g) {
+  int SRID = 123;
+  g.setSRID(SRID);
+
+  Object DATA = 999;
+  g.setUserData(DATA);
+
+  Geometry copy = g.copy();
+
+  assertEquals(g.getSRID(), copy.getSRID());
+  assertEquals(g.getUserData(), copy.getUserData());
+
+  //TODO: use a test which checks all ordinates of CoordinateSequences
+  assertTrue(g.equalsExactGeom(copy));
 }
 
 void checkArea(String wkt, double expectedValue) {
@@ -635,4 +776,35 @@ void checkMUnsupported(Coordinate coord) {
     fail(coord.runtimeType.toString() + " does not support M");
   } catch (expected) {}
   assertTrue(coord.getM().isNaN);
+}
+
+void checkEmpty(Geometry geom, String clz) {
+  assertTrue(geom.isEmpty());
+  assertTrue(geom.runtimeType.toString() == clz);
+}
+
+/**
+ * CoordinateArraySequences default their dimension to 3 unless explicitly told otherwise.
+ * This test ensures that GeometryFactory.createGeometry() recreates the input dimension properly.
+ *
+ * @throws ParseException
+ */
+void testCopyGeometryWithNonDefaultDimension() {
+  GeometryFactory gf = new GeometryFactory.withCoordinateSequenceFactory(CoordinateArraySequenceFactory());
+  CoordinateSequence mpSeq = gf.getCoordinateSequenceFactory().createSizeDim(1, 2);
+  mpSeq.setOrdinate(0, 0, 50);
+  mpSeq.setOrdinate(0, 1, -2);
+
+  Point g = gf.createPointSeq(mpSeq);
+  CoordinateSequence pSeq = (g.getGeometryN(0) as Point).getCoordinateSequence();
+  assertEquals(2, pSeq.getDimension());
+
+  Point g2 = geometryFactory.createGeometry(g) as Point;
+  assertEquals(2, g2.getCoordinateSequence().getDimension());
+}
+
+void checkCreateGeometryExact(String wkt) {
+  Geometry g = read(wkt);
+  Geometry g2 = geometryFactory.createGeometry(g);
+  assertTrue(g.equalsExactGeom(g2));
 }
