@@ -640,70 +640,83 @@ class CoordinateArrays {
   }
 }
 
-/// Useful utility functions for handling Coordinate objects.
-class Coordinates {
-  /// Factory method providing access to common Coordinate implementations.
-  ///
-  /// @param dimension
-  /// @return created coordinate
-  static Coordinate create(int dimension) {
-    return createDimMeas(dimension, 0);
+
+/**
+ * Useful utility functions for handling Coordinate objects.
+ */
+ class Coordinates {
+  /**
+   * Factory method providing access to common Coordinate implementations.
+   *
+   * @param dimension
+   * @return created coordinate
+   */
+   static Coordinate create(int dimension)
+  {
+    return createWithMeasure(dimension, 0);
   }
 
-  /// Factory method providing access to common Coordinate implementations.
-  ///
-  /// @param dimension
-  /// @param measures
-  /// @return created coordinate
-  static Coordinate createDimMeas(int dimension, int measures) {
-//    if (dimension == 2) {
-//      return Coordinate.empty();
-//      return CoordinateXY.empty();
-//    } else if (dimension == 3 && measures == 0) {
-//      return Coordinate.empty();
-//    } else if (dimension == 3 && measures == 1) {
-//      return new CoordinateXYM();
-//    } else if (dimension == 4 && measures == 1) {
-//      return new CoordinateXYZM();
-//    }
-    return Coordinate.empty(dimension, measures);
+  /**
+   * Factory method providing access to common Coordinate implementations.
+   *
+   * @param dimension
+   * @param measures
+   * @return created coordinate
+   */
+   static Coordinate createWithMeasure(int dimension, int measures)
+  {
+    if (dimension == 2) {
+      return new CoordinateXY();
+    } else if (dimension == 3 && measures == 0) {
+      return new Coordinate.empty2D();
+    } else if (dimension == 3 && measures == 1) {
+      return new CoordinateXYM.empty();
+    } else if (dimension == 4 && measures == 1) {
+      return new CoordinateXYZM.empty();
+    }
+    return new Coordinate.empty2D();
   }
 
-  /// Determine dimension based on subclass of {@link Coordinate}.
-  ///
-  /// @param coordinate supplied coordinate
-  /// @return number of ordinates recorded
-  static int dimension(Coordinate coordinate) {
-    return coordinate.getDimension();
-//    if (coordinate is CoordinateXY) {
-//      return 2;
-////    } else if (coordinate is CoordinateXYM) {
-////      return 3;
-////    } else if (coordinate is CoordinateXYZM) {
-////      return 4;
-//    } else if (coordinate is Coordinate) {
-//      return 3;
-//    }
-//    return 3;
+  /**
+   * Determine dimension based on subclass of {@link Coordinate}.
+   *
+   * @param coordinate supplied coordinate
+   * @return number of ordinates recorded
+   */
+   static int dimension(Coordinate coordinate)
+  {
+    if (coordinate is CoordinateXY) {
+      return 2;
+    } else if (coordinate is CoordinateXYM) {
+      return 3;
+    } else if (coordinate is CoordinateXYZM) {
+      return 4;
+    } else if (coordinate is Coordinate) {
+      return 3;
+    }
+    return 3;
   }
 
-  /// Determine number of measures based on subclass of {@link Coordinate}.
-  ///
-  /// @param coordinate supplied coordinate
-  /// @return number of measures recorded
-  static int measures(Coordinate coordinate) {
-    return coordinate._m == null ? 0 : 1;
-//    if (coordinate is CoordinateXY) {
-//      return 0;
-////    } else if (coordinate is CoordinateXYM) {
-////      return 1;
-////    } else if (coordinate is CoordinateXYZM) {
-////      return 1;
-//    } else if (coordinate is Coordinate) {
-//      return 0;
-//    }
-//    return 0;
+  /**
+   * Determine number of measures based on subclass of {@link Coordinate}.
+   *
+   * @param coordinate supplied coordinate
+   * @return number of measures recorded
+   */
+   static int measures(Coordinate coordinate)
+  {
+    if (coordinate is CoordinateXY) {
+      return 0;
+    } else if (coordinate is CoordinateXYM) {
+      return 1;
+    } else if (coordinate is CoordinateXYZM) {
+      return 1;
+    } else if (coordinate is Coordinate) {
+      return 0;
+    }
+    return 0;
   }
+
 }
 
 /// Creates {@link CoordinateSequence}s represented as an array of {@link Coordinate}s.
@@ -828,7 +841,7 @@ class CoordinateArraySequence extends CoordinateSequence {
   CoordinateArraySequence.fromSize(int size) {
     coordinates = List<Coordinate>(size);
     for (int i = 0; i < size; i++) {
-      coordinates[i] = Coordinate.emptyDefault();
+      coordinates[i] = Coordinate.empty2D();
     }
   }
 
@@ -1282,23 +1295,23 @@ class Double extends PackedCoordinateSequence {
   Coordinate getCoordinateInternal(int i) {
     double x = coords[i * dimension];
     double y = coords[i * dimension + 1];
-    if (dimension == 2 && measures == 0) {
-      return Coordinate(x, y);
-//      return CoordinateXY(x, y);
-    } else if (dimension == 3 && measures == 0) {
-      double z = coords[i * dimension + 2];
-      return Coordinate(x, y, z);
+    if( dimension == 2 && measures == 0 ) {
+      return new CoordinateXY.fromXY(x,y);
     }
-//    else if (dimension == 3 && measures == 1) {
-//      double m = coords[i * dimension + 2];
-//      return new CoordinateXYM(x,y,m);
-//    }
-//    else if (dimension == 4 && measures == 1) {
-//      double z = coords[i * dimension + 2];
-//      double m = coords[i * dimension + 3];
-//      return new CoordinateXYZM(x,y,z,m);
-//    }
-    return Coordinate(x, y);
+    else if (dimension == 3 && measures == 0) {
+      double z = coords[i * dimension + 2];
+      return new Coordinate(x,y,z);
+    }
+    else if (dimension == 3 && measures == 1) {
+      double m = coords[i * dimension + 2];
+      return new CoordinateXYM(x,y,m);
+    }
+    else if (dimension == 4 && measures == 1) {
+      double z = coords[i * dimension + 2];
+      double m = coords[i * dimension + 3];
+      return new CoordinateXYZM(x,y,z,m);
+    }
+    return new CoordinateXY.fromXY(x, y);
   }
 
   /// Gets the underlying array containing the coordinate values.

@@ -97,7 +97,7 @@ class SortedPackedIntervalRTree {
     buildRoot();
   }
 
-  void buildRoot() sync* // TODO check
+  void buildRoot()  // TODO check how to make this methos synchronized
   {
     if (root != null) return;
     root = buildTree();

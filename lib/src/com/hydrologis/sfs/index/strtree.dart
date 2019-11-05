@@ -530,7 +530,8 @@ abstract class AbstractSTRtree {
    * called once, and thus can be called only after all of the data has been
    * inserted into the tree.
    */
-  void build() sync* {
+  // TODO check how to make this method synchronized
+  void build() {
     if (built) return;
     root = itemBoundables.isEmpty ? createNode(0) : createHigherLevels(itemBoundables, -1);
     // the item list is no longer needed

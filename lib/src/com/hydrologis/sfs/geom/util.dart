@@ -843,7 +843,7 @@ abstract class CoordinateSequence {
   /// </p>
   /// @return coordinate for use with this sequence
   Coordinate createCoordinate() {
-    return Coordinates.createDimMeas(getDimension(), getMeasures());
+    return Coordinates.createWithMeasure(getDimension(), getMeasures());
   }
 
   /// Returns (possibly a copy of) the i'th coordinate in this sequence.
@@ -1850,7 +1850,7 @@ abstract class CoordinateSequenceOperation implements GeometryEditorOperation {
     }
 
     if (geometry is Point) {
-      return gfactory.createPointFromSeq(editSeq((geometry as Point).getCoordinateSequence(), geometry));
+      return gfactory.createPointSeq(editSeq((geometry as Point).getCoordinateSequence(), geometry));
     }
 
     return geometry;

@@ -46,7 +46,6 @@ part of dart_sfs;
 /// @see IsSimpleOp
 /// @see PointLocator
 abstract class BoundaryNodeRule {
-
   /// Tests whether a point that lies in <tt>boundaryCount</tt>
   /// geometry component boundaries is considered to form part of the boundary
   /// of the parent geometry.
@@ -75,9 +74,7 @@ abstract class BoundaryNodeRule {
   /// which is the same as the Mod-2 rule.
   /// @see Mod2BoundaryNodeRule
   static final BoundaryNodeRule OGC_SFS_BOUNDARY_RULE = MOD2_BOUNDARY_RULE;
-
 }
-
 
 /// A {@link BoundaryNodeRule} specifies that points are in the
 /// boundary of a lineal geometry iff
@@ -91,8 +88,7 @@ abstract class BoundaryNodeRule {
 ///
 /// @author Martin Davis
 /// @version 1.7
-class Mod2BoundaryNodeRule
-    implements BoundaryNodeRule {
+class Mod2BoundaryNodeRule implements BoundaryNodeRule {
   bool isInBoundary(int boundaryCount) {
 // the "Mod-2 Rule"
     return boundaryCount % 2 == 1;
@@ -119,8 +115,7 @@ class Mod2BoundaryNodeRule
 ///
 /// @author Martin Davis
 /// @version 1.7
-class EndPointBoundaryNodeRule
-    implements BoundaryNodeRule {
+class EndPointBoundaryNodeRule implements BoundaryNodeRule {
   bool isInBoundary(int boundaryCount) {
     return boundaryCount > 0;
   }
@@ -134,8 +129,7 @@ class EndPointBoundaryNodeRule
 ///
 /// @author Martin Davis
 /// @version 1.7
-class MultiValentEndPointBoundaryNodeRule
-    implements BoundaryNodeRule {
+class MultiValentEndPointBoundaryNodeRule implements BoundaryNodeRule {
   bool isInBoundary(int boundaryCount) {
     return boundaryCount > 1;
   }
@@ -148,13 +142,11 @@ class MultiValentEndPointBoundaryNodeRule
 ///
 /// @author Martin Davis
 /// @version 1.7
-class MonoValentEndPointBoundaryNodeRule
-    implements BoundaryNodeRule {
+class MonoValentEndPointBoundaryNodeRule implements BoundaryNodeRule {
   bool isInBoundary(int boundaryCount) {
     return boundaryCount == 1;
   }
 }
-
 
 /// Tests whether a <code>Geometry</code> is simple.
 /// In general, the SFS specification of simplicity
@@ -389,28 +381,6 @@ class MonoValentEndPointBoundaryNodeRule
 //
 //}
 
-class EndpointInfo {
-  Coordinate pt;
-  bool isClosed;
-  int degree;
-
-   EndpointInfo(Coordinate pt)
-  {
-    this.pt = pt;
-    isClosed = false;
-    degree = 0;
-  }
-
-   Coordinate getCoordinate() { return pt; }
-
-   void addEndpoint(bool isClosed)
-  {
-    degree++;
-    this.isClosed |= isClosed;
-  }
-}
-
-
 /// Computes the boundary of a {@link Geometry}.
 /// This operation will always return a {@link Geometry} of the appropriate
 /// dimension for the boundary (even if the input geometry is empty).
@@ -436,8 +406,7 @@ class BoundaryOp {
     this.bnRule = BoundaryNodeRule.MOD2_BOUNDARY_RULE;
   }
 
-  BoundaryOp.withRule(Geometry geom, BoundaryNodeRule bnRule)
-  {
+  BoundaryOp.withRule(Geometry geom, BoundaryNodeRule bnRule) {
     this.geom = geom;
     this.bnRule = bnRule;
   }
@@ -451,7 +420,7 @@ class BoundaryOp {
   }
 
   MultiPoint getEmptyMultiPoint() {
-    return geomFact.createMultiPoint();
+    return geomFact.createMultiPointEmpty();
   }
 
   Geometry boundaryMultiLineString(MultiLineString mLine) {
@@ -486,11 +455,11 @@ class BoundaryOp {
     endpointMap = SplayTreeMap();
     for (int i = 0; i < mLine.getNumGeometries(); i++) {
       LineString line = mLine.getGeometryN(i);
-      if (line.isEmpty) {
+      if (line.isEmpty()) {
         continue;
       }
       addEndpoint(line.getCoordinateN(0));
-      addEndpoint(line.getCoordinateN(line.length - 1));
+      addEndpoint(line.getCoordinateN(line.getNumPoints() - 1));
     }
 
     endpointMap.forEach((coord, counter) {
@@ -517,17 +486,16 @@ class BoundaryOp {
       return getEmptyMultiPoint();
     }
 
-    if (line.isClosed) {
+    if (line.isClosed()) {
       // check whether endpoints of valence 2 are on the boundary or not
       bool closedEndpointOnBoundary = bnRule.isInBoundary(2);
       if (closedEndpointOnBoundary) {
         return line.getStartPoint();
       } else {
-        return geomFact.createMultiPoint();
+        return geomFact.createMultiPointEmpty();
       }
     }
-    return geomFact
-        .createMultiPoint([line.getStartPoint(), line.getEndPoint()]);
+    return geomFact.createMultiPoint([line.getStartPoint(), line.getEndPoint()]);
   }
 }
 

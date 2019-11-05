@@ -611,8 +611,8 @@ class DistanceOp {
         double dist = Distance.segmentToSegment(coord0[i], coord0[i + 1], coord1[j], coord1[j + 1]);
         if (dist < minDistance) {
           minDistance = dist;
-          LineSegment seg0 = new LineSegment(coord0[i], coord0[i + 1]);
-          LineSegment seg1 = new LineSegment(coord1[j], coord1[j + 1]);
+          LineSegment seg0 = new LineSegment.fromCoordinates(coord0[i], coord0[i + 1]);
+          LineSegment seg1 = new LineSegment.fromCoordinates(coord1[j], coord1[j + 1]);
           List<Coordinate> closestPt = seg0.closestPoints(seg1);
           locGeom[0] = new GeometryLocation(line0, i, closestPt[0]);
           locGeom[1] = new GeometryLocation(line1, j, closestPt[1]);
@@ -631,7 +631,7 @@ class DistanceOp {
       double dist = Distance.pointToSegment(coord, coord0[i], coord0[i + 1]);
       if (dist < minDistance) {
         minDistance = dist;
-        LineSegment seg = new LineSegment(coord0[i], coord0[i + 1]);
+        LineSegment seg = new LineSegment.fromCoordinates(coord0[i], coord0[i + 1]);
         Coordinate segClosestPoint = seg.closestPoint(coord);
         locGeom[0] = new GeometryLocation(line, i, segClosestPoint);
         locGeom[1] = new GeometryLocation(pt, 0, coord);

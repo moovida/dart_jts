@@ -522,7 +522,7 @@ part of dart_sfs;
    void addPolygonRing(LinearRing lr, int cwLeft, int cwRight)
   {
     // don't bother adding empty holes
-    if (lr.isEmpty) return;
+    if (lr.isEmpty()) return;
 
     List<Coordinate> coord = CoordinateArrays.removeRepeatedPoints(lr.getCoordinates());
 
@@ -1235,7 +1235,7 @@ abstract class EdgeRing {
     for (int i = 0; i < holes.length; i++) {
       holeLR[i] = (holes[i] as EdgeRing).getLinearRing();
     }
-    Polygon poly = geometryFactory.createPolygonWithHoles(getLinearRing(), holeLR);
+    Polygon poly = geometryFactory.createPolygon(getLinearRing(), holeLR);
     return poly;
   }
 

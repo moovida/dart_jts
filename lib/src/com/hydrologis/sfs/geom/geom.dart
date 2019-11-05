@@ -231,20 +231,14 @@ abstract class GeometryFilter {
 ///
 /// @author Martin Davis
 ///
-abstract class Puntal {
-
-}
+abstract class Puntal {}
 
 /// Identifies {@link Geometry} subclasses which
 /// are 1-dimensional and have components which are {@link LineString}s.
 ///
 /// @author Martin Davis
 ///
-abstract class Lineal {
-
-}
-
-
+abstract class Lineal {}
 
 /// Identifies {@link Geometry} subclasses which
 /// are 2-dimensional
@@ -360,5 +354,346 @@ class GeometryCollectionIterator implements Iterator {
   /// @throws  UnsupportedOperationException  This method is not implemented.
   void remove() {
     throw UnsupportedError(this.runtimeType.toString());
+  }
+}
+
+/**
+ * Coordinate subclass supporting XY ordinates.
+ * <p>
+ * This data object is suitable for use with coordinate sequences with <tt>dimension</tt> = 2.
+ * <p>
+ * The {@link Coordinate#z} field is visible, but intended to be ignored.
+ *
+ * @since 1.16
+ */
+class CoordinateXY extends Coordinate {
+  /** Standard ordinate index value for X */
+  static const int X = 0;
+
+  /** Standard ordinate index value for Y */
+  static const int Y = 1;
+
+  /** CoordinateXY does not support Z values. */
+  static const int Z = -1;
+
+  /** CoordinateXY does not support M measures. */
+  static const int M = -1;
+
+  /** Default constructor */
+  CoordinateXY() : super.empty2D();
+
+  /**
+   * Constructs a CoordinateXY instance with the given ordinates.
+   *
+   * @param x the X ordinate
+   * @param y the Y ordinate
+   */
+  CoordinateXY.fromXY(double x, double y) : super(x, y, Coordinate.NULL_ORDINATE);
+
+  /**
+   * Constructs a CoordinateXY instance with the x and y ordinates of the given Coordinate.
+   *
+   * @param coord the Coordinate providing the ordinates
+   */
+  CoordinateXY.fromCoordinate(Coordinate coord) : super.fromXY(coord.x, coord.y);
+
+  /**
+   * Constructs a CoordinateXY instance with the x and y ordinates of the given CoordinateXY.
+   *
+   * @param coord the CoordinateXY providing the ordinates
+   */
+  CoordinateXY.fromCoordinateXY(CoordinateXY coord) : super.fromXY(coord.x, coord.y);
+
+  /**
+   * Creates a copy of this CoordinateXY.
+   *
+   * @return a copy of this CoordinateXY
+   */
+  CoordinateXY copy() {
+    return new CoordinateXY.fromCoordinateXY(this);
+  }
+
+  /** The z-ordinate is not supported */
+  double getZ() {
+    return Coordinate.NULL_ORDINATE;
+  }
+
+  /** The z-ordinate is not supported */
+  void setZ(double z) {
+    throw new ArgumentError("CoordinateXY dimension 2 does not support z-ordinate");
+  }
+
+  void setCoordinate(Coordinate other) {
+    x = other.x;
+    y = other.y;
+    z = other.getZ();
+  }
+
+  double getOrdinate(int ordinateIndex) {
+    switch (ordinateIndex) {
+      case X:
+        return x;
+      case Y:
+        return y;
+    }
+    throw new ArgumentError("Invalid ordinate index: $ordinateIndex");
+  }
+
+  void setOrdinate(int ordinateIndex, double value) {
+    switch (ordinateIndex) {
+      case X:
+        x = value;
+        break;
+      case Y:
+        y = value;
+        break;
+      default:
+        throw new ArgumentError("Invalid ordinate index: $ordinateIndex");
+    }
+  }
+
+  String toString() {
+    return "(" + x.toString() + ", " + y.toString() + ")";
+  }
+}
+
+/**
+ * Coordinate subclass supporting XYM ordinates.
+ * <p>
+ * This data object is suitable for use with coordinate sequences with <tt>dimension</tt> = 3 and <tt>measures</tt> = 1.
+ * <p>
+ * The {@link Coordinate#z} field is visible, but intended to be ignored.
+ *
+ * @since 1.16
+ */
+class CoordinateXYM extends Coordinate {
+  /** Standard ordinate index value for X */
+  static const int X = 0;
+
+  /** Standard ordinate index value for Y */
+  static const int Y = 1;
+
+  /** CoordinateXYM does not support Z values. */
+  static const int Z = -1;
+
+  /**
+   * Standard ordinate index value for M in XYM sequences.
+   *
+   * <p>This constant assumes XYM coordinate sequence definition.  Check this assumption using
+   * {@link #getDimension()} and {@link #getMeasures()} before use.
+   */
+  static const int M = 2;
+
+  /** Default constructor */
+  CoordinateXYM.empty() : super.empty2D() {
+    this.m = 0.0;
+  }
+
+  /**
+   * Constructs a CoordinateXYM instance with the given ordinates and measure.
+   *
+   * @param x the X ordinate
+   * @param y the Y ordinate
+   * @param m the M measure value
+   */
+  CoordinateXYM(double x, double y, double m) : super(x, y, Coordinate.NULL_ORDINATE) {
+    this.m = m;
+  }
+
+  /**
+   * Constructs a CoordinateXYM instance with the x and y ordinates of the given Coordinate.
+   *
+   * @param coord the coordinate providing the ordinates
+   */
+  CoordinateXYM.fromCoordinate(Coordinate coord) : super.fromXY(coord.x, coord.y) {
+    m = getM();
+  }
+
+  /**
+   * Constructs a CoordinateXY instance with the x and y ordinates of the given CoordinateXYM.
+   *
+   * @param coord the coordinate providing the ordinates
+   */
+  CoordinateXYM.fromCoordinateXYM(CoordinateXYM coord) : super.fromXY(coord.x, coord.y) {
+    m = coord.m;
+  }
+
+  /**
+   * Creates a copy of this CoordinateXYM.
+   *
+   * @return a copy of this CoordinateXYM
+   */
+  CoordinateXYM copy() {
+    return new CoordinateXYM.fromCoordinateXYM(this);
+  }
+
+  /** The m-measure. */
+  double m;
+
+  /** The m-measure, if available. */
+  double getM() {
+    return m;
+  }
+
+  void setM(double m) {
+    this.m = m;
+  }
+
+  /** The z-ordinate is not supported */
+  double getZ() {
+    return Coordinate.NULL_ORDINATE;
+  }
+
+  /** The z-ordinate is not supported */
+  void setZ(double z) {
+    throw new ArgumentError("CoordinateXY dimension 2 does not support z-ordinate");
+  }
+
+  void setCoordinate(Coordinate other) {
+    x = other.x;
+    y = other.y;
+    z = other.getZ();
+    m = other.getM();
+  }
+
+  double getOrdinate(int ordinateIndex) {
+    switch (ordinateIndex) {
+      case X:
+        return x;
+      case Y:
+        return y;
+      case M:
+        return m;
+    }
+    throw new ArgumentError("Invalid ordinate index: $ordinateIndex");
+  }
+
+  void setOrdinate(int ordinateIndex, double value) {
+    switch (ordinateIndex) {
+      case X:
+        x = value;
+        break;
+      case Y:
+        y = value;
+        break;
+      case M:
+        m = value;
+        break;
+      default:
+        throw new ArgumentError("Invalid ordinate index: $ordinateIndex");
+    }
+  }
+
+  String toString() {
+    return "(" + x.toString() + ", " + y.toString() + " m=" + getM().toString() + ")";
+  }
+}
+
+/**
+ * Coordinate subclass supporting XYZM ordinates.
+ * <p>
+ * This data object is suitable for use with coordinate sequences with <tt>dimension</tt> = 4 and <tt>measures</tt> = 1.
+ *
+ * @since 1.16
+ */
+class CoordinateXYZM extends Coordinate {
+  /** Default constructor */
+  CoordinateXYZM.empty() : super.empty2D() {
+    this.m = 0.0;
+  }
+
+  /**
+   * Constructs a CoordinateXYZM instance with the given ordinates and measure.
+   *
+   * @param x the X ordinate
+   * @param y the Y ordinate
+   * @param z the Z ordinate
+   * @param m the M measure value
+   */
+  CoordinateXYZM(double x, double y, double z, double m) : super(x, y, z) {
+    this.m = m;
+  }
+
+  /**
+   * Constructs a CoordinateXYZM instance with the ordinates of the given Coordinate.
+   *
+   * @param coord the coordinate providing the ordinates
+   */
+  CoordinateXYZM.fromCoordinate(Coordinate coord) : super.fromCoordinate(coord) {
+    m = getM();
+  }
+
+  /**
+   * Constructs a CoordinateXYZM instance with the ordinates of the given CoordinateXYZM.
+   *
+   * @param coord the coordinate providing the ordinates
+   */
+  CoordinateXYZM.fromCoordinateXYZM(CoordinateXYZM coord) : super.fromCoordinate(coord) {
+    m = coord.m;
+  }
+
+  /**
+   * Creates a copy of this CoordinateXYZM.
+   *
+   * @return a copy of this CoordinateXYZM
+   */
+  CoordinateXYZM copy() {
+    return new CoordinateXYZM.fromCoordinateXYZM(this);
+  }
+
+  /** The m-measure. */
+  double m;
+
+  /** The m-measure, if available. */
+  double getM() {
+    return m;
+  }
+
+  void setM(double m) {
+    this.m = m;
+  }
+
+  double getOrdinate(int ordinateIndex) {
+    switch (ordinateIndex) {
+      case Coordinate.X:
+        return x;
+      case Coordinate.Y:
+        return y;
+      case Coordinate.Z:
+        return getZ(); // sure to delegate to subclass rather than offer direct field access
+      case Coordinate.M:
+        return getM(); // sure to delegate to subclass rather than offer direct field access
+    }
+    throw new ArgumentError("Invalid ordinate index: $ordinateIndex");
+  }
+
+  void setCoordinate(Coordinate other) {
+    x = other.x;
+    y = other.y;
+    z = other.getZ();
+    m = other.getM();
+  }
+
+  void setOrdinate(int ordinateIndex, double value) {
+    switch (ordinateIndex) {
+      case Coordinate.X:
+        x = value;
+        break;
+      case Coordinate.Y:
+        y = value;
+        break;
+      case Coordinate.Z:
+        z = value;
+        break;
+      case Coordinate.M:
+        m = value;
+        break;
+      default:
+        throw new ArgumentError("Invalid ordinate index: $ordinateIndex");
+    }
+  }
+
+  String toString() {
+    return "(" + x.toString() + ", " + y.toString() + ", " + getZ().toString() + " m=" + getM().toString() + ")";
   }
 }

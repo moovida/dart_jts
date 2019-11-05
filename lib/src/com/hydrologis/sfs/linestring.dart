@@ -159,7 +159,7 @@ class LineString extends Geometry implements Lineal {
   Geometry reverse() {
     CoordinateSequence seq = points.copy();
     CoordinateSequences.reverse(seq);
-    LineString revLine = getFactory().createLineStringFromSequence(seq);
+    LineString revLine = getFactory().createLineStringSeq(seq);
     return revLine;
   }
 
@@ -410,7 +410,7 @@ class LinearRing extends LineString {
   Geometry reverse() {
     CoordinateSequence seq = points.copy();
     CoordinateSequences.reverse(seq);
-    LinearRing rev = getFactory().createLinearRingFromSequence(seq);
+    LinearRing rev = getFactory().createLinearRingSeq(seq);
     return rev;
   }
 }

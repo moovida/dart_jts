@@ -652,15 +652,15 @@ class WKTWriter {
   /// @param  formatter       the formatter to use for writing ordinate values.
   void appendPolygonText(
       Polygon polygon, List<Ordinate> outputOrdinates, bool useFormatting, int level, bool indentFirst, StringBuffer writer, NumberFormat formatter) {
-    if (polygon.isEmpty) {
+    if (polygon.isEmpty()) {
       writer.write("EMPTY");
     } else {
       if (indentFirst) indent(useFormatting, level, writer);
       writer.write("(");
-      appendSequenceText(polygon._exterior.getCoordinateSequence(), outputOrdinates, useFormatting, level, false, writer, formatter);
-      for (int i = 0; i < polygon._interiors.length; i++) {
+      appendSequenceText(polygon.getExteriorRing().getCoordinateSequence(), outputOrdinates, useFormatting, level, false, writer, formatter);
+      for (int i = 0; i < polygon.getNumInteriorRing(); i++) {
         writer.write(", ");
-        appendSequenceText(polygon._interiors[i].getCoordinateSequence(), outputOrdinates, useFormatting, level + 1, true, writer, formatter);
+        appendSequenceText(polygon.getInteriorRingN(i).getCoordinateSequence(), outputOrdinates, useFormatting, level + 1, true, writer, formatter);
       }
       writer.write(")");
     }
@@ -675,7 +675,7 @@ class WKTWriter {
   /// @param  writer          the output writer to append to
   /// @param  formatter       the formatter to use for writing ordinate values.
   void appendMultiPointText(MultiPoint multiPoint, List<Ordinate> outputOrdinates, bool useFormatting, int level, StringBuffer writer, NumberFormat formatter) {
-    if (multiPoint.isEmpty) {
+    if (multiPoint.isEmpty()) {
       writer.write("EMPTY");
     } else {
       writer.write("(");
@@ -684,7 +684,7 @@ class WKTWriter {
           writer.write(", ");
           indentCoords(useFormatting, i, level + 1, writer);
         }
-        appendSequenceText(multiPoint.getGeometryN(i).getCoordinateSequence(), outputOrdinates, useFormatting, level, false, writer, formatter);
+        appendSequenceText((multiPoint.getGeometryN(i) as Point).getCoordinateSequence(), outputOrdinates, useFormatting, level, false, writer, formatter);
       }
       writer.write(")");
     }
@@ -707,7 +707,7 @@ class WKTWriter {
       int level,
       /*bool indentFirst, */ StringBuffer writer,
       NumberFormat formatter) {
-    if (multiLineString.isEmpty) {
+    if (multiLineString.isEmpty()) {
       writer.write("EMPTY");
     } else {
       int level2 = level;
@@ -719,7 +719,7 @@ class WKTWriter {
           level2 = level + 1;
           doIndent = true;
         }
-        appendSequenceText(multiLineString.getGeometryN(i).getCoordinateSequence(), outputOrdinates, useFormatting, level2, doIndent, writer, formatter);
+        appendSequenceText((multiLineString.getGeometryN(i) as LineString).getCoordinateSequence(), outputOrdinates, useFormatting, level2, doIndent, writer, formatter);
       }
       writer.write(")");
     }
@@ -735,7 +735,7 @@ class WKTWriter {
   /// @param  formatter       the formatter to use for writing ordinate values.
   void appendMultiPolygonText(
       MultiPolygon multiPolygon, List<Ordinate> outputOrdinates, bool useFormatting, int level, StringBuffer writer, NumberFormat formatter) {
-    if (multiPolygon.isEmpty) {
+    if (multiPolygon.isEmpty()) {
       writer.write("EMPTY");
     } else {
       int level2 = level;
@@ -763,7 +763,7 @@ class WKTWriter {
   /// @param  formatter       the formatter to use for writing ordinate values.
   void appendGeometryCollectionText(
       GeometryCollection geometryCollection, List<Ordinate> outputOrdinates, bool useFormatting, int level, StringBuffer writer, NumberFormat formatter) {
-    if (geometryCollection.isEmpty) {
+    if (geometryCollection.isEmpty()) {
       writer.write("EMPTY");
     } else {
       int level2 = level;
@@ -1543,7 +1543,7 @@ class WKTReader {
   ///
   ///@deprecated in favor of functions returning {@link CoordinateSequence}s
   Coordinate getPreciseCoordinate(WKTTokenizer tokenizer) {
-    Coordinate coord = Coordinate.emptyDefault();
+    Coordinate coord = Coordinate.empty2D();
     coord.x = getNextNumber(tokenizer);
     coord.y = getNextNumber(tokenizer);
     if (isNumberNext(tokenizer)) {
@@ -1829,7 +1829,7 @@ class WKTReader {
   ///@throws  IOException     if an I/O error occurs
   ///@throws  ParseException  if an unexpected token was encountered
   Point readPointText(WKTTokenizer tokenizer, List<Ordinate> ordinateFlags) {
-    Point point = geometryFactory.createPointFromSequence(getCoordinateSequence(tokenizer, ordinateFlags));
+    Point point = geometryFactory.createPointSeq(getCoordinateSequence(tokenizer, ordinateFlags));
     return point;
   }
 
@@ -1842,7 +1842,7 @@ class WKTReader {
   ///@throws  IOException     if an I/O error occurs
   ///@throws  ParseException  if an unexpected token was encountered
   LineString readLineStringText(WKTTokenizer tokenizer, List<Ordinate> ordinateFlags) {
-    return geometryFactory.createLineStringFromSequence(getCoordinateSequence(tokenizer, ordinateFlags));
+    return geometryFactory.createLineStringSeq(getCoordinateSequence(tokenizer, ordinateFlags));
   }
 
   ///  Creates a <code>LinearRing</code> using the next token in the stream.
@@ -1856,7 +1856,7 @@ class WKTReader {
   ///      do not form a closed linestring, or if an unexpected token was
   ///      encountered
   LinearRing readLinearRingText(WKTTokenizer tokenizer, List<Ordinate> ordinateFlags) {
-    return geometryFactory.createLinearRingFromSequence(getCoordinateSequence(tokenizer, ordinateFlags));
+    return geometryFactory.createLinearRingSeq(getCoordinateSequence(tokenizer, ordinateFlags));
   }
 
   ///  Creates a <code>MultiPoint</code> using the next tokens in the stream.
@@ -1868,7 +1868,7 @@ class WKTReader {
   ///@throws  IOException     if an I/O error occurs
   ///@throws  ParseException  if an unexpected token was encountered
   MultiPoint readMultiPointText(WKTTokenizer tokenizer, List<Ordinate> ordinateFlags) {
-    return geometryFactory.createMultiPointFromSequence(getCoordinateSequenceTryParen(tokenizer, ordinateFlags, this.isAllowOldJtsMultipointSyntax));
+    return geometryFactory.createMultiPointSeq(getCoordinateSequenceTryParen(tokenizer, ordinateFlags, this.isAllowOldJtsMultipointSyntax));
   }
 
   ///  Creates a <code>Polygon</code> using the next token in the stream.
@@ -1895,7 +1895,7 @@ class WKTReader {
       nextToken = getNextCloserOrComma(tokenizer);
     }
     List<LinearRing> array = List(holes.length);
-    return geometryFactory.createPolygonWithHoles(shell, holes);
+    return geometryFactory.createPolygon(shell, holes);
   }
 
   ///  Creates a <code>MultiLineString</code> using the next token in the stream.

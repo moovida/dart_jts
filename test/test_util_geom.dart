@@ -3,25 +3,25 @@ import "package:test/test.dart";
 import "dart:math" as math;
 
 void main() {
-  List<Coordinate> COORDS_1 = [Coordinate(1, 1), Coordinate(2, 2), Coordinate(3, 3)];
+  List<Coordinate> COORDS_1 = [Coordinate.fromXY(1, 1), Coordinate.fromXY(2, 2), Coordinate.fromXY(3, 3)];
   List<Coordinate> COORDS_EMPTY = [];
 
   group("CoordinateArraysTest - ", () {
     test("testPtNotInList", () {
       expect(
-          CoordinateArrays.ptNotInList([Coordinate(1, 1), Coordinate(2, 2), Coordinate(3, 3)], [Coordinate(1, 1), Coordinate(1, 2), Coordinate(1, 3)])
-              .equals2D(Coordinate(2, 2)),
+          CoordinateArrays.ptNotInList([Coordinate.fromXY(1, 1), Coordinate.fromXY(2, 2), Coordinate.fromXY(3, 3)], [Coordinate.fromXY(1, 1), Coordinate.fromXY(1, 2), Coordinate.fromXY(1, 3)])
+              .equals2D(Coordinate.fromXY(2, 2)),
           true);
 
       expect(
-          CoordinateArrays.ptNotInList([Coordinate(1, 1), Coordinate(2, 2), Coordinate(3, 3)], [Coordinate(1, 1), Coordinate(2, 2), Coordinate(3, 3)]) == null,
+          CoordinateArrays.ptNotInList([Coordinate.fromXY(1, 1), Coordinate.fromXY(2, 2), Coordinate.fromXY(3, 3)], [Coordinate.fromXY(1, 1), Coordinate.fromXY(2, 2), Coordinate.fromXY(3, 3)]) == null,
           true);
     });
 
     test("testEnvelopes", () {
       expect(CoordinateArrays.envelope(COORDS_1), Envelope(1, 3, 1, 3));
       expect(CoordinateArrays.envelope(COORDS_EMPTY), Envelope.empty());
-      expect(CoordinateArrays.equals(CoordinateArrays.intersection(COORDS_1, Envelope(1, 2, 1, 2)), [Coordinate(1, 1), Coordinate(2, 2)]), true);
+      expect(CoordinateArrays.equals(CoordinateArrays.intersection(COORDS_1, Envelope(1, 2, 1, 2)), [Coordinate.fromXY(1, 1), Coordinate.fromXY(2, 2)]), true);
 
       expect(CoordinateArrays.equals(CoordinateArrays.intersection(COORDS_1, Envelope(10, 20, 10, 20)), COORDS_EMPTY), true);
 
@@ -106,7 +106,7 @@ void checkValue(List<Coordinate> coordArray, List<double> ords) {
 List<Coordinate> coordList(List<double> ords) {
   List<Coordinate> cl = [];
   for (int i = 0; i < ords.length; i += 2) {
-    cl.add(Coordinate(ords[i], ords[i + 1]));
+    cl.add(Coordinate.fromXY(ords[i], ords[i + 1]));
 //    CollectionsUtils.addIfNotEqualToLast(cl, Coordinate(ords[i], ords[i + 1]));
   }
   return cl;
@@ -202,8 +202,8 @@ void doTestCopy(CoordinateSequenceFactory factory, int dimension) {
 
 void doTestIsRing(CoordinateSequenceFactory factory, int dimension) {
   // arrange
-  CoordinateSequence ring = createCircle(factory, dimension, Coordinate.emptyDefault(), 5);
-  CoordinateSequence noRing = createCircularString(factory, dimension, Coordinate.emptyDefault(), 5, 0.1, 22);
+  CoordinateSequence ring = createCircle(factory, dimension, Coordinate.empty2D(), 5);
+  CoordinateSequence noRing = createCircularString(factory, dimension, Coordinate.empty2D(), 5, 0.1, 22);
   CoordinateSequence empty = createAlmostRing(factory, dimension, 0);
   CoordinateSequence incomplete1 = createAlmostRing(factory, dimension, 1);
   CoordinateSequence incomplete2 = createAlmostRing(factory, dimension, 2);
@@ -258,7 +258,7 @@ void doTestMinCoordinateIndex(CoordinateSequenceFactory factory, int dimension) 
 
 void doTestScroll(CoordinateSequenceFactory factory, int dimension) {
   // arrange
-  CoordinateSequence sequence = createCircularString(factory, dimension, Coordinate(20, 20), 7.0, 0.1, 22);
+  CoordinateSequence sequence = createCircularString(factory, dimension, Coordinate.fromXY(20, 20), 7.0, 0.1, 22);
   CoordinateSequence scrolled = sequence.copy();
 
   // act
@@ -276,7 +276,7 @@ void doTestScroll(CoordinateSequenceFactory factory, int dimension) {
 void doTestScrollRing(CoordinateSequenceFactory factory, int dimension) {
   // arrange
   //System.out.println("Testing '" + factory.getClass().getSimpleName() + "' with dim=" +dimension );
-  CoordinateSequence sequence = createCircle(factory, dimension, Coordinate(10, 10), 9.0);
+  CoordinateSequence sequence = createCircle(factory, dimension, Coordinate.fromXY(10, 10), 9.0);
   CoordinateSequence scrolled = sequence.copy();
 
   // act

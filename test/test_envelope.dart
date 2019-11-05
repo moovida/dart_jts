@@ -1,51 +1,11 @@
 import "package:test/test.dart";
 import 'package:dart_sfs/dart_sfs.dart';
 
-void checkIntersectsPermuted(double a1x, double a1y, double a2x, double a2y, double b1x, double b1y, double b2x, double b2y, bool expected) {
-  checkIntersects(a1x, a1y, a2x, a2y, b1x, b1y, b2x, b2y, expected);
-  checkIntersects(a1x, a2y, a2x, a1y, b1x, b1y, b2x, b2y, expected);
-  checkIntersects(a1x, a1y, a2x, a2y, b1x, b2y, b2x, b1y, expected);
-  checkIntersects(a1x, a2y, a2x, a1y, b1x, b2y, b2x, b1y, expected);
-}
+PrecisionModel precisionModel = new PrecisionModel.fixedPrecision(1);
 
-void checkIntersects(double a1x, double a1y, double a2x, double a2y, double b1x, double b1y, double b2x, double b2y, bool expected) {
-  Envelope a = Envelope(a1x, a2x, a1y, a2y);
-  Envelope b = Envelope(b1x, b2x, b1y, b2y);
-  expect(expected, a.intersectsEnvelope(b));
-  expect(expected, !a.disjoint(b));
+GeometryFactory geometryFactory = new GeometryFactory.withPrecisionModelSrid(precisionModel, 0);
 
-  Coordinate a1 = Coordinate(a1x, a1y);
-  Coordinate a2 = Coordinate(a2x, a2y);
-  Coordinate b1 = Coordinate(b1x, b1y);
-  Coordinate b2 = Coordinate(b2x, b2y);
-  expect(expected, Envelope.intersectsEnvelopeCoords(a1, a2, b1, b2));
-
-  expect(expected, a.intersectsEnvelopeCoordinates(b1, b2));
-}
-
-void checkExpectedEnvelopeGeometry(String wktInput) {
-  checkExpectedEnvelopeGeometry2(wktInput, wktInput);
-}
-
-void checkExpectedEnvelopeGeometry2(String wktInput, String wktEnvGeomExpected) {
-//  Geometry input = WKTReader(wktInput).parseGeometryCollection();
-//  Geometry envGeomExpected = WKTReader(wktEnvGeomExpected).parseGeometryCollection();
-//
-//  Envelope env = input.envelope;
-//  Geometry envGeomActual = input.getFactory().toGeometry(env);
-//  bool isEqual = envGeomActual.equalsNorm(envGeomExpected);
-//  expect(isEqual, true);
-}
-
-void checkCompareTo(int expected, Envelope env1, Envelope env2) {
-  expect(expected == env1.compareTo(env2), true);
-  expect(-expected == env2.compareTo(env1), true);
-}
-
-Envelope expandToInclude(Envelope a, Envelope b) {
-  a.expandToIncludeEnvelope(b);
-  return a;
-}
+WKTReader reader = new WKTReader.withFactory(geometryFactory);
 
 void main() {
   group("envelope - ", () {
@@ -123,38 +83,31 @@ void main() {
       e.initFromEnvelope(Envelope.empty());
       expect(Envelope.empty(), e);
     });
-//    test("testAsGeometry", () {
-//      assertTrue(geometryFactory.createPoint((Coordinate) null).getEnvelope()
-//          .isEmpty());
-//
-//      Geometry g = geometryFactory.createPoint(Coordinate(5, 6))
-//          .getEnvelope();
-//      assertTrue(!g.isEmpty());
-//      assertTrue(g instanceof Point);
-//
-//      Point p = (Point) g;
-//      assertEquals(5, p.getX(), 1E-1);
-//      assertEquals(6, p.getY(), 1E-1);
-//
-//      LineString l = (LineString) reader.read("LINESTRING(10 10, 20 20, 30 40)");
-//      Geometry g2 = l.getEnvelope();
-//      assertTrue(!g2.isEmpty());
-//      assertTrue(g2 instanceof Polygon);
-//
-//      Polygon poly = (Polygon) g2;
-//      poly.normalize();
-//      assertEquals(5, poly.getExteriorRing().getNumPoints());
-//      assertEquals(Coordinate(10, 10), poly.getExteriorRing().getCoordinateN(
-//          0));
-//      assertEquals(Coordinate(10, 40), poly.getExteriorRing().getCoordinateN(
-//          1));
-//      assertEquals(Coordinate(30, 40), poly.getExteriorRing().getCoordinateN(
-//          2));
-//      assertEquals(Coordinate(30, 10), poly.getExteriorRing().getCoordinateN(
-//          3));
-//      assertEquals(Coordinate(10, 10), poly.getExteriorRing().getCoordinateN(
-//          4));
-//    });
+    test("testAsGeometry", () {
+      expect(geometryFactory.createPoint(null).getEnvelope().isEmpty(), true);
+
+      Geometry g = geometryFactory.createPoint(Coordinate.fromXY(5, 6)).getEnvelope();
+      expect(!g.isEmpty(), true);
+      expect(g is Point, true);
+
+      Point p = g as Point;
+      expect(NumberUtils.equalsWithTolerance(5, p.getX(), 1E-1), true);
+      expect(NumberUtils.equalsWithTolerance(6, p.getY(), 1E-1), true);
+
+      LineString l = reader.read("LINESTRING(10 10, 20 20, 30 40)") as LineString;
+      Geometry g2 = l.getEnvelope();
+      expect(!g2.isEmpty(), true);
+      expect(g2 is Polygon, true);
+
+      Polygon poly = g2 as Polygon;
+      poly.normalize();
+      expect(5, poly.getExteriorRing().getNumPoints());
+      expectCoords(Coordinate.fromXY(10, 10), poly.getExteriorRing().getCoordinateN(0));
+      expectCoords(Coordinate.fromXY(10, 40), poly.getExteriorRing().getCoordinateN(1));
+      expectCoords(Coordinate.fromXY(30, 40), poly.getExteriorRing().getCoordinateN(2));
+      expectCoords(Coordinate.fromXY(30, 10), poly.getExteriorRing().getCoordinateN(3));
+      expectCoords(Coordinate.fromXY(10, 10), poly.getExteriorRing().getCoordinateN(4));
+    });
 
     test("testSetToNull", () {
       Envelope e1 = Envelope.empty();
@@ -239,4 +192,54 @@ void main() {
     });
     test("empty", () {});
   });
+}
+
+void expectCoords(Coordinate c1, Coordinate c2) {
+  expect(c1.equals3D(c2), true);
+}
+
+void checkIntersectsPermuted(double a1x, double a1y, double a2x, double a2y, double b1x, double b1y, double b2x, double b2y, bool expected) {
+  checkIntersects(a1x, a1y, a2x, a2y, b1x, b1y, b2x, b2y, expected);
+  checkIntersects(a1x, a2y, a2x, a1y, b1x, b1y, b2x, b2y, expected);
+  checkIntersects(a1x, a1y, a2x, a2y, b1x, b2y, b2x, b1y, expected);
+  checkIntersects(a1x, a2y, a2x, a1y, b1x, b2y, b2x, b1y, expected);
+}
+
+void checkIntersects(double a1x, double a1y, double a2x, double a2y, double b1x, double b1y, double b2x, double b2y, bool expected) {
+  Envelope a = Envelope(a1x, a2x, a1y, a2y);
+  Envelope b = Envelope(b1x, b2x, b1y, b2y);
+  expect(expected, a.intersectsEnvelope(b));
+  expect(expected, !a.disjoint(b));
+
+  Coordinate a1 = Coordinate.fromXY(a1x, a1y);
+  Coordinate a2 = Coordinate.fromXY(a2x, a2y);
+  Coordinate b1 = Coordinate.fromXY(b1x, b1y);
+  Coordinate b2 = Coordinate.fromXY(b2x, b2y);
+  expect(expected, Envelope.intersectsEnvelopeCoords(a1, a2, b1, b2));
+
+  expect(expected, a.intersectsEnvelopeCoordinates(b1, b2));
+}
+
+void checkExpectedEnvelopeGeometry(String wktInput) {
+  checkExpectedEnvelopeGeometry2(wktInput, wktInput);
+}
+
+void checkExpectedEnvelopeGeometry2(String wktInput, String wktEnvGeomExpected) {
+//  Geometry input = WKTReader(wktInput).parseGeometryCollection();
+//  Geometry envGeomExpected = WKTReader(wktEnvGeomExpected).parseGeometryCollection();
+//
+//  Envelope env = input.envelope;
+//  Geometry envGeomActual = input.getFactory().toGeometry(env);
+//  bool isEqual = envGeomActual.equalsNorm(envGeomExpected);
+//  expect(isEqual, true);
+}
+
+void checkCompareTo(int expected, Envelope env1, Envelope env2) {
+  expect(expected == env1.compareTo(env2), true);
+  expect(-expected == env2.compareTo(env1), true);
+}
+
+Envelope expandToInclude(Envelope a, Envelope b) {
+  a.expandToIncludeEnvelope(b);
+  return a;
 }

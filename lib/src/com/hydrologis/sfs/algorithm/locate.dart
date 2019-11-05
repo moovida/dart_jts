@@ -90,7 +90,7 @@ class IntervalIndexedGeometry {
 
   void addLine(List<Coordinate> pts) {
     for (int i = 1; i < pts.length; i++) {
-      LineSegment seg = new LineSegment(pts[i - 1], pts[i]);
+      LineSegment seg = new LineSegment.fromCoordinates(pts[i - 1], pts[i]);
       double min = math.min(seg.p0.y, seg.p1.y);
       double max = math.max(seg.p0.y, seg.p1.y);
       index.insert(min, max, seg);
@@ -264,7 +264,7 @@ class SimplePointInAreaLocator implements PointOnGeometryLocator {
    */
   static int locatePointInRing(Coordinate p, LinearRing ring) {
     // short-circuit if point is not in ring envelope
-    if (!ring.getEnvelopeInternal().intersects(p)) return Location.EXTERIOR;
+    if (!ring.getEnvelopeInternal().intersectsCoordinate(p)) return Location.EXTERIOR;
     return PointLocation.locateInRing(p, ring.getCoordinates());
   }
 

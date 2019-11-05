@@ -1903,7 +1903,7 @@ class GeometryFactory {
    * @return an empty Point
    */
   Point createPointEmpty() {
-    return createPointFromSeq(getCoordinateSequenceFactory().create(<Coordinate>[]));
+    return createPointSeq(getCoordinateSequenceFactory().create(<Coordinate>[]));
   }
 
   /**
@@ -1914,7 +1914,7 @@ class GeometryFactory {
    * @return the created Point
    */
   Point createPoint(Coordinate coordinate) {
-    return createPointFromSeq(coordinate != null ? getCoordinateSequenceFactory().create([coordinate]) : null);
+    return createPointSeq(coordinate != null ? getCoordinateSequenceFactory().create([coordinate]) : null);
   }
 
   /**
@@ -1924,7 +1924,7 @@ class GeometryFactory {
    * @param coordinates a CoordinateSequence (possibly empty), or null
    * @return the created Point
    */
-  Point createPointFromSeq(CoordinateSequence coordinates) {
+  Point createPointSeq(CoordinateSequence coordinates) {
     return new Point.fromSequence(coordinates, this);
   }
 
@@ -1973,8 +1973,8 @@ class GeometryFactory {
    *
    * @return an empty MultiPolygon
    */
-  MultiPolygon createMultiPolygon() {
-    return new MultiPolygon(null, this);
+  MultiPolygon createMultiPolygonEmpty() {
+    return new MultiPolygon.withFactory(null, this);
   }
 
   /**
@@ -1989,7 +1989,7 @@ class GeometryFactory {
    * @return the created MultiPolygon
    */
   MultiPolygon createMultiPolygon(List<Polygon> polygons) {
-    return new MultiPolygon(polygons, this);
+    return new MultiPolygon.withFactory(polygons, this);
   }
 
   /**
@@ -2073,7 +2073,7 @@ class GeometryFactory {
     for (int i = 0; i < coordinates.size(); i++) {
       CoordinateSequence ptSeq = getCoordinateSequenceFactory().createSizeDimMeas(1, coordinates.getDimension(), coordinates.getMeasures());
       CoordinateSequences.copy(coordinates, i, ptSeq, 0, 1);
-      points[i] = createPointFromSeq(ptSeq);
+      points[i] = createPointSeq(ptSeq);
     }
     return createMultiPoint(points);
   }

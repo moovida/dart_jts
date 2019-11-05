@@ -1,123 +1,119 @@
 part of dart_sfs;
 
-/// A MultiSurface is a 2-dimensional [GeometryCollection] whose elements
-/// are [Surface]s, all using coordinates from the same coordinate reference
-/// system.
-abstract class MultiSurface extends GeometryCollection {
-  MultiSurface(Iterable<Surface> surfaces) : super(surfaces);
+/**
+ * Models a collection of {@link Polygon}s.
+ * <p>
+ * As per the OGC SFS specification,
+ * the Polygons in a MultiPolygon may not overlap,
+ * and may only touch at single points.
+ * This allows the topological point-set semantics
+ * to be well-defined.
+ *
+ *
+ *@version 1.7
+ */
+class MultiPolygon extends GeometryCollection implements Polygonal {
+  /**
+   *  Constructs a <code>MultiPolygon</code>.
+   *
+   *@param  polygons        the <code>Polygon</code>s for this <code>MultiPolygon</code>
+   *      , or <code>null</code> or an empty array to create the empty geometry.
+   *      Elements may be empty <code>Polygon</code>s, but not <code>null</code>
+   *      s. The polygons must conform to the assertions specified in the <A
+   *      HREF="http://www.opengis.org/techno/specs.htm">OpenGIS Simple Features
+   *      Specification for SQL</A> .
+   *@param  precisionModel  the specification of the grid of allowable points
+   *      for this <code>MultiPolygon</code>
+   *@param  SRID            the ID of the Spatial Reference System used by this
+   *      <code>MultiPolygon</code>
+   * @deprecated Use GeometryFactory instead
+   */
+  MultiPolygon(List<Polygon> polygons, PrecisionModel precisionModel, int SRID)
+      : this.withFactory(polygons, new GeometryFactory.withPrecisionModelSrid(precisionModel, SRID));
 
-  /// The mathematical centroid for this [Surface] as a [Point]. The result
-  /// is not guaranteed to be on this [Surface].
-  ///
-  @specification(name: "centroid()")
-  Point get centroid;
+  /**
+   * @param polygons
+   *            the <code>Polygon</code>s for this <code>MultiPolygon</code>,
+   *            or <code>null</code> or an empty array to create the empty
+   *            geometry. Elements may be empty <code>Polygon</code>s, but
+   *            not <code>null</code>s. The polygons must conform to the
+   *            assertions specified in the <A
+   *            HREF="http://www.opengis.org/techno/specs.htm">OpenGIS Simple
+   *            Features Specification for SQL</A>.
+   */
+  MultiPolygon.withFactory(List<Polygon> polygons, GeometryFactory factory) : super.withFactory(polygons, factory);
 
-  /// A [Point] guaranteed to be on this [Surface].
-  @specification(name: "pointOnSurface()")
-  Point get pointOnSurface;
+  int getDimension() {
+    return 2;
+  }
 
-  /// The area of this [Surface], as measured in the spatial reference system
-  /// of this [Surface].
-  @specification(name: "area()")
-  double get area;
-}
+  int getBoundaryDimension() {
+    return 1;
+  }
 
-final _EMPTY_MULTI_POLYGON = MultiPolygon(null);
+  String getGeometryType() {
+    return "MultiPolygon";
+  }
 
-/// A MultiPolygon is a MultiSurface whose elements are [Polygon]s.
-class MultiPolygon extends MultiSurface {
-  /// Creates a multipolygon.
-  ///
-  /// For polygons, a set of geometric invariants should hold, see
-  /// the SFS:
-  ///
-  /// * the interiors of two polygons in this multi polygon may not intersect
-  /// * the boundaries of two polygons may not "cross" and if they touch, then
-  ///   only at a finite number of points
-  /// * a multipolygon must not have cut lines, spikes or punctures
-  ///
-  /// Note, that none of these invariants is currently enforced when a
-  /// polygon is created.
-  MultiPolygon(Iterable<Polygon> polygons) : super(polygons);
+  /*
+   bool isSimple() {
+    return true;
+  }
+*/
 
-  /// Creates an empty multipolygon.
-  factory MultiPolygon.empty() => _EMPTY_MULTI_POLYGON;
-
-  /// Creates a new multipolygon from the WKT string [wkt].
-  ///
-  /// Throws a [WKTError] if [wkt] isn't a valid representation of
-  /// a [MultiPolygon].
-  factory MultiPolygon.wkt(String wkt) {
-    var g = WKTReader().read(wkt);
-    if (g is! MultiPolygon) {
-      throw ArgumentError("WKT string doesn't represent a MultiPolygon");
+  /**
+   * Computes the boundary of this geometry
+   *
+   * @return a lineal geometry (which may be empty)
+   * @see Geometry#getBoundary
+   */
+  Geometry getBoundary() {
+    if (isEmpty()) {
+      return getFactory().createMultiLineStringEmpty();
     }
-    return g;
-  }
-
-  @override
-  Geometry get boundary {
-    if (this.isEmpty) return MultiLineString.empty();
-
-    List<LineString> lines = [];
-    _geometries.forEach((g) {
-      MultiLineString mls = g.boundary as MultiLineString;
-      lines.addAll(mls._geometries as List<LineString>);
-    });
-    return MultiLineString(lines);
-  }
-
-  @override
-  int get dimension => 2;
-
-  @override
-  String get geometryType => "MultiPolygon";
-
-  @override
-  Point get centroid {
-    throw UnimplementedError();
-  }
-
-  @override
-  Point get pointOnSurface {
-    throw UnimplementedError();
-  }
-
-  @override
-  double get area {
-    throw UnimplementedError();
-  }
-
-  @override
-  _writeTaggedWKT(writer, {bool withZ: false, bool withM: false}) {
-    writer.write("MULTIPOLYGON");
-    writer.blank();
-    if (!this.isEmpty) {
-      writer.ordinateSpecification(withZ: withZ, withM: withM);
-    }
-    if (this.isEmpty) {
-      writer.empty();
-    } else {
-      writer
-        ..lparen()
-        ..newline();
-      writer
-        ..incIdent()
-        ..ident();
-      for (int i = 0; i < length; i++) {
-        if (i > 0) {
-          writer
-            ..comma()
-            ..newline()
-            ..ident();
-        }
-        (elementAt(i) as Polygon)._writeWKT(writer, withZ: withZ, withM: withM);
+    List allRings = [];
+    for (int i = 0; i < geometries.length; i++) {
+      Polygon polygon = geometries[i] as Polygon;
+      Geometry rings = polygon.getBoundary();
+      for (int j = 0; j < rings.getNumGeometries(); j++) {
+        allRings.add(rings.getGeometryN(j));
       }
-      writer..newline();
-      writer
-        ..decIdent()
-        ..ident()
-        ..rparen();
     }
+    return getFactory().createMultiLineString(allRings);
+  }
+
+  bool equalsExactWithTol(Geometry other, double tolerance) {
+    if (!isEquivalentClass(other)) {
+      return false;
+    }
+    return super.equalsExactWithTol(other, tolerance);
+  }
+
+  /**
+   * Creates a {@link MultiPolygon} with
+   * every component reversed.
+   * The order of the components in the collection are not reversed.
+   *
+   * @return a MultiPolygon in the reverse order
+   */
+  Geometry reverse() {
+    int n = geometries.length;
+    List<Polygon> revGeoms = List(n);
+    for (int i = 0; i < geometries.length; i++) {
+      revGeoms[i] = geometries[i].reverse() as Polygon;
+    }
+    return getFactory().createMultiPolygon(revGeoms);
+  }
+
+  MultiPolygon copyInternal() {
+    List<Polygon> polygons = List(this.geometries.length);
+    for (int i = 0; i < polygons.length; i++) {
+      polygons[i] = this.geometries[i].copy() as Polygon;
+    }
+    return new MultiPolygon.withFactory(polygons, geomFactory);
+  }
+
+  int getSortIndex() {
+    return Geometry.SORTINDEX_MULTIPOLYGON;
   }
 }

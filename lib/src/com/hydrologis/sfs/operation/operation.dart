@@ -139,7 +139,7 @@ class IsSimpleOp {
   }
 
   bool isSimpleMultiPoint_(MultiPoint mp) {
-    if (mp.isEmpty) return true;
+    if (mp.isEmpty()) return true;
     Set points = new SplayTreeSet();
     for (int i = 0; i < mp.getNumGeometries(); i++) {
       Point pt = mp.getGeometryN(i);
@@ -285,7 +285,6 @@ class EndpointInfo {
   }
 }
 
-
 /**
  * Implements the algorithms required to compute the <code>isValid()</code> method
  * for {@link Geometry}s.
@@ -326,9 +325,7 @@ class IsValidOp {
    *
    * @return the point found, or <code>null</code> if none found
    */
-  static Coordinate findPtNotNode(List<Coordinate> testCoords,
-      LinearRing searchRing,
-      GeometryGraph graph) {
+  static Coordinate findPtNotNode(List<Coordinate> testCoords, LinearRing searchRing, GeometryGraph graph) {
     // find edge corresponding to searchRing.
     Edge searchEdge = graph.findEdgeFromLine(searchRing);
     // find a point in the testCoords which is not a node of the searchRing
@@ -336,8 +333,7 @@ class IsValidOp {
     // somewhat inefficient - is there a better way? (Use a node map, for instance?)
     for (int i = 0; i < testCoords.length; i++) {
       Coordinate pt = testCoords[i];
-      if (!eiList.isIntersection(pt))
-        return pt;
+      if (!eiList.isIntersection(pt)) return pt;
     }
     return null;
   }
@@ -413,19 +409,20 @@ class IsValidOp {
     if (g.isEmpty()) return;
 
     if (g is Point)
-      checkValid( g);
-    else if (g is MultiPoint) checkValid( g);
+      checkValid(g);
+    else if (g is MultiPoint)
+      checkValid(g);
     // LineString also handles LinearRings
     else if (g is LinearRing)
-      checkValid( g);
+      checkValid(g);
     else if (g is LineString)
-      checkValid( g);
+      checkValid(g);
     else if (g is Polygon)
-      checkValid( g);
+      checkValid(g);
     else if (g is MultiPolygon)
-      checkValid( g);
+      checkValid(g);
     else if (g is GeometryCollection)
-      checkValid( g);
+      checkValid(g);
     else
       throw new UnsupportedError(g.runtimeType.toString());
   }
@@ -546,9 +543,7 @@ class IsValidOp {
   void checkInvalidCoordinatesList(List<Coordinate> coords) {
     for (int i = 0; i < coords.length; i++) {
       if (!isValidStaticCoord(coords[i])) {
-        validErr = new TopologyValidationError.withCoordinate(
-            TopologyValidationError.INVALID_COORDINATE,
-            coords[i]);
+        validErr = new TopologyValidationError.withCoordinate(TopologyValidationError.INVALID_COORDINATE, coords[i]);
         return;
       }
     }
@@ -573,22 +568,17 @@ class IsValidOp {
   }
 
   void checkClosedRing(LinearRing ring) {
-    if (ring.isEmpty) return;
-    if (!ring.isClosed) {
+    if (ring.isEmpty()) return;
+    if (!ring.isClosed()) {
       Coordinate pt = null;
-      if (ring.getNumPoints() >= 1)
-        pt = ring.getCoordinateN(0);
-      validErr = new TopologyValidationError.withCoordinate(
-          TopologyValidationError.RING_NOT_CLOSED,
-          pt);
+      if (ring.getNumPoints() >= 1) pt = ring.getCoordinateN(0);
+      validErr = new TopologyValidationError.withCoordinate(TopologyValidationError.RING_NOT_CLOSED, pt);
     }
   }
 
   void checkTooFewPoints(GeometryGraph graph) {
     if (graph.hasTooFewPoints()) {
-      validErr = new TopologyValidationError.withCoordinate(
-          TopologyValidationError.TOO_FEW_POINTS,
-          graph.getInvalidPoint());
+      validErr = new TopologyValidationError.withCoordinate(TopologyValidationError.TOO_FEW_POINTS, graph.getInvalidPoint());
       return;
     }
   }
@@ -605,15 +595,11 @@ class IsValidOp {
     ConsistentAreaTester cat = new ConsistentAreaTester(graph);
     bool isValidArea = cat.isNodeConsistentArea();
     if (!isValidArea) {
-      validErr = new TopologyValidationError.withCoordinate(
-          TopologyValidationError.SELF_INTERSECTION,
-          cat.getInvalidPoint());
+      validErr = new TopologyValidationError.withCoordinate(TopologyValidationError.SELF_INTERSECTION, cat.getInvalidPoint());
       return;
     }
     if (cat.hasDuplicateRings()) {
-      validErr = new TopologyValidationError.withCoordinate(
-          TopologyValidationError.DUPLICATE_RINGS,
-          cat.getInvalidPoint());
+      validErr = new TopologyValidationError.withCoordinate(TopologyValidationError.DUPLICATE_RINGS, cat.getInvalidPoint());
     }
   }
 
@@ -628,8 +614,7 @@ class IsValidOp {
     for (Iterator i = graph.getEdgeIterator(); i.moveNext();) {
       Edge e = i.current as Edge;
       checkNoSelfIntersectingRing(e.getEdgeIntersectionList());
-      if (validErr != null)
-        return;
+      if (validErr != null) return;
     }
   }
 
@@ -648,12 +633,9 @@ class IsValidOp {
         continue;
       }
       if (nodeSet.contains(ei.coord)) {
-        validErr = new TopologyValidationError.withCoordinate(
-            TopologyValidationError.RING_SELF_INTERSECTION,
-            ei.coord);
+        validErr = new TopologyValidationError.withCoordinate(TopologyValidationError.RING_SELF_INTERSECTION, ei.coord);
         return;
-      }
-      else {
+      } else {
         nodeSet.add(ei.coord);
       }
     }
@@ -673,7 +655,7 @@ class IsValidOp {
    */
   void checkHolesInShell(Polygon p, GeometryGraph graph) {
     LinearRing shell = p.getExteriorRing();
-    bool isShellEmpty = shell.isEmpty;
+    bool isShellEmpty = shell.isEmpty();
     //PointInRing pir = new SimplePointInRing(shell);
     //PointInRing pir = new SIRtreePointInRing(shell);
     //PointInRing pir = new MCPointInRing(shell);
@@ -682,7 +664,7 @@ class IsValidOp {
     for (int i = 0; i < p.getNumInteriorRing(); i++) {
       LinearRing hole = p.getInteriorRingN(i);
       Coordinate holePt = null;
-      if (hole.isEmpty) continue;
+      if (hole.isEmpty()) continue;
       holePt = findPtNotNode(hole.getCoordinates(), shell, graph);
       /**
        * If no non-node hole vertex can be found, the hole must
@@ -693,9 +675,7 @@ class IsValidOp {
 
       bool outside = isShellEmpty || (Location.EXTERIOR == pir.locate(holePt));
       if (outside) {
-        validErr = new TopologyValidationError.withCoordinate(
-            TopologyValidationError.HOLE_OUTSIDE_SHELL,
-            holePt);
+        validErr = new TopologyValidationError.withCoordinate(TopologyValidationError.HOLE_OUTSIDE_SHELL, holePt);
         return;
       }
     }
@@ -720,14 +700,12 @@ class IsValidOp {
 
     for (int i = 0; i < p.getNumInteriorRing(); i++) {
       LinearRing innerHole = p.getInteriorRingN(i);
-      if (innerHole.isEmpty) continue;
+      if (innerHole.isEmpty()) continue;
       nestedTester.add(innerHole);
     }
     bool isNonNested = nestedTester.isNonNested();
     if (!isNonNested) {
-      validErr = new TopologyValidationError.withCoordinate(
-          TopologyValidationError.NESTED_HOLES,
-          nestedTester.getNestedPoint());
+      validErr = new TopologyValidationError.withCoordinate(TopologyValidationError.NESTED_HOLES, nestedTester.getNestedPoint());
     }
   }
 
@@ -769,20 +747,17 @@ class IsValidOp {
     List<Coordinate> shellPts = shell.getCoordinates();
     // test if shell is inside polygon shell
     LinearRing polyShell = p.getExteriorRing();
-    if (polyShell.isEmpty) return;
+    if (polyShell.isEmpty()) return;
     List<Coordinate> polyPts = polyShell.getCoordinates();
     Coordinate shellPt = findPtNotNode(shellPts, polyShell, graph);
     // if no point could be found, we can assume that the shell is outside the polygon
-    if (shellPt == null)
-      return;
+    if (shellPt == null) return;
     bool insidePolyShell = PointLocation.isInRing(shellPt, polyPts);
     if (!insidePolyShell) return;
 
     // if no holes, this is an error!
     if (p.getNumInteriorRing() <= 0) {
-      validErr = new TopologyValidationError.withCoordinate(
-          TopologyValidationError.NESTED_SHELLS,
-          shellPt);
+      validErr = new TopologyValidationError.withCoordinate(TopologyValidationError.NESTED_SHELLS, shellPt);
       return;
     }
 
@@ -796,12 +771,9 @@ class IsValidOp {
     for (int i = 0; i < p.getNumInteriorRing(); i++) {
       LinearRing hole = p.getInteriorRingN(i);
       badNestedPt = checkShellInsideHole(shell, hole, graph);
-      if (badNestedPt == null)
-        return;
+      if (badNestedPt == null) return;
     }
-    validErr = new TopologyValidationError.withCoordinate(
-        TopologyValidationError.NESTED_SHELLS,
-        badNestedPt);
+    validErr = new TopologyValidationError.withCoordinate(TopologyValidationError.NESTED_SHELLS, badNestedPt);
   }
 
   /**
@@ -840,14 +812,9 @@ class IsValidOp {
 
   void checkConnectedInteriors(GeometryGraph graph) {
     ConnectedInteriorTester cit = new ConnectedInteriorTester(graph);
-    if (!cit.isInteriorsConnected())
-      validErr = new TopologyValidationError.withCoordinate(
-          TopologyValidationError.DISCONNECTED_INTERIOR,
-          cit.getCoordinate());
+    if (!cit.isInteriorsConnected()) validErr = new TopologyValidationError.withCoordinate(TopologyValidationError.DISCONNECTED_INTERIOR, cit.getCoordinate());
   }
-
 }
-
 
 /**
  * Contains information about the nature and location of a {@link Geometry}
@@ -856,7 +823,6 @@ class IsValidOp {
  * @version 1.7
  */
 class TopologyValidationError {
-
   /**
    * Not used
    * @deprecated
@@ -953,11 +919,9 @@ class TopologyValidationError {
    * @param errorType the type of the error
    * @param pt the location of the error
    */
-  TopologyValidationError.withCoordinate(int errorType, Coordinate pt)
-  {
+  TopologyValidationError.withCoordinate(int errorType, Coordinate pt) {
     this.errorType = errorType;
-    if (pt != null)
-      this.pt = pt.copy();
+    if (pt != null) this.pt = pt.copy();
   }
 
   /**
@@ -966,7 +930,7 @@ class TopologyValidationError {
    * @param errorType the type of the error
    *
    */
-  TopologyValidationError(int errorType) :this.withCoordinate(errorType, null);
+  TopologyValidationError(int errorType) : this.withCoordinate(errorType, null);
 
   /**
    * Returns the location of this error (on the {@link Geometry} containing the error).
@@ -1002,12 +966,10 @@ class TopologyValidationError {
    */
   String toString() {
     String locStr = "";
-    if (pt != null)
-      locStr = " at or near point $pt";
+    if (pt != null) locStr = " at or near point $pt";
     return getMessage() + locStr;
   }
 }
-
 
 /**
  * Tests whether any of a set of {@link LinearRing}s are
@@ -1016,46 +978,42 @@ class TopologyValidationError {
  *
  * @version 1.7
  */
- class IndexedNestedRingTester
-{
-   GeometryGraph graph;  // used to find non-node vertices
-   List rings = [];
-   Envelope totalEnv = new Envelope.empty();
-   SpatialIndex index;
-   Coordinate nestedPt;
+class IndexedNestedRingTester {
+  GeometryGraph graph; // used to find non-node vertices
+  List rings = [];
+  Envelope totalEnv = new Envelope.empty();
+  SpatialIndex index;
+  Coordinate nestedPt;
 
-   IndexedNestedRingTester(GeometryGraph graph)
-  {
+  IndexedNestedRingTester(GeometryGraph graph) {
     this.graph = graph;
   }
 
-   Coordinate getNestedPoint() { return nestedPt; }
+  Coordinate getNestedPoint() {
+    return nestedPt;
+  }
 
-   void add(LinearRing ring)
-  {
+  void add(LinearRing ring) {
     rings.add(ring);
     totalEnv.expandToIncludeEnvelope(ring.getEnvelopeInternal());
   }
 
-   bool isNonNested()
-  {
+  bool isNonNested() {
     buildIndex();
 
     for (int i = 0; i < rings.length; i++) {
-      LinearRing innerRing =  rings[i] as LinearRing;
+      LinearRing innerRing = rings[i] as LinearRing;
       List<Coordinate> innerRingPts = innerRing.getCoordinates();
 
       List results = index.query(innerRing.getEnvelopeInternal());
 //System.out.println(results.size());
       for (int j = 0; j < results.length; j++) {
-        LinearRing searchRing =  results[j] as LinearRing;
+        LinearRing searchRing = results[j] as LinearRing;
         List<Coordinate> searchRingPts = searchRing.getCoordinates();
 
-        if (innerRing == searchRing)
-          continue;
+        if (innerRing == searchRing) continue;
 
-        if (! innerRing.getEnvelopeInternal().intersectsEnvelope(searchRing.getEnvelopeInternal()))
-          continue;
+        if (!innerRing.getEnvelopeInternal().intersectsEnvelope(searchRing.getEnvelopeInternal())) continue;
 
         Coordinate innerRingPt = IsValidOp.findPtNotNode(innerRingPts, searchRing, graph);
 
@@ -1069,8 +1027,7 @@ class TopologyValidationError {
          * Both of these cases are caught by other tests,
          * so it is safe to simply skip this situation here.
          */
-        if (innerRingPt == null)
-          continue;
+        if (innerRingPt == null) continue;
 
         bool isInside = PointLocation.isInRing(innerRingPt, searchRingPts);
         if (isInside) {
@@ -1082,8 +1039,7 @@ class TopologyValidationError {
     return true;
   }
 
-   void buildIndex()
-  {
+  void buildIndex() {
     index = new STRtree();
 
     for (int i = 0; i < rings.length; i++) {

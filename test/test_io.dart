@@ -44,7 +44,7 @@ void main() {
     test("testWritePolygon", () {
       List<Coordinate> coordinates = [Coordinate(10, 10, 0), Coordinate(10, 20, 0), Coordinate(20, 20, 0), Coordinate(20, 15, 0), Coordinate(10, 10, 0)];
       LinearRing linearRing = geometryFactory.createLinearRing(coordinates);
-      Polygon polygon = geometryFactory.createPolygon(linearRing);
+      Polygon polygon = geometryFactory.createPolygonFromRing(linearRing);
       expect("POLYGON ((10 10, 10 20, 20 20, 20 15, 10 10))", writer.write(polygon));
     });
     test("testWriteMultiPoint", () {
@@ -64,10 +64,10 @@ void main() {
     test("testWriteMultiPolygon", () {
       List<Coordinate> coordinates1 = [Coordinate(10, 10, 0), Coordinate(10, 20, 0), Coordinate(20, 20, 0), Coordinate(20, 15, 0), Coordinate(10, 10, 0)];
       LinearRing linearRing1 = geometryFactory.createLinearRing(coordinates1);
-      Polygon polygon1 = geometryFactory.createPolygon(linearRing1);
+      Polygon polygon1 = geometryFactory.createPolygonFromRing(linearRing1);
       List<Coordinate> coordinates2 = [Coordinate(60, 60, 0), Coordinate(70, 70, 0), Coordinate(80, 60, 0), Coordinate(60, 60, 0)];
       LinearRing linearRing2 = geometryFactory.createLinearRing(coordinates2);
-      Polygon polygon2 = geometryFactory.createPolygon(linearRing2);
+      Polygon polygon2 = geometryFactory.createPolygonFromRing(linearRing2);
       List<Polygon> polygons = [polygon1, polygon2];
       MultiPolygon multiPolygon = geometryFactory.createMultiPolygon(polygons);
 //    System.out.println("MULTIPOLYGON (((10 10, 10 20, 20 20, 20 15, 10 10)), ((60 60, 70 70, 80 60, 60 60)))");
@@ -295,17 +295,17 @@ void main() {
       MultiPoint mP3DM = rdr.read("MULTIPOINT ZM((10 10 10 11), (20 20 10 11))");
 
       // assert
-      expect(checkEqual(csMP2D[0], (mP2D.getGeometryN(0)).getCoordinateSequence()), true);
-      expect(checkEqual(csMP2D[1], (mP2D.getGeometryN(1)).getCoordinateSequence()), true);
+      expect(checkEqual(csMP2D[0], (mP2D.getGeometryN(0) as Point).getCoordinateSequence()), true);
+      expect(checkEqual(csMP2D[1], (mP2D.getGeometryN(1) as Point).getCoordinateSequence()), true);
       expect(mP2DE.isEmpty, true);
       expect(mP2DE.getNumGeometries() == 0, true);
-      expect(checkEqual(csMP3D[0], (mP3D.getGeometryN(0)).getCoordinateSequence()), true);
-      expect(checkEqual(csMP3D[1], (mP3D.getGeometryN(1)).getCoordinateSequence()), true);
-      expect(checkEqual(csMP2DM[0], (mP2DM.getGeometryN(0)).getCoordinateSequence()), true);
-      expect(checkEqual(csMP2DM[1], (mP2DM.getGeometryN(1)).getCoordinateSequence()), true);
-      var mp3DMCS = (mP3DM.getGeometryN(0)).getCoordinateSequence();
+      expect(checkEqual(csMP3D[0], (mP3D.getGeometryN(0) as Point).getCoordinateSequence()), true);
+      expect(checkEqual(csMP3D[1], (mP3D.getGeometryN(1) as Point).getCoordinateSequence()), true);
+      expect(checkEqual(csMP2DM[0], (mP2DM.getGeometryN(0) as Point).getCoordinateSequence()), true);
+      expect(checkEqual(csMP2DM[1], (mP2DM.getGeometryN(1) as Point).getCoordinateSequence()), true);
+      var mp3DMCS = (mP3DM.getGeometryN(0) as Point).getCoordinateSequence();
       expect(checkEqual(csMP3DM[0], mp3DMCS), true);
-      expect(checkEqual(csMP3DM[1], (mP3DM.getGeometryN(1)).getCoordinateSequence()), true);
+      expect(checkEqual(csMP3DM[1], (mP3DM.getGeometryN(1) as Point).getCoordinateSequence()), true);
     });
     test("testReadMultiLineString", () {
       // arrange
@@ -330,16 +330,16 @@ void main() {
       MultiLineString mLs3DM = rdr.read("MULTILINESTRING ZM((10 10 10 11, 20 20 10 11), (15 15 10 11, 30 15 10 11))");
 
       // assert
-      expect(checkEqual(csMls2D[0], (mLs2D.getGeometryN(0)).getCoordinateSequence()), true);
-      expect(checkEqual(csMls2D[1], (mLs2D.getGeometryN(1)).getCoordinateSequence()), true);
+      expect(checkEqual(csMls2D[0], (mLs2D.getGeometryN(0) as LineString).getCoordinateSequence()), true);
+      expect(checkEqual(csMls2D[1], (mLs2D.getGeometryN(1) as LineString).getCoordinateSequence()), true);
       expect(mLs2DE.isEmpty, true);
       expect(mLs2DE.getNumGeometries() == 0, true);
-      expect(checkEqual(csMls3D[0], (mLs3D.getGeometryN(0)).getCoordinateSequence()), true);
-      expect(checkEqual(csMls3D[1], (mLs3D.getGeometryN(1)).getCoordinateSequence()), true);
-      expect(checkEqual(csMls2DM[0], (mLs2DM.getGeometryN(0)).getCoordinateSequence()), true);
-      expect(checkEqual(csMls2DM[1], (mLs2DM.getGeometryN(1)).getCoordinateSequence()), true);
-      expect(checkEqual(csMls3DM[0], (mLs3DM.getGeometryN(0)).getCoordinateSequence()), true);
-      expect(checkEqual(csMls3DM[1], (mLs3DM.getGeometryN(1)).getCoordinateSequence()), true);
+      expect(checkEqual(csMls3D[0], (mLs3D.getGeometryN(0) as LineString).getCoordinateSequence()), true);
+      expect(checkEqual(csMls3D[1], (mLs3D.getGeometryN(1) as LineString).getCoordinateSequence()), true);
+      expect(checkEqual(csMls2DM[0], (mLs2DM.getGeometryN(0) as LineString).getCoordinateSequence()), true);
+      expect(checkEqual(csMls2DM[1], (mLs2DM.getGeometryN(1) as LineString).getCoordinateSequence()), true);
+      expect(checkEqual(csMls3DM[0], (mLs3DM.getGeometryN(0) as LineString).getCoordinateSequence()), true);
+      expect(checkEqual(csMls3DM[1], (mLs3DM.getGeometryN(1) as LineString).getCoordinateSequence()), true);
     });
     test("testReadMultiPolygon", () {
       List<double> shell1 = [10, 10, 10, 20, 20, 20, 20, 15, 10, 10];
