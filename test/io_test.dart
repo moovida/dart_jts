@@ -1,8 +1,17 @@
 import "package:test/test.dart";
 import 'package:dart_jts/dart_jts.dart';
 import 'dart:math' as math;
+import 'dart:typed_data';
+import 'testing_utilities.dart';
 
 void main() {
+  group("WKBTest - ", () {
+    WKBTest test = WKBTest();
+
+
+  });
+
+
   group("WKTWriterTest - ", () {
     PrecisionModel precisionModel = PrecisionModel.fixedPrecision(1);
     GeometryFactory geometryFactory = GeometryFactory.withPrecisionModelSrid(precisionModel, 0);
@@ -605,4 +614,172 @@ bool checkEqualWithDimTol(CoordinateSequence seq1, CoordinateSequence seq2, int 
   }
 
   return true;
+}
+
+class WKBTest {
+  static GeometryFactory geomFactory = new GeometryFactory.defaultPrecision();
+  WKTReader rdr = new WKTReader.withFactory(geomFactory);
+
+  void testFirst() {
+    runWKBTestWKT("MULTIPOINT ((0 0), (1 4), (100 200))");
+  }
+
+  void testPointPCS() {
+    runWKBTestPackedCoordinate("POINT (1 2)");
+  }
+
+  void testPoint() {
+    runWKBTestWKT("POINT (1 2)");
+  }
+
+  void testLineString() {
+    runWKBTestWKT("LINESTRING (1 2, 10 20, 100 200)");
+  }
+
+  void testPolygon() {
+    runWKBTestWKT("POLYGON ((0 0, 100 0, 100 100, 0 100, 0 0))");
+  }
+
+  void testPolygonWithHole() {
+    runWKBTestWKT("POLYGON ((0 0, 100 0, 100 100, 0 100, 0 0), (1 1, 1 10, 10 10, 10 1, 1 1) )");
+  }
+
+  void testMultiPoint() {
+    runWKBTestWKT("MULTIPOINT ((0 0), (1 4), (100 200))");
+  }
+
+  void testMultiLineString() {
+    runWKBTestWKT("MULTILINESTRING ((0 0, 1 10), (10 10, 20 30), (123 123, 456 789))");
+  }
+
+  void testMultiPolygon() {
+    runWKBTestWKT("MULTIPOLYGON ( ((0 0, 100 0, 100 100, 0 100, 0 0), (1 1, 1 10, 10 10, 10 1, 1 1) ), ((200 200, 200 250, 250 250, 250 200, 200 200)) )");
+  }
+
+  void testGeometryCollection() {
+    runWKBTestWKT("GEOMETRYCOLLECTION ( POINT ( 1 1), LINESTRING (0 0, 10 10), POLYGON ((0 0, 100 0, 100 100, 0 100, 0 0)) )");
+  }
+
+  void testNestedGeometryCollection() {
+    runWKBTestWKT(
+        "GEOMETRYCOLLECTION ( POINT (20 20), GEOMETRYCOLLECTION ( POINT ( 1 1), LINESTRING (0 0, 10 10), POLYGON ((0 0, 100 0, 100 100, 0 100, 0 0)) ) )");
+  }
+
+  void testLineStringEmpty() {
+    runWKBTestWKT("LINESTRING EMPTY");
+  }
+
+// void testBigPolygon()
+//
+//{
+//GeometricShapeFactory shapeFactory = new GeometricShapeFactory(geomFactory);
+//shapeFactory.setBase(new Coordinate(0,0));
+//shapeFactory.setSize(1000);
+//shapeFactory.setNumPoints(1000);
+//Geometry geom = shapeFactory.createRectangle();
+//runWKBTest(geom, 2, false);
+//}
+
+  void testPolygonEmpty() {
+    runWKBTestWKT("POLYGON EMPTY");
+  }
+
+  void testMultiPointEmpty() {
+    runWKBTestWKT("MULTIPOINT EMPTY");
+  }
+
+  void testMultiLineStringEmpty() {
+    runWKBTestWKT("MULTILINESTRING EMPTY");
+  }
+
+  void testMultiPolygonEmpty() {
+    runWKBTestWKT("MULTIPOLYGON EMPTY");
+  }
+
+  void testGeometryCollectionEmpty() {
+    runWKBTestWKT("GEOMETRYCOLLECTION EMPTY");
+  }
+
+  void runWKBTestWKT(String wkt) {
+    runWKBTestCoordinateArray(wkt);
+    runWKBTestPackedCoordinate(wkt);
+  }
+
+  void runWKBTestPackedCoordinate(String wkt) {
+    GeometryFactory geomFactory =
+        new GeometryFactory.withCoordinateSequenceFactory(new PackedCoordinateSequenceFactory.withType(PackedCoordinateSequenceFactory.DOUBLE));
+    WKTReader rdr = new WKTReader.withFactory(geomFactory);
+    Geometry g = rdr.read(wkt);
+
+// Since we are using a PCS of dim=2, only check 2-dimensional storage
+    runWKBTest(g, 2, true);
+    runWKBTest(g, 2, false);
+  }
+
+  void runWKBTestCoordinateArray(String wkt) {
+    GeometryFactory geomFactory = new GeometryFactory.defaultPrecision();
+    WKTReader rdr = new WKTReader.withFactory(geomFactory);
+    Geometry g = rdr.read(wkt);
+
+// CoordinateArrays support dimension 3, so test both dimensions
+    runWKBTest(g, 2, true);
+    runWKBTest(g, 2, false);
+    runWKBTest(g, 3, true);
+    runWKBTest(g, 3, false);
+  }
+
+  void runWKBTest(Geometry g, int dimension, bool toHex) {
+    setZ(g);
+    runWKBTestWithBO(g, dimension, Endian.little, toHex);
+    runWKBTestWithBO(g, dimension, Endian.big, toHex);
+  }
+
+  void runWKBTestWithBO(Geometry g, int dimension, Endian byteOrder, bool toHex) {
+    runGeometry(g, dimension, byteOrder, toHex, 100);
+    runGeometry(g, dimension, byteOrder, toHex, 0);
+    runGeometry(g, dimension, byteOrder, toHex, 101010);
+    runGeometry(g, dimension, byteOrder, toHex, -1);
+  }
+
+  void setZ(Geometry g) {
+    g.applyCF((coord) {
+      coord.setZ((coord.x + coord.y) / 2);
+    });
+  }
+
+//static Comparator comp2D = new Coordinate.DimensionalComparator();
+//static Comparator comp3D = new Coordinate.DimensionalComparator(3);
+
+  static Comparator<CoordinateSequence> comp2 = CoordinateSequenceComparatorBuilder.withLimit(2);
+  static Comparator<CoordinateSequence> comp3 = CoordinateSequenceComparatorBuilder.withLimit(3);
+
+  /**
+   * Use single WKB reader, to ensure it can be used for multiple input geometries
+   */
+  WKBReader wkbReader = new WKBReader.withFactory(geomFactory);
+
+  void runGeometry(Geometry g, int dimension, Endian byteOrder, bool toHex, int srid) {
+    bool includeSRID = false;
+    if (srid >= 0) {
+      includeSRID = true;
+      g.setSRID(srid);
+    }
+
+    WKBWriter wkbWriter = new WKBWriter.withDimOrderSrid(dimension, byteOrder, includeSRID);
+    List<int> wkb = wkbWriter.write(g);
+    String wkbHex = null;
+    if (toHex) wkbHex = WKBWriter.toHex(wkb);
+
+    if (toHex) wkb = WKBReader.hexToBytes(wkbHex);
+    Geometry g2 = wkbReader.read(wkb);
+
+    Comparator<CoordinateSequence> comp = (dimension == 2) ? comp2 : comp3;
+    bool isEqual = (g.compareToWithComparator(g2, comp) == 0);
+    assertTrue(isEqual);
+
+    if (includeSRID) {
+      bool isSRIDEqual = g.getSRID() == g2.getSRID();
+      assertTrue(isSRIDEqual);
+    }
+  }
 }

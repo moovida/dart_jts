@@ -1,17 +1,28 @@
 part of dart_jts;
 
-_require(cond, [msg]) {
-  if (!cond) throw new ArgumentError(msg);
+class RuntimeException implements Exception {
+  String msg;
+
+  RuntimeException(this.msg);
+
+  String toString() => "RuntimeException: " + msg;
 }
 
-//abstract class ComparableMixin<T> implements Comparable {
-//  bool operator ==(T other) => compareTo(other) == 0;
-//  bool operator <(T other) => compareTo(other) == -1;
-//  bool operator <=(T other) => compareTo(other) <= 0;
-//  bool operator >(T other) => compareTo(other) == 1;
-//  bool operator >=(T other) => compareTo(other) > 0;
-//  int compareTo(T other);
-//}
+class IOException implements Exception {
+  String msg;
+
+  IOException(this.msg);
+
+  String toString() => "IOException: " + msg;
+}
+
+class ParseException implements Exception {
+  String msg;
+
+  ParseException(this.msg);
+
+  String toString() => "ParseException: " + msg;
+}
 
 class FormattingUtils {}
 
