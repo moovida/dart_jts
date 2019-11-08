@@ -122,7 +122,7 @@ class CoordinateSequenceComparatorBuilder {
     for (int d = 0; d < dimension; d++) {
       double ord1 = s1.getOrdinate(i, d);
       double ord2 = s2.getOrdinate(i, d);
-      int comp = compare(ord1, ord2, dimension);
+      int comp = compareStatic(ord1, ord2);
       if (comp != 0) return comp;
     }
     return 0;

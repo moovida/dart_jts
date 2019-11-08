@@ -55,7 +55,7 @@ class ByteOrderDataInStream {
    * @return the byte read
    */
   int readByte() {
-    stream.getInt8(readOffset++);
+    return stream.getInt8(readOffset++);
   }
 
   int readInt() {
@@ -536,32 +536,29 @@ class WKBWriter {
    * @return a string of hexadecimal digits
    */
   static String toHex(List<int> bytes) {
-    return HEX.encode(bytes);
-//  StringBuffer buf = new StringBuffer();
-//  for (int i = 0; i < bytes.length; i++) {
-//  byte b = bytes[i];
-//  buf.append(toHexDigit((b >> 4) & 0x0F));
-//  buf.append(toHexDigit(b & 0x0F));
-//  }
-//  return buf.toString();
+//    return HEX.encode(bytes);
+    StringBuffer buf = new StringBuffer();
+    for (int i = 0; i < bytes.length; i++) {
+      int b = bytes[i];
+      buf.write(toHexDigit((b >> 4) & 0x0F));
+      buf.write(toHexDigit(b & 0x0F));
+    }
+    return buf.toString();
   }
 
-//   static char toHexDigit(int n)
-//  {
-//    if (n < 0 || n > 15)
-//      throw new ArgumentError("Nibble value out of range: " + n);
-//    if (n <= 9)
-//      return (char) ('0' + n);
-//    return (char) ('A' + (n - 10));
-//  }
+  static String toHexDigit(int n) {
+    if (n < 0 || n > 15) throw new ArgumentError("Nibble value out of range: $n");
+    if (n <= 9) return '0$n';
+    return 'A${n - 10}';
+  }
 
   int outputDimension = 2;
   Endian byteOrder;
   bool includeSRID = false;
-  Uint8List byteArrayOutStream;
+  List<int> byteArrayOutStream;
 
   // holds output data values
-  List<int> buf = List(8);
+  List<int> buf = List.from([0, 0, 0, 0, 0, 0, 0, 0]);
 
   /**
    * Creates a writer that writes {@link Geometry}s with
@@ -632,12 +629,12 @@ class WKBWriter {
    * @param geom the geometry to write
    * @return the byte array containing the WKB
    */
-  Uint8List write(Geometry geom) {
+  List<int> write(Geometry geom) {
     try {
-      byteArrayOutStream = Uint8List(0);
+      byteArrayOutStream = [];
       writeStream(geom, byteArrayOutStream);
     } catch (ex) {
-      throw RuntimeException("Unexpected IO exception: ${ex.getMessage()}");
+      throw RuntimeException("Unexpected IO exception: $ex");
     }
     return byteArrayOutStream;
   }
@@ -649,7 +646,7 @@ class WKBWriter {
    * @param os the out stream to write to
    * @throws IOException if an I/O error occurs
    */
-  void writeStream(Geometry geom, Uint8List os) {
+  void writeStream(Geometry geom, List<int> os) {
     if (geom is Point)
       writePoint(geom, os);
     // LinearRings will be written as LineStrings
@@ -670,20 +667,20 @@ class WKBWriter {
     }
   }
 
-  void writePoint(Point pt, Uint8List os) {
+  void writePoint(Point pt, List<int> os) {
     if (pt.getCoordinateSequence().size() == 0) throw ArgumentError("Empty Points cannot be represented in WKB");
     writeByteOrder(os);
     writeGeometryType(WKBConstants.wkbPoint, pt, os);
     writeCoordinateSequence(pt.getCoordinateSequence(), false, os);
   }
 
-  void writeLineString(LineString line, Uint8List os) {
+  void writeLineString(LineString line, List<int> os) {
     writeByteOrder(os);
     writeGeometryType(WKBConstants.wkbLineString, line, os);
     writeCoordinateSequence(line.getCoordinateSequence(), true, os);
   }
 
-  void writePolygon(Polygon poly, Uint8List os) {
+  void writePolygon(Polygon poly, List<int> os) {
     writeByteOrder(os);
     writeGeometryType(WKBConstants.wkbPolygon, poly, os);
     writeInt(poly.getNumInteriorRing() + 1, os);
@@ -693,7 +690,7 @@ class WKBWriter {
     }
   }
 
-  void writeGeometryCollection(int geometryType, GeometryCollection gc, Uint8List os) {
+  void writeGeometryCollection(int geometryType, GeometryCollection gc, List<int> os) {
     writeByteOrder(os);
     writeGeometryType(geometryType, gc, os);
     writeInt(gc.getNumGeometries(), os);
@@ -702,14 +699,14 @@ class WKBWriter {
     }
   }
 
-  void writeByteOrder(Uint8List os) {
+  void writeByteOrder(List<int> os) {
     if (byteOrder == Endian.little)
       os.add(WKBConstants.wkbNDR);
     else
       os.add(WKBConstants.wkbXDR);
   }
 
-  void writeGeometryType(int geometryType, Geometry g, Uint8List os) {
+  void writeGeometryType(int geometryType, Geometry g, List<int> os) {
     int flag3D = (outputDimension == 3) ? 0x80000000 : 0;
     int typeInt = geometryType | flag3D;
     typeInt |= includeSRID ? 0x20000000 : 0;
@@ -719,12 +716,12 @@ class WKBWriter {
     }
   }
 
-  void writeInt(int intValue, Uint8List os) {
-    ByteOrderValues.putInt(intValue, buf, byteOrder);
+  void writeInt(int intValue, List<int> os) {
+    Byteutils.putInt32(intValue, buf, byteOrder);
     os.addAll(buf.sublist(0, 4));
   }
 
-  void writeCoordinateSequence(CoordinateSequence seq, bool writeSize, Uint8List os) {
+  void writeCoordinateSequence(CoordinateSequence seq, bool writeSize, List<int> os) {
     if (writeSize) writeInt(seq.size(), os);
 
     for (int i = 0; i < seq.size(); i++) {
@@ -732,10 +729,10 @@ class WKBWriter {
     }
   }
 
-  void writeCoordinate(CoordinateSequence seq, int index, Uint8List os) {
-    ByteOrderValues.putDouble(seq.getX(index), buf, byteOrder);
+  void writeCoordinate(CoordinateSequence seq, int index, List<int> os) {
+    Byteutils.putFloat64(seq.getX(index), buf, byteOrder);
     os.addAll(buf);
-    ByteOrderValues.putDouble(seq.getY(index), buf, byteOrder);
+    Byteutils.putFloat64(seq.getY(index), buf, byteOrder);
     os.addAll(buf);
 
 // only write 3rd dim if caller has requested it for this writer
@@ -743,101 +740,101 @@ class WKBWriter {
 // if 3rd dim is requested, only write it if the CoordinateSequence provides it
       double ordVal = Coordinate.NULL_ORDINATE;
       if (seq.getDimension() >= 3) ordVal = seq.getOrdinate(index, 2);
-      ByteOrderValues.putDouble(ordVal, buf, byteOrder);
+      Byteutils.putFloat64(ordVal, buf, byteOrder);
       os.addAll(buf);
     }
   }
 }
 
-/**
- * Methods to read and write primitive Java datatypes from/to byte
- * sequences, allowing the byte order to be specified
- * <p>
- * Similar to the standard Java <code>ByteBuffer</code> class.
- */
-class ByteOrderValues {
-  static int getInt(List<int> buf, Endian byteOrder) {
-    if (byteOrder == Endian.big) {
-      return ((buf[0] & 0xff) << 24) | ((buf[1] & 0xff) << 16) | ((buf[2] & 0xff) << 8) | ((buf[3] & 0xff));
-    } else {
-      // LITTLE_ENDIAN
-      return ((buf[3] & 0xff) << 24) | ((buf[2] & 0xff) << 16) | ((buf[1] & 0xff) << 8) | ((buf[0] & 0xff));
-    }
-  }
-
-  static void putInt(int intValue, List<int> buf, Endian byteOrder) {
-    if (byteOrder == Endian.big) {
-      buf[0] = (intValue >> 24);
-      buf[1] = (intValue >> 16);
-      buf[2] = (intValue >> 8);
-      buf[3] = intValue;
-    } else {
-      // LITTLE_ENDIAN
-      buf[0] = intValue;
-      buf[1] = (intValue >> 8);
-      buf[2] = (intValue >> 16);
-      buf[3] = (intValue >> 24);
-    }
-  }
-
-  static int getLong(List<int> buf, Endian byteOrder) {
-    if (byteOrder == Endian.big) {
-      return (buf[0] & 0xff) << 56 |
-          (buf[1] & 0xff) << 48 |
-          (buf[2] & 0xff) << 40 |
-          (buf[3] & 0xff) << 32 |
-          (buf[4] & 0xff) << 24 |
-          (buf[5] & 0xff) << 16 |
-          (buf[6] & 0xff) << 8 |
-          (buf[7] & 0xff);
-    } else {
-      // LITTLE_ENDIAN
-      return (buf[7] & 0xff) << 56 |
-          (buf[6] & 0xff) << 48 |
-          (buf[5] & 0xff) << 40 |
-          (buf[4] & 0xff) << 32 |
-          (buf[3] & 0xff) << 24 |
-          (buf[2] & 0xff) << 16 |
-          (buf[1] & 0xff) << 8 |
-          (buf[0] & 0xff);
-    }
-  }
-
-  static void putLong(int longValue, List<int> buf, Endian byteOrder) {
-    if (byteOrder == Endian.big) {
-      buf[0] = (longValue >> 56);
-      buf[1] = (longValue >> 48);
-      buf[2] = (longValue >> 40);
-      buf[3] = (longValue >> 32);
-      buf[4] = (longValue >> 24);
-      buf[5] = (longValue >> 16);
-      buf[6] = (longValue >> 8);
-      buf[7] = longValue;
-    } else {
-      // LITTLE_ENDIAN
-      buf[0] = longValue;
-      buf[1] = (longValue >> 8);
-      buf[2] = (longValue >> 16);
-      buf[3] = (longValue >> 24);
-      buf[4] = (longValue >> 32);
-      buf[5] = (longValue >> 40);
-      buf[6] = (longValue >> 48);
-      buf[7] = (longValue >> 56);
-    }
-  }
-
-  static double getDouble(List<int> buf, Endian byteOrder) {
-    var bdata = new ByteData.view(Uint8List.fromList(buf).buffer);
-    return bdata.getFloat64(0, byteOrder);
-//    int longVal = getLong(buf, byteOrder);
-//    return Double.longBitsToDouble(longVal);
-  }
-
-  static void putDouble(double doubleValue, List<int> buf, Endian byteOrder) {
-    var uint8list = Uint8List.fromList(buf);
-    var bdata = new ByteData.view(uint8list.buffer);
-    bdata.setFloat64(0, doubleValue, byteOrder);
-//    long longVal = Double.doubleToLongBits(doubleValue);
-//    putLong(longVal, buf, byteOrder);
-  }
-}
+///**
+// * Methods to read and write primitive Java datatypes from/to byte
+// * sequences, allowing the byte order to be specified
+// * <p>
+// * Similar to the standard Java <code>ByteBuffer</code> class.
+// */
+//class ByteOrderValues {
+//  static int getInt(List<int> buf, Endian byteOrder) {
+//    if (byteOrder == Endian.big) {
+//      return ((buf[0] & 0xff) << 24) | ((buf[1] & 0xff) << 16) | ((buf[2] & 0xff) << 8) | ((buf[3] & 0xff));
+//    } else {
+//      // LITTLE_ENDIAN
+//      return ((buf[3] & 0xff) << 24) | ((buf[2] & 0xff) << 16) | ((buf[1] & 0xff) << 8) | ((buf[0] & 0xff));
+//    }
+//  }
+//
+//  static void putInt(int intValue, List<int> buf, Endian byteOrder) {
+//    if (byteOrder == Endian.big) {
+//      buf[0] = (intValue >> 24);
+//      buf[1] = (intValue >> 16);
+//      buf[2] = (intValue >> 8);
+//      buf[3] = intValue;
+//    } else {
+//      // LITTLE_ENDIAN
+//      buf[0] = intValue;
+//      buf[1] = (intValue >> 8);
+//      buf[2] = (intValue >> 16);
+//      buf[3] = (intValue >> 24);
+//    }
+//  }
+//
+//  static int getLong(List<int> buf, Endian byteOrder) {
+//    if (byteOrder == Endian.big) {
+//      return (buf[0] & 0xff) << 56 |
+//          (buf[1] & 0xff) << 48 |
+//          (buf[2] & 0xff) << 40 |
+//          (buf[3] & 0xff) << 32 |
+//          (buf[4] & 0xff) << 24 |
+//          (buf[5] & 0xff) << 16 |
+//          (buf[6] & 0xff) << 8 |
+//          (buf[7] & 0xff);
+//    } else {
+//      // LITTLE_ENDIAN
+//      return (buf[7] & 0xff) << 56 |
+//          (buf[6] & 0xff) << 48 |
+//          (buf[5] & 0xff) << 40 |
+//          (buf[4] & 0xff) << 32 |
+//          (buf[3] & 0xff) << 24 |
+//          (buf[2] & 0xff) << 16 |
+//          (buf[1] & 0xff) << 8 |
+//          (buf[0] & 0xff);
+//    }
+//  }
+//
+//  static void putLong(int longValue, List<int> buf, Endian byteOrder) {
+//    if (byteOrder == Endian.big) {
+//      buf[0] = (longValue >> 56);
+//      buf[1] = (longValue >> 48);
+//      buf[2] = (longValue >> 40);
+//      buf[3] = (longValue >> 32);
+//      buf[4] = (longValue >> 24);
+//      buf[5] = (longValue >> 16);
+//      buf[6] = (longValue >> 8);
+//      buf[7] = longValue;
+//    } else {
+//      // LITTLE_ENDIAN
+//      buf[0] = longValue;
+//      buf[1] = (longValue >> 8);
+//      buf[2] = (longValue >> 16);
+//      buf[3] = (longValue >> 24);
+//      buf[4] = (longValue >> 32);
+//      buf[5] = (longValue >> 40);
+//      buf[6] = (longValue >> 48);
+//      buf[7] = (longValue >> 56);
+//    }
+//  }
+//
+//  static double getDouble(List<int> buf, Endian byteOrder) {
+//    var bdata = new ByteData.view(Uint8List.fromList(buf).buffer);
+//    return bdata.getFloat64(0, byteOrder);
+////    int longVal = getLong(buf, byteOrder);
+////    return Double.longBitsToDouble(longVal);
+//  }
+//
+//  static void putDouble(double doubleValue, List<int> buf, Endian byteOrder) {
+//    Float64List float64List = Float64List.fromList([doubleValue]);
+//    Uint8List bytes = new Uint8List.view(float64List.buffer);
+//    buf.setAll(0, bytes);
+////    long longVal = Double.doubleToLongBits(doubleValue);
+////    putLong(longVal, buf, byteOrder);
+//  }
+//}
