@@ -2076,10 +2076,11 @@ abstract class EdgeEndStar {
         // if there is a right location, that is the next location to propagate
         if (rightLoc != Location.NONE) {
 //Debug.print(rightLoc != currLoc, this);
-          if (rightLoc != currLoc) {
-            throw new TopologyException.withCoord("side location conflict", e.getCoordinate());
+          if (rightLoc != currLoc)
+            throw new TopologyException("side location conflict ${e.getCoordinate()}");
+          if (leftLoc == Location.NONE) {
+            Assert.shouldNeverReachHereWithMsg("found single null side (at ${e.getCoordinate()})");
           }
-          assert(leftLoc == Location.NONE, "found single null side (at ${e.getCoordinate()})");
           currLoc = leftLoc;
         } else {
           /** RHS is null - LHS must be null too.

@@ -1,5 +1,101 @@
 part of dart_jts;
 
+
+
+/**
+ * Implements the SFS <tt>relate()</tt> generalized spatial predicate on two {@link Geometry}s.
+ * <p>
+ * The class supports specifying a custom {@link BoundaryNodeRule}
+ * to be used during the relate computation.
+ * <p>
+ * If named spatial predicates are used on the result {@link IntersectionMatrix}
+ * of the RelateOp, the result may or not be affected by the
+ * choice of <tt>BoundaryNodeRule</tt>, depending on the exact nature of the pattern.
+ * For instance, {@link IntersectionMatrix#isIntersects()} is insensitive
+ * to the choice of <tt>BoundaryNodeRule</tt>,
+ * whereas {@link IntersectionMatrix#isTouches(int, int)} is affected by the rule chosen.
+ * <p>
+ * <b>Note:</b> custom Boundary Node Rules do not (currently)
+ * affect the results of other {@link Geometry} methods (such
+ * as {@link Geometry#getBoundary}.  The results of
+ * these methods may not be consistent with the relationship computed by
+ * a custom Boundary Node Rule.
+ *
+ * @version 1.7
+ */
+ class RelateOp
+    extends GeometryGraphOperation
+{
+  /**
+   * Computes the {@link IntersectionMatrix} for the spatial relationship
+   * between two {@link Geometry}s, using the default (OGC SFS) Boundary Node Rule
+   *
+   * @param a a Geometry to test
+   * @param b a Geometry to test
+   * @return the IntersectionMatrix for the spatial relationship between the geometries
+   */
+   static IntersectionMatrix relateStatic(Geometry a, Geometry b)
+  {
+    RelateOp relOp = new RelateOp(a, b);
+    IntersectionMatrix im = relOp.getIntersectionMatrix();
+    return im;
+  }
+
+  /**
+   * Computes the {@link IntersectionMatrix} for the spatial relationship
+   * between two {@link Geometry}s using a specified Boundary Node Rule.
+   *
+   * @param a a Geometry to test
+   * @param b a Geometry to test
+   * @param boundaryNodeRule the Boundary Node Rule to use
+   * @return the IntersectionMatrix for the spatial relationship between the input geometries
+   */
+   static IntersectionMatrix relateStaticWithRule(Geometry a, Geometry b, BoundaryNodeRule boundaryNodeRule)
+  {
+    RelateOp relOp = new RelateOp.withRule(a, b, boundaryNodeRule);
+    IntersectionMatrix im = relOp.getIntersectionMatrix();
+    return im;
+  }
+
+   RelateComputer relate;
+
+  /**
+   * Creates a new Relate operation, using the default (OGC SFS) Boundary Node Rule.
+   *
+   * @param g0 a Geometry to relate
+   * @param g1 another Geometry to relate
+   */
+   RelateOp(Geometry g0, Geometry g1): super(g0, g1)
+  {
+    relate = new RelateComputer(arg);
+  }
+
+  /**
+   * Creates a new Relate operation with a specified Boundary Node Rule.
+   *
+   * @param g0 a Geometry to relate
+   * @param g1 another Geometry to relate
+   * @param boundaryNodeRule the Boundary Node Rule to use
+   */
+   RelateOp.withRule(Geometry g0, Geometry g1, BoundaryNodeRule boundaryNodeRule):super.withRule(g0, g1, boundaryNodeRule)
+  {
+    relate = new RelateComputer(arg);
+  }
+
+  /**
+   * Gets the IntersectionMatrix for the spatial relationship
+   * between the input geometries.
+   *
+   * @return the IntersectionMatrix for the spatial relationship between the input geometries
+   */
+   IntersectionMatrix getIntersectionMatrix()
+  {
+    return relate.computeIM();
+  }
+
+}
+
+
 /**
  * Computes the {@link EdgeEnd}s which arise from a noded {@link Edge}.
  *

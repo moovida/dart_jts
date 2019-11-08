@@ -1112,7 +1112,7 @@ class PrecisionModel implements Comparable {
   Type modelType;
 
   /// The scale factor which determines the number of decimal places in fixed precision.
-  double scale;
+  double scale = 0.0;
 
   /// Creates a <code>PrecisionModel</code> with a default precision
   /// of FLOATING.

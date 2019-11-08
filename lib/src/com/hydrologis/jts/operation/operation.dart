@@ -1,6 +1,392 @@
 part of dart_jts;
 
 /**
+ * Computes the topological relationship between two Geometries.
+ * <p>
+ * RelateComputer does not need to build a complete graph structure to compute
+ * the IntersectionMatrix.  The relationship between the geometries can
+ * be computed by simply examining the labelling of edges incident on each node.
+ * <p>
+ * RelateComputer does not currently support arbitrary GeometryCollections.
+ * This is because GeometryCollections can contain overlapping Polygons.
+ * In order to correct compute relate on overlapping Polygons, they
+ * would first need to be noded and merged (if not explicitly, at least
+ * implicitly).
+ *
+ * @version 1.7
+ */
+class RelateComputer {
+  LineIntersector li = new RobustLineIntersector();
+  PointLocator ptLocator = new PointLocator();
+  List<GeometryGraph> arg; // the arg(s) of the operation
+  NodeMap nodes = new NodeMap(new RelateNodeFactory());
+
+  // this intersection matrix will hold the results compute for the relate
+  IntersectionMatrix im = null;
+  List isolatedEdges = [];
+
+  // the intersection point found (if any)
+  Coordinate invalidPoint;
+
+  RelateComputer(List<GeometryGraph> arg) {
+    this.arg = arg;
+  }
+
+  IntersectionMatrix computeIM() {
+    IntersectionMatrix im = new IntersectionMatrix();
+    // since Geometries are finite and embedded in a 2-D space, the EE element must always be 2
+    im.set(Location.EXTERIOR, Location.EXTERIOR, 2);
+
+    // if the Geometries don't overlap there is nothing to do
+    if (!arg[0].getGeometry().getEnvelopeInternal().intersectsEnvelope(arg[1].getGeometry().getEnvelopeInternal())) {
+      computeDisjointIM(im);
+      return im;
+    }
+    arg[0].computeSelfNodes(li, false);
+    arg[1].computeSelfNodes(li, false);
+
+    // compute intersections between edges of the two input geometries
+    SegmentIntersector intersector = arg[0].computeEdgeIntersections(arg[1], li, false);
+//System.out.println("computeIM: # segment intersection tests: " + intersector.numTests);
+    computeIntersectionNodes(0);
+    computeIntersectionNodes(1);
+    /**
+     * Copy the labelling for the nodes in the parent Geometries.  These override
+     * any labels determined by intersections between the geometries.
+     */
+    copyNodesAndLabels(0);
+    copyNodesAndLabels(1);
+
+    // complete the labelling for any nodes which only have a label for a single geometry
+//Debug.addWatch(nodes.find(new Coordinate(110, 200)));
+//Debug.printWatch();
+    labelIsolatedNodes();
+//Debug.printWatch();
+
+    // If a proper intersection was found, we can set a lower bound on the IM.
+    computeProperIntersectionIM(intersector, im);
+
+    /**
+     * Now process improper intersections
+     * (eg where one or other of the geometries has a vertex at the intersection point)
+     * We need to compute the edge graph at all nodes to determine the IM.
+     */
+
+    // build EdgeEnds for all intersections
+    EdgeEndBuilder eeBuilder = new EdgeEndBuilder();
+    List ee0 = eeBuilder.computeEdgeEnds(arg[0].getEdgeIterator());
+    insertEdgeEnds(ee0);
+    List ee1 = eeBuilder.computeEdgeEnds(arg[1].getEdgeIterator());
+    insertEdgeEnds(ee1);
+
+//Debug.println("==== NodeList ===");
+//Debug.print(nodes);
+
+    labelNodeEdges();
+
+    /**
+     * Compute the labeling for isolated components
+     * <br>
+     * Isolated components are components that do not touch any other components in the graph.
+     * They can be identified by the fact that they will
+     * contain labels containing ONLY a single element, the one for their parent geometry.
+     * We only need to check components contained in the input graphs, since
+     * isolated components will not have been replaced by new components formed by intersections.
+     */
+//debugPrintln("Graph A isolated edges - ");
+    labelIsolatedEdges(0, 1);
+//debugPrintln("Graph B isolated edges - ");
+    labelIsolatedEdges(1, 0);
+
+    // update the IM from all components
+    updateIM(im);
+    return im;
+  }
+
+  void insertEdgeEnds(List ee) {
+    for (Iterator i = ee.iterator; i.moveNext();) {
+      EdgeEnd e = i.current as EdgeEnd;
+      nodes.add(e);
+    }
+  }
+
+  void computeProperIntersectionIM(SegmentIntersector intersector, IntersectionMatrix im) {
+    // If a proper intersection is found, we can set a lower bound on the IM.
+    int dimA = arg[0].getGeometry().getDimension();
+    int dimB = arg[1].getGeometry().getDimension();
+    bool hasProper = intersector.hasProperIntersection();
+    bool hasProperInterior = intersector.hasProperInteriorIntersection();
+
+    // For Geometry's of dim 0 there can never be proper intersections.
+
+    /**
+     * If edge segments of Areas properly intersect, the areas must properly overlap.
+     */
+    if (dimA == 2 && dimB == 2) {
+      if (hasProper) im.setAtLeastDimensionSymbols("212101212");
+    }
+    /**
+     * If an Line segment properly intersects an edge segment of an Area,
+     * it follows that the Interior of the Line intersects the Boundary of the Area.
+     * If the intersection is a proper <i>interior</i> intersection, then
+     * there is an Interior-Interior intersection too.
+     * Note that it does not follow that the Interior of the Line intersects the Exterior
+     * of the Area, since there may be another Area component which contains the rest of the Line.
+     */
+    else if (dimA == 2 && dimB == 1) {
+      if (hasProper) im.setAtLeastDimensionSymbols("FFF0FFFF2");
+      if (hasProperInterior) im.setAtLeastDimensionSymbols("1FFFFF1FF");
+    } else if (dimA == 1 && dimB == 2) {
+      if (hasProper) im.setAtLeastDimensionSymbols("F0FFFFFF2");
+      if (hasProperInterior) im.setAtLeastDimensionSymbols("1F1FFFFFF");
+    }
+    /* If edges of LineStrings properly intersect *in an interior point*, all
+        we can deduce is that
+        the interiors intersect.  (We can NOT deduce that the exteriors intersect,
+        since some other segments in the geometries might cover the points in the
+        neighbourhood of the intersection.)
+        It is important that the point be known to be an interior point of
+        both Geometries, since it is possible in a self-intersecting geometry to
+        have a proper intersection on one segment that is also a boundary point of another segment.
+    */
+    else if (dimA == 1 && dimB == 1) {
+      if (hasProperInterior) im.setAtLeastDimensionSymbols("0FFFFFFFF");
+    }
+  }
+
+  /**
+   * Copy all nodes from an arg geometry into this graph.
+   * The node label in the arg geometry overrides any previously computed
+   * label for that argIndex.
+   * (E.g. a node may be an intersection node with
+   * a computed label of BOUNDARY,
+   * but in the original arg Geometry it is actually
+   * in the interior due to the Boundary Determination Rule)
+   */
+  void copyNodesAndLabels(int argIndex) {
+    for (Iterator i = arg[argIndex].getNodeIterator(); i.moveNext();) {
+      Node graphNode = i.current as Node;
+      Node newNode = nodes.addNodeFromCoordinate(graphNode.getCoordinate());
+      newNode.setLabelWithIndex(argIndex, graphNode.getLabel().getLocation(argIndex));
+//node.print(System.out);
+    }
+  }
+
+  /**
+   * Insert nodes for all intersections on the edges of a Geometry.
+   * Label the created nodes the same as the edge label if they do not already have a label.
+   * This allows nodes created by either self-intersections or
+   * mutual intersections to be labelled.
+   * Endpoint nodes will already be labelled from when they were inserted.
+   */
+  void computeIntersectionNodes(int argIndex) {
+    for (Iterator i = arg[argIndex].getEdgeIterator(); i.moveNext();) {
+      Edge e = i.current as Edge;
+      int eLoc = e.getLabel().getLocation(argIndex);
+      for (Iterator eiIt = e.getEdgeIntersectionList().iterator(); eiIt.moveNext();) {
+        EdgeIntersection ei = eiIt.current as EdgeIntersection;
+        RelateNode n = nodes.addNodeFromCoordinate(ei.coord) as RelateNode;
+        if (eLoc == Location.BOUNDARY)
+          n.setLabelBoundary(argIndex);
+        else {
+          if (n.getLabel().isNull(argIndex)) n.setLabelWithIndex(argIndex, Location.INTERIOR);
+        }
+//Debug.println(n);
+      }
+    }
+  }
+
+  /**
+   * For all intersections on the edges of a Geometry,
+   * label the corresponding node IF it doesn't already have a label.
+   * This allows nodes created by either self-intersections or
+   * mutual intersections to be labelled.
+   * Endpoint nodes will already be labelled from when they were inserted.
+   */
+  void labelIntersectionNodes(int argIndex) {
+    for (Iterator i = arg[argIndex].getEdgeIterator(); i.moveNext();) {
+      Edge e = i.current as Edge;
+      int eLoc = e.getLabel().getLocation(argIndex);
+      for (Iterator eiIt = e.getEdgeIntersectionList().iterator(); eiIt.moveNext();) {
+        EdgeIntersection ei = eiIt.current as EdgeIntersection;
+        RelateNode n = nodes.find(ei.coord) as RelateNode;
+        if (n.getLabel().isNull(argIndex)) {
+          if (eLoc == Location.BOUNDARY)
+            n.setLabelBoundary(argIndex);
+          else
+            n.setLabelWithIndex(argIndex, Location.INTERIOR);
+        }
+//n.print(System.out);
+      }
+    }
+  }
+
+  /**
+   * If the Geometries are disjoint, we need to enter their dimension and
+   * boundary dimension in the Ext rows in the IM
+   */
+  void computeDisjointIM(IntersectionMatrix im) {
+    Geometry ga = arg[0].getGeometry();
+    if (!ga.isEmpty()) {
+      im.set(Location.INTERIOR, Location.EXTERIOR, ga.getDimension());
+      im.set(Location.BOUNDARY, Location.EXTERIOR, ga.getBoundaryDimension());
+    }
+    Geometry gb = arg[1].getGeometry();
+    if (!gb.isEmpty()) {
+      im.set(Location.EXTERIOR, Location.INTERIOR, gb.getDimension());
+      im.set(Location.EXTERIOR, Location.BOUNDARY, gb.getBoundaryDimension());
+    }
+  }
+
+  void labelNodeEdges() {
+    for (Iterator ni = nodes.iterator(); ni.moveNext();) {
+      RelateNode node = ni.current as RelateNode;
+      node.getEdges().computeLabelling(arg);
+//Debug.print(node.getEdges());
+//node.print(System.out);
+    }
+  }
+
+  /**
+   * update the IM with the sum of the IMs for each component
+   */
+  void updateIM(IntersectionMatrix im) {
+//Debug.println(im);
+    for (Iterator ei = isolatedEdges.iterator; ei.moveNext();) {
+      Edge e = ei.current as Edge;
+      e.updateIM(im);
+//Debug.println(im);
+    }
+    for (Iterator ni = nodes.iterator(); ni.moveNext();) {
+      RelateNode node = ni.current as RelateNode;
+      node.updateIM(im);
+//Debug.println(im);
+      node.updateIMFromEdges(im);
+//Debug.println(im);
+//node.print(System.out);
+    }
+  }
+
+  /**
+   * Processes isolated edges by computing their labelling and adding them
+   * to the isolated edges list.
+   * Isolated edges are guaranteed not to touch the boundary of the target (since if they
+   * did, they would have caused an intersection to be computed and hence would
+   * not be isolated)
+   */
+  void labelIsolatedEdges(int thisIndex, int targetIndex) {
+    for (Iterator ei = arg[thisIndex].getEdgeIterator(); ei.moveNext();) {
+      Edge e = ei.current as Edge;
+      if (e.isIsolated()) {
+        labelIsolatedEdge(e, targetIndex, arg[targetIndex].getGeometry());
+        isolatedEdges.add(e);
+      }
+    }
+  }
+
+  /**
+   * Label an isolated edge of a graph with its relationship to the target geometry.
+   * If the target has dim 2 or 1, the edge can either be in the interior or the exterior.
+   * If the target has dim 0, the edge must be in the exterior
+   */
+  void labelIsolatedEdge(Edge e, int targetIndex, Geometry target) {
+    // this won't work for GeometryCollections with both dim 2 and 1 geoms
+    if (target.getDimension() > 0) {
+      // since edge is not in boundary, may not need the full generality of PointLocator?
+      // Possibly should use ptInArea locator instead?  We probably know here
+      // that the edge does not touch the bdy of the target Geometry
+      int loc = ptLocator.locate(e.getCoordinate(), target);
+      e.getLabel().setAllLocations(targetIndex, loc);
+    } else {
+      e.getLabel().setAllLocations(targetIndex, Location.EXTERIOR);
+    }
+//System.out.println(e.getLabel());
+  }
+
+  /**
+   * Isolated nodes are nodes whose labels are incomplete
+   * (e.g. the location for one Geometry is null).
+   * This is the case because nodes in one graph which don't intersect
+   * nodes in the other are not completely labelled by the initial process
+   * of adding nodes to the nodeList.
+   * To complete the labelling we need to check for nodes that lie in the
+   * interior of edges, and in the interior of areas.
+   */
+  void labelIsolatedNodes() {
+    for (Iterator ni = nodes.iterator(); ni.moveNext();) {
+      Node n = ni.current;
+      Label label = n.getLabel();
+      // isolated nodes should always have at least one geometry in their label
+      Assert.isTrueWithMsg(label.getGeometryCount() > 0, "node with empty label found");
+      if (n.isIsolated()) {
+        if (label.isNull(0))
+          labelIsolatedNode(n, 0);
+        else
+          labelIsolatedNode(n, 1);
+      }
+    }
+  }
+
+  /**
+   * Label an isolated node with its relationship to the target geometry.
+   */
+  void labelIsolatedNode(Node n, int targetIndex) {
+    int loc = ptLocator.locate(n.getCoordinate(), arg[targetIndex].getGeometry());
+    n.getLabel().setAllLocations(targetIndex, loc);
+//debugPrintln(n.getLabel());
+  }
+}
+
+/**
+ * The base class for operations that require {@link GeometryGraph}s.
+ *
+ * @version 1.7
+ */
+class GeometryGraphOperation {
+  final LineIntersector li = new RobustLineIntersector();
+  PrecisionModel resultPrecisionModel;
+
+  /**
+   * The operation args into an array so they can be accessed by index
+   */
+  List<GeometryGraph> arg; // the arg(s) of the operation
+
+  GeometryGraphOperation(Geometry g0, Geometry g1)
+      : this.withRule(g0, g1, BoundaryNodeRule.OGC_SFS_BOUNDARY_RULE
+//         BoundaryNodeRule.ENDPOINT_BOUNDARY_RULE
+            );
+
+  GeometryGraphOperation.withRule(Geometry g0, Geometry g1, BoundaryNodeRule boundaryNodeRule) {
+    // use the most precise model for the result
+    if (g0.getPrecisionModel().compareTo(g1.getPrecisionModel()) >= 0)
+      setComputationPrecision(g0.getPrecisionModel());
+    else
+      setComputationPrecision(g1.getPrecisionModel());
+
+    arg = List(2);
+    arg[0] = new GeometryGraph.args3(0, g0, boundaryNodeRule);
+    arg[1] = new GeometryGraph.args3(1, g1, boundaryNodeRule);
+  }
+
+  GeometryGraphOperation.singleGeom(Geometry g0) {
+    setComputationPrecision(g0.getPrecisionModel());
+
+    arg = List(1);
+    arg[0] = new GeometryGraph(0, g0);
+    ;
+  }
+
+  Geometry getArgGeometry(int i) {
+    return arg[i].getGeometry();
+  }
+
+  void setComputationPrecision(PrecisionModel pm) {
+    resultPrecisionModel = pm;
+    li.setPrecisionModel(resultPrecisionModel);
+  }
+}
+
+/**
  * Tests whether a <code>Geometry</code> is simple.
  * In general, the SFS specification of simplicity
  * follows the rule:

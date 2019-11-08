@@ -637,8 +637,8 @@ class SegmentIntersector {
 
   bool isBoundaryPoint(LineIntersector li, List<List> bdyNodes) {
     if (bdyNodes == null) return false;
-    if (isBoundaryPointInternal(li, bdyNodes[0])) return true;
-    if (isBoundaryPointInternal(li, bdyNodes[1])) return true;
+    if (isBoundaryPointInternal(li, bdyNodes[0].cast<Node>())) return true;
+    if (isBoundaryPointInternal(li, bdyNodes[1].cast<Node>())) return true;
     return false;
   }
 
@@ -813,7 +813,7 @@ class MonotoneChainIndexer {
   List<int> getChainStartIndices(List<Coordinate> pts) {
     // find the startpoint (and endpoints) of all monotone chains in this edge
     int start = 0;
-    List<int> startIndexList = List(pts.length ~/ 2);
+    List<int> startIndexList = []; //List(pts.length ~/ 2, );
     // use heuristic to size initial array
     //startIndexList.ensureCapacity(pts.length / 4);
     startIndexList.add(start);

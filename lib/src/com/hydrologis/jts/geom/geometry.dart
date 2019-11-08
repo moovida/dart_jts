@@ -409,11 +409,10 @@ abstract class Geometry implements Comparable {
    * @return a {@link Point} which is the centroid of this Geometry
    */
   Point getCentroid() {
-    throw UnimplementedError("not implemented yet");
-//    if (isEmpty())
-//      return factory.createPoint();
-//    Coordinate centPt = Centroid.getCentroid(this);
-//    return createPointFromInternalCoord(centPt, this);
+    if (isEmpty())
+      return geomFactory.createPointEmpty();
+    Coordinate centPt = Centroid.getCentroidStatic(this);
+    return createPointFromInternalCoord(centPt, this);
   }
 
   /**
@@ -912,10 +911,9 @@ abstract class Geometry implements Comparable {
    *      boundaries and exteriors of the two <code>Geometry</code>s
    */
   IntersectionMatrix relate(Geometry g) {
-    throw UnimplementedError("Not implemented yet");
-//    checkNotGeometryCollection(this);
-//    checkNotGeometryCollection(g);
-//    return RelateOp.relate(this, g);
+    checkNotGeometryCollection(this);
+    checkNotGeometryCollection(g);
+    return RelateOp.relateStatic(this, g);
   }
 
   /**
@@ -1000,10 +998,9 @@ abstract class Geometry implements Comparable {
    * @see #normalize()
    */
   bool equalsObj(Object o) {
-    throw UnimplementedError("Not implemented yet");
-//    if (!(o is Geometry)) return false;
-//    Geometry g = o as Geometry;
-//    return equalsExact(g);
+    if (!(o is Geometry)) return false;
+    Geometry g = o as Geometry;
+    return equalsExactGeom(g);
   }
 
   /**
@@ -1058,7 +1055,7 @@ abstract class Geometry implements Comparable {
    * @see #buffer(double, int, int)
    */
   Geometry buffer(double distance) {
-    throw UnimplementedError("Not implemented yet");
+    throw UnimplementedError("Not implemented yet"); // TODO
 //    return BufferOp.bufferOp(this, distance);
   }
 
@@ -1092,7 +1089,7 @@ abstract class Geometry implements Comparable {
    * @see #buffer(double, int, int)
    */
   Geometry buffer2(double distance, int quadrantSegments) {
-    throw UnimplementedError("Not implemented yet");
+    throw UnimplementedError("Not implemented yet"); // TODO
 //    return BufferOp.bufferOp(this, distance, quadrantSegments);
   }
 
@@ -1131,7 +1128,7 @@ abstract class Geometry implements Comparable {
    * @see BufferOp
    */
   Geometry buffer3(double distance, int quadrantSegments, int endCapStyle) {
-    throw UnimplementedError("Not implemented yet");
+    throw UnimplementedError("Not implemented yet"); // TODO
 //    return BufferOp.bufferOp(this, distance, quadrantSegments, endCapStyle);
   }
 
@@ -1166,7 +1163,7 @@ abstract class Geometry implements Comparable {
    *      s points
    */
   Geometry convexHull() {
-    throw UnimplementedError("Not implemented yet");
+    throw UnimplementedError("Not implemented yet"); // TODO
 //    return (new ConvexHull(this)).getConvexHull();
   }
 
@@ -1200,7 +1197,7 @@ abstract class Geometry implements Comparable {
    * @throws IllegalArgumentException if the argument is a non-empty heterogeneous <code>GeometryCollection</code>
    */
   Geometry intersection(Geometry other) {
-    throw UnimplementedError("Not implemented yet");
+    throw UnimplementedError("Not implemented yet"); // TODO
 //    /**
 //     * TODO: MD - add optimization for P-A case using Point-In-Polygon
 //     */
@@ -1263,7 +1260,7 @@ abstract class Geometry implements Comparable {
    * @see LineMerger
    */
   Geometry unionGeom(Geometry other) {
-    throw UnimplementedError("Not implemented yet");
+    throw UnimplementedError("Not implemented yet"); // TODO
 //    // handle empty geometry cases
 //    if (this.isEmpty() || other.isEmpty()) {
 //      if (this.isEmpty() && other.isEmpty())
@@ -1299,7 +1296,7 @@ abstract class Geometry implements Comparable {
    * @throws IllegalArgumentException if either input is a non-empty GeometryCollection
    */
   Geometry difference(Geometry other) {
-    throw UnimplementedError("Not implemented yet");
+    throw UnimplementedError("Not implemented yet"); // TODO
 //    // special case: if A.isEmpty ==> empty; if B.isEmpty ==> A
 //    if (this.isEmpty()) return OverlayOp.createEmptyResult(OverlayOp.DIFFERENCE, this, other, factory);
 //    if (other.isEmpty()) return copy();
@@ -1328,7 +1325,7 @@ abstract class Geometry implements Comparable {
    * @throws IllegalArgumentException if either input is a non-empty GeometryCollection
    */
   Geometry symDifference(Geometry other) {
-    throw UnimplementedError("Not implemented yet");
+    throw UnimplementedError("Not implemented yet"); // TODO
 //    // handle empty geometry cases
 //    if (this.isEmpty() || other.isEmpty()) {
 //      // both empty - check dimensions
@@ -1367,7 +1364,7 @@ abstract class Geometry implements Comparable {
    * @see UnaryUnionOp
    */
   Geometry union() {
-    throw UnimplementedError("Not implemented yet");
+    throw UnimplementedError("Not implemented yet"); // TODO
 //    return UnaryUnionOp.union(this);
   }
 

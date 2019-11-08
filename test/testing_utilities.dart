@@ -31,6 +31,11 @@ assertEqualsD(double n1, double n2, double tolerance) {
   expect(NumberUtils.equalsWithTolerance(n1, n2, tolerance), true);
 }
 
+assertEqualsExact(Geometry expectedValue, Geometry actualValue) {
+  assertTrueMsg("Expected $expectedValue but encountered $actualValue",
+      actualValue.equalsExactGeom(expectedValue));
+}
+
 assertTrue(actual) {
   expect(actual, true);
 }

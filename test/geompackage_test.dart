@@ -12,6 +12,86 @@ GeometryFactory geometryFactory = GeometryFactory.withPrecisionModelSrid(precisi
 WKTReader reader = WKTReader.withFactory(geometryFactory);
 
 void main() {
+  group("LineSegmentTest - ", () {
+    test("testProjectionFactor", () {
+      // zero-length line
+      LineSegment seg = new LineSegment(10, 0, 10, 0);
+      assertTrue(seg.projectionFactor(new Coordinate(11, 0)).isNaN);
+
+      LineSegment seg2 = new LineSegment(10, 0, 20, 0);
+      assertTrue(seg2.projectionFactor(new Coordinate(11, 0)) == 0.1);
+    });
+    test("testLineIntersection", () {
+      // simple case
+      LineSegmentTest.checkLineIntersection(0, 0, 10, 10, 0, 10, 10, 0, 5, 5);
+
+      //Almost collinear - See JTS GitHub issue #464
+      LineSegmentTest.checkLineIntersection(35613471.6165017, 4257145.306132293, 35613477.7705378, 4257160.528222711, 35613477.77505724, 4257160.539653536,
+          35613479.85607389, 4257165.92369170, 35613477.772841461, 4257160.5339209242);
+    });
+    test("testOrientationIndexCoordinate", () {
+      LineSegment seg = new LineSegment(0, 0, 10, 10);
+      LineSegmentTest.checkOrientationIndexLS(seg, 10, 11, 1);
+      LineSegmentTest.checkOrientationIndexLS(seg, 10, 9, -1);
+
+      LineSegmentTest.checkOrientationIndexLS(seg, 11, 11, 0);
+
+      LineSegmentTest.checkOrientationIndexLS(seg, 11, 11.0000001, 1);
+      LineSegmentTest.checkOrientationIndexLS(seg, 11, 10.9999999, -1);
+
+      LineSegmentTest.checkOrientationIndexLS(seg, -2, -1.9999999, 1);
+      LineSegmentTest.checkOrientationIndexLS(seg, -2, -2.0000001, -1);
+    });
+    test("testOrientationIndexSegment", () {
+      LineSegment seg = new LineSegment(100, 100, 110, 110);
+
+      LineSegmentTest.checkOrientationIndexLSCoords(seg, 100, 101, 105, 106, 1);
+      LineSegmentTest.checkOrientationIndexLSCoords(seg, 100, 99, 105, 96, -1);
+
+      LineSegmentTest.checkOrientationIndexLSCoords(seg, 200, 200, 210, 210, 0);
+    });
+    test("testOffset", () {
+      LineSegmentTest.checkOffset(0, 0, 10, 10, 0.0, LineSegmentTest.ROOT2, -1, 1);
+      LineSegmentTest.checkOffset(0, 0, 10, 10, 0.0, -LineSegmentTest.ROOT2, 1, -1);
+
+      LineSegmentTest.checkOffset(0, 0, 10, 10, 1.0, LineSegmentTest.ROOT2, 9, 11);
+      LineSegmentTest.checkOffset(0, 0, 10, 10, 0.5, LineSegmentTest.ROOT2, 4, 6);
+
+      LineSegmentTest.checkOffset(0, 0, 10, 10, 0.5, -LineSegmentTest.ROOT2, 6, 4);
+      LineSegmentTest.checkOffset(0, 0, 10, 10, 0.5, -LineSegmentTest.ROOT2, 6, 4);
+
+      LineSegmentTest.checkOffset(0, 0, 10, 10, 2.0, LineSegmentTest.ROOT2, 19, 21);
+      LineSegmentTest.checkOffset(0, 0, 10, 10, 2.0, -LineSegmentTest.ROOT2, 21, 19);
+
+      LineSegmentTest.checkOffset(0, 0, 10, 10, 2.0, 5 * LineSegmentTest.ROOT2, 15, 25);
+      LineSegmentTest.checkOffset(0, 0, 10, 10, -2.0, 5 * LineSegmentTest.ROOT2, -25, -15);
+    });
+  });
+  group("IsRectangleTest - ", () {
+    WKTReader rdr = WKTReader();
+    test("testValidRectangles", () {
+      assertTrue(isRectangle(rdr, "POLYGON ((0 0, 0 100, 100 100, 100 0, 0 0))"));
+      assertTrue(isRectangle(rdr, "POLYGON ((0 0, 0 200, 100 200, 100 0, 0 0))"));
+    });
+    test("testRectangleWithHole", () {
+      assertTrue(!isRectangle(rdr, "POLYGON ((0 0, 0 100, 100 100, 100 0, 0 0), (10 10, 10 90, 90 90, 90 10, 10 10) ))"));
+    });
+    test("testNotRectilinear", () {
+      assertTrue(!isRectangle(rdr, "POLYGON ((0 0, 0 100, 99 100, 100 0, 0 0))"));
+    });
+    test("testTooManyPoints", () {
+      assertTrue(!isRectangle(rdr, "POLYGON ((0 0, 0 100, 100 50, 100 100, 100 0, 0 0))"));
+    });
+    test("testTooFewPoints", () {
+      assertTrue(!isRectangle(rdr, "POLYGON ((0 0, 0 100, 100 0, 0 0))"));
+    });
+    test("testRectangularLinestring", () {
+      assertTrue(!isRectangle(rdr, "LINESTRING (0 0, 0 100, 100 100, 100 0, 0 0)"));
+    });
+    test("testPointsInWrongOrder", () {
+      assertTrue(!isRectangle(rdr, "POLYGON ((0 0, 0 100, 100 0, 100 100, 0 0))"));
+    });
+  });
   group("GeometryFactoryTest - ", () {
     PrecisionModel precisionModel = new PrecisionModel();
     GeometryFactory geometryFactory = new GeometryFactory.withPrecisionModelSrid(precisionModel, 0);
@@ -433,6 +513,11 @@ void main() {
   });
 }
 
+bool isRectangle(WKTReader rdr, String wkt) {
+  Geometry a = rdr.read(wkt);
+  return a.isRectangle();
+}
+
 int compareBiDir(String wkt0, String wkt1) {
   LineString g0 = reader.read(wkt0) as LineString;
   LineString g1 = reader.read(wkt1) as LineString;
@@ -763,7 +848,7 @@ void checkZUnsupported(Coordinate coord) {
     fail(coord.runtimeType.toString() + " does not support Z");
   } catch (expected) {}
   assertTrue(coord.z.isNaN);
-  coord.z = 0.0; // field still public
+  coord.z = 0.0; // field still
   assertTrueMsg("z field not used", coord.getZ().isNaN); // but not used
 }
 
@@ -807,4 +892,54 @@ void checkCreateGeometryExact(String wkt) {
   Geometry g = read(wkt);
   Geometry g2 = geometryFactory.createGeometry(g);
   assertTrue(g.equalsExactGeom(g2));
+}
+
+class LineSegmentTest {
+  WKTReader rdr = new WKTReader();
+
+  static double ROOT2 = math.sqrt(2);
+
+  static final double MAX_ABS_ERROR_INTERSECTION = 1e-5;
+
+  static void checkLineIntersection(
+      double p1x, double p1y, double p2x, double p2y, double q1x, double q1y, double q2x, double q2y, double expectedx, double expectedy) {
+    LineSegment seg1 = new LineSegment(p1x, p1y, p2x, p2y);
+    LineSegment seg2 = new LineSegment(q1x, q1y, q2x, q2y);
+
+    Coordinate actual = seg1.lineIntersection(seg2);
+    Coordinate expected = new Coordinate(expectedx, expectedy);
+    double dist = actual.distance(expected);
+    //System.out.println("Expected: " + expected + "  Actual: " + actual + "  Dist = " + dist);
+    assertTrue(dist <= MAX_ABS_ERROR_INTERSECTION);
+  }
+
+  static void checkOffset(double x0, double y0, double x1, double y1, double segFrac, double offset, double expectedX, double expectedY) {
+    LineSegment seg = new LineSegment(x0, y0, x1, y1);
+    Coordinate p = seg.pointAlongOffset(segFrac, offset);
+
+    assertTrue(equalsTolerance(new Coordinate(expectedX, expectedY), p, 0.000001));
+  }
+
+  static bool equalsTolerance(Coordinate p0, Coordinate p1, double tolerance) {
+    if ((p0.x - p1.x).abs() > tolerance) return false;
+    if ((p0.y - p1.y).abs() > tolerance) return false;
+    return true;
+  }
+
+  void checkOrientationIndex(double x0, double y0, double x1, double y1, double px, double py, int expectedOrient) {
+    LineSegment seg = new LineSegment(x0, y0, x1, y1);
+    checkOrientationIndexLS(seg, px, py, expectedOrient);
+  }
+
+  static void checkOrientationIndexLS(LineSegment seg, double px, double py, int expectedOrient) {
+    Coordinate p = new Coordinate(px, py);
+    int orient = seg.orientationIndexCoord(p);
+    assertTrue(orient == expectedOrient);
+  }
+
+  static void checkOrientationIndexLSCoords(LineSegment seg, double s0x, double s0y, double s1x, double s1y, int expectedOrient) {
+    LineSegment seg2 = new LineSegment(s0x, s0y, s1x, s1y);
+    int orient = seg.orientationIndex(seg2);
+    assertTrue(orient == expectedOrient);
+  }
 }
