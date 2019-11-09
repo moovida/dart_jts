@@ -1,6 +1,4 @@
-/// Support for doing something awesome.
-///
-/// More dartdocs go here.
+/// Entry point for the dart_jts library.
 library dart_jts;
 
 import "dart:collection";

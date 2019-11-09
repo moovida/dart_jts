@@ -5,7 +5,7 @@ part of dart_jts;
 /// @author Martin Davis
 ///
 class CGAlgorithmsDD {
-  CGAlgorithmsDD() {}
+  CGAlgorithmsDD();
 
   /// Returns the index of the direction of the point <code>q</code> relative to
   /// a vector specified by <code>p1-p2</code>.
