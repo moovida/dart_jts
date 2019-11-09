@@ -836,11 +836,13 @@ class WKBTest {
 
     WKBWriter wkbWriter = new WKBWriter.withDimOrderSrid(dimension, byteOrder, includeSRID);
     List<int> wkb = wkbWriter.write(g);
+    Uint8List wkbU8 = Uint8List.fromList(wkb);
+
     String wkbHex = null;
-    if (toHex) wkbHex = WKBWriter.toHex(wkb);
+    if (toHex) wkbHex = WKBWriter.toHex(wkbU8);
 
     if (toHex) wkb = WKBReader.hexToBytes(wkbHex);
-    Geometry g2 = wkbReader.read(wkb);
+    Geometry g2 = wkbReader.read(wkbU8);
 
     Comparator<CoordinateSequence> comp = (dimension == 2) ? comp2 : comp3;
     bool isEqual = (g.compareToWithComparator(g2, comp) == 0);

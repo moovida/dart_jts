@@ -196,8 +196,14 @@ class WKBReader {
    * @throws IOException if the underlying stream creates an error
    * @throws ParseException if the WKB is ill-formed
    */
-  Geometry read(Uint8List ins) {
-    dis = ByteOrderDataInStream(ByteData.view(ins.buffer));
+  Geometry read(List<int> ins) {
+    var buffer;
+    if (ins is Uint8List) {
+      buffer = ins.buffer;
+    } else {
+      buffer = Uint8List.fromList(ins).buffer;
+    }
+    dis = ByteOrderDataInStream(ByteData.view(buffer));
     Geometry g = readGeometry();
     return g;
   }
@@ -536,20 +542,24 @@ class WKBWriter {
    * @return a string of hexadecimal digits
    */
   static String toHex(List<int> bytes) {
-//    return HEX.encode(bytes);
-    StringBuffer buf = new StringBuffer();
-    for (int i = 0; i < bytes.length; i++) {
-      int b = bytes[i];
-      buf.write(toHexDigit((b >> 4) & 0x0F));
-      buf.write(toHexDigit(b & 0x0F));
+    if (!(bytes is Uint8List)) {
+      bytes = Uint8List.fromList(bytes);
     }
-    return buf.toString();
-  }
-
-  static String toHexDigit(int n) {
-    if (n < 0 || n > 15) throw new ArgumentError("Nibble value out of range: $n");
-    if (n <= 9) return '0$n';
-    return 'A${n - 10}';
+    return HEX.encode(bytes);
+//    StringBuffer buf = new StringBuffer();
+//    for (int i = 0; i < bytes.length; i++) {
+//      int b = bytes[i];
+//      buf.write(toHexDigit((b >> 4) & 0x0F));
+//      buf.write(toHexDigit(b & 0x0F));
+//    }
+//    return buf.toString();
+//  }
+//
+//
+//  static String toHexDigit(int n) {
+//    if (n < 0 || n > 15) throw new ArgumentError("Nibble value out of range: $n");
+//    if (n <= 9) return '0$n';
+//    return 'A${n - 10}';
   }
 
   int outputDimension = 2;
