@@ -8,7 +8,7 @@ import "dart:core" ;
 import "dart:typed_data" ;
 import 'package:intl/intl.dart';
 import "dart:math" as math;
-import 'package:collection/collection.dart';
+import 'package:collection/collection.dart' show ListEquality;
 import "package:hex/hex.dart";
 
 part 'src/com/hydrologis/jts/io/io.dart';

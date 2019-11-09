@@ -11,3 +11,5 @@ It is currently developed by [HydroloGIS](http://www.hydrologis.com).
 Copyright (C) 2019 HydroloGIS
 
 The project is distributed under the Eclipse Distribution License - v 1.0, the same as the JTS project itself.
+
+
