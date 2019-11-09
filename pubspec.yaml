@@ -12,6 +12,7 @@ environment:
 dependencies:
   intl: ^0.16.0
   hex: ^0.1.2
+  collection: ^1.14.12
 
 dev_dependencies:
   pedantic: ^1.8.0+1
