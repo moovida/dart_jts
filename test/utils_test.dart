@@ -47,14 +47,6 @@ void main() {
       float64 = Byteutils.getFloat64(buf, byteOrder);
       expect(float64, d2);
     });
-    test('BE float64', () {
-      var byteOrder = Endian.big;
-      List<int> buf = List.from([0, 0, 0, 0, 0, 0, 0, 0]);
-      double d1 = 1.0;
-      Byteutils.putFloat64(d1, buf, byteOrder);
-      var float64 = Byteutils.getFloat64(buf, byteOrder);
-      expect(float64, d1);
-    });
     test('Int32', () {
       var byteOrder = Endian.little;
       List<int> buf = List.from([0, 0, 0, 0, 0, 0, 0, 0]);
