@@ -56,4 +56,25 @@ void main() {
       expect(int32, i1);
     });
   });
+
+  group("ByteStream - ", () {
+    test('ByteOrderDataInStream', () {
+      List<int> buf = List.from([71, 80, 0, 1, 0, 0, 0, 0]);
+      var din = ByteOrderDataInStream(buf);
+      var b1 = din.readByte();
+      var b2 = din.readByte();
+      var b3 = din.readByte();
+      var b4 = din.readByte();
+
+      expect(b1, 71);
+      expect(b2, 80);
+      expect(b3, 0);
+      expect(b4, 1);
+
+      din.setOrder(Endian.little);
+
+      var int32 = din.readInt();
+      expect(int32, 0);
+    });
+  });
 }

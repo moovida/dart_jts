@@ -22,31 +22,33 @@ class WKBConstants {
  * with the representation being in either common byte ordering.
  */
 class ByteOrderDataInStream {
-  Endian byteOrder = Endian.big;
-  ByteData stream;
+  Endian _byteOrder = Endian.big;
+  Uint8List _bytesList;
 
-//  // buffers to hold primitive datatypes
-//   List<int> buf1 = new byte[1];
-//   List<int> buf4 = new byte[4];
-//   List<int> buf8 = new byte[8];
-  int readOffset = 0;
+  int _readOffset = 0;
 
-  ByteOrderDataInStream(ByteData stream) {
-    this.stream = stream;
+  ByteOrderDataInStream(List<int> bytesList) {
+    if (bytesList is Uint8List) {
+      this._bytesList = bytesList;
+    } else {
+      this._bytesList = Uint8List.fromList(bytesList);
+    }
   }
 
-  /**
-   * Allows a single ByteOrderDataInStream to be reused
-   * on multiple InStreams.
-   *
-   * @param stream
-   */
-  void setInStream(ByteData stream) {
-    this.stream = stream;
-  }
+  int get readOffset => _readOffset;
+
+//  /**
+//   * Allows a single ByteOrderDataInStream to be reused
+//   * on multiple InStreams.
+//   *
+//   * @param stream
+//   */
+//  void setInStream(Uint8List stream) {
+//    this._stream = stream;
+//  }
 
   void setOrder(Endian byteOrder) {
-    this.byteOrder = byteOrder;
+    this._byteOrder = byteOrder;
   }
 
   /**
@@ -55,24 +57,32 @@ class ByteOrderDataInStream {
    * @return the byte read
    */
   int readByte() {
-    return stream.getInt8(readOffset++);
+    int b = _bytesList[_readOffset++];
+    return b;
   }
 
   int readInt() {
-    var int32 = stream.getInt32(readOffset, byteOrder);
-    readOffset += 4;
+    var sublist = _bytesList.sublist(_readOffset, _readOffset + 4);
+    var bdata = ByteData.view(sublist.buffer);
+    var int32 = bdata.getInt32(0, _byteOrder);
+
+    _readOffset += 4;
     return int32;
   }
 
   int readLong() {
-    var int64 = stream.getInt64(readOffset, byteOrder);
-    readOffset += 8;
+    var sublist = _bytesList.sublist(_readOffset, _readOffset + 8);
+    var bdata = ByteData.view(sublist.buffer);
+    var int64 = bdata.getInt64(0, _byteOrder);
+    _readOffset += 8;
     return int64;
   }
 
   double readDouble() {
-    var float64 = stream.getFloat64(readOffset, byteOrder);
-    readOffset += 8;
+    var sublist = _bytesList.sublist(_readOffset, _readOffset + 8);
+    var bdata = ByteData.view(sublist.buffer);
+    var float64 = bdata.getFloat64(0, _byteOrder);
+    _readOffset += 8;
     return float64;
   }
 }
@@ -197,13 +207,11 @@ class WKBReader {
    * @throws ParseException if the WKB is ill-formed
    */
   Geometry read(List<int> ins) {
-    var buffer;
-    if (ins is Uint8List) {
-      buffer = ins.buffer;
-    } else {
-      buffer = Uint8List.fromList(ins).buffer;
+    var bytesList = ins;
+    if (!(ins is Uint8List)) {
+      bytesList = Uint8List.fromList(ins);
     }
-    dis = ByteOrderDataInStream(ByteData.view(buffer));
+    dis = ByteOrderDataInStream(bytesList);
     Geometry g = readGeometry();
     return g;
   }
