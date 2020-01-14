@@ -23,6 +23,8 @@ part 'src/com/hydrologis/dart_jts/operation/valid.dart';
 part 'src/com/hydrologis/dart_jts/operation/relate.dart';
 part 'src/com/hydrologis/dart_jts/operation/overlay.dart';
 part 'src/com/hydrologis/dart_jts/operation/predicate.dart';
+part 'src/com/hydrologis/dart_jts/operation/buffer.dart';
+part 'src/com/hydrologis/dart_jts/noding/noding.dart';
 part "src/com/hydrologis/dart_jts/math/math.dart";
 part "src/com/hydrologis/dart_jts/geomgraph/geomgraph.dart";
 part "src/com/hydrologis/dart_jts/geomgraph/index.dart";
@@ -38,6 +40,7 @@ part 'src/com/hydrologis/dart_jts/geom/multipolygon.dart';
 part "src/com/hydrologis/dart_jts/util/geom_impl.dart";
 part "src/com/hydrologis/dart_jts/util/util.dart";
 part "src/com/hydrologis/dart_jts/index/index.dart";
+part "src/com/hydrologis/dart_jts/index/chain.dart";
 part "src/com/hydrologis/dart_jts/index/strtree.dart";
 part "src/com/hydrologis/dart_jts/util/avltree.dart";
 

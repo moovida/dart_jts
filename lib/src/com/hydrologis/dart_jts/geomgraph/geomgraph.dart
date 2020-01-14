@@ -1,19 +1,13 @@
 part of dart_jts;
 
-
-
-
-
-
 /**
  * @version 1.7
  */
- class NodeFactory {
+class NodeFactory {
   /**
    * The basic node constructor does not allow for incident edges
    */
-   Node createNode(Coordinate coord)
-  {
+  Node createNode(Coordinate coord) {
     return new Node(coord, null);
   }
 }
@@ -22,14 +16,12 @@ part of dart_jts;
  * A map of nodes, indexed by the coordinate of the node
  * @version 1.7
  */
- class NodeMap
-
-{
+class NodeMap {
   //Map nodeMap = new HashMap();
   Map<Coordinate, Node> nodeMap = new SplayTreeMap();
   NodeFactory nodeFact;
 
-   NodeMap(NodeFactory nodeFact) {
+  NodeMap(NodeFactory nodeFact) {
     this.nodeFact = nodeFact;
   }
 
@@ -45,21 +37,19 @@ part of dart_jts;
   /**
    * This method expects that a node has a coordinate value.
    */
-   Node addNodeFromCoordinate(Coordinate coord)
-  {
-    Node node =  nodeMap[coord];
+  Node addNodeFromCoordinate(Coordinate coord) {
+    Node node = nodeMap[coord];
     if (node == null) {
       node = nodeFact.createNode(coord);
-      nodeMap[coord]= node;
+      nodeMap[coord] = node;
     }
     return node;
   }
 
-   Node addNode(Node n)
-  {
-    Node node =  nodeMap[n.getCoordinate()];
+  Node addNode(Node n) {
+    Node node = nodeMap[n.getCoordinate()];
     if (node == null) {
-      nodeMap[n.getCoordinate()]= n;
+      nodeMap[n.getCoordinate()] = n;
       return n;
     }
     node.mergeLabelFromNode(n);
@@ -71,33 +61,32 @@ part of dart_jts;
    * (if one does not already exist in this map).
    * Adds the EdgeEnd to the (possibly new) node.
    */
-   void add(EdgeEnd e)
-  {
+  void add(EdgeEnd e) {
     Coordinate p = e.getCoordinate();
     Node n = addNodeFromCoordinate(p);
     n.add(e);
   }
+
   /**
    * @return the node if found; null otherwise
    */
-   Node find(Coordinate coord)  {    return  nodeMap[coord];  }
+  Node find(Coordinate coord) {
+    return nodeMap[coord];
+  }
 
-   Iterator iterator()
-  {
+  Iterator iterator() {
     return nodeMap.values.iterator;
   }
-   List values()
-  {
-    return List.from( nodeMap.values);
+
+  List values() {
+    return List.from(nodeMap.values);
   }
 
-  List getBoundaryNodes(int geomIndex)
-  {
+  List getBoundaryNodes(int geomIndex) {
     List bdyNodes = [];
-    for (Iterator i = iterator(); i.moveNext(); ) {
-      Node node =  i.current;
-      if (node.getLabel().getLocation(geomIndex) == Location.BOUNDARY)
-        bdyNodes.add(node);
+    for (Iterator i = iterator(); i.moveNext();) {
+      Node node = i.current;
+      if (node.getLabel().getLocation(geomIndex) == Location.BOUNDARY) bdyNodes.add(node);
     }
     return bdyNodes;
   }
@@ -131,72 +120,87 @@ part of dart_jts;
  *
  * @version 1.7
  */
- class PlanarGraph
-{
+class PlanarGraph {
   /**
    * For nodes in the Collection, link the DirectedEdges at the node that are in the result.
    * This allows clients to link only a subset of nodes in the graph, for
    * efficiency (because they know that only a subset is of interest).
    */
-   static void linkResultDirectedEdgesStatic(List nodes)
-  {
-    for (Iterator nodeit = nodes.iterator; nodeit.moveNext(); ) {
-      Node node =  nodeit.current;
-      ( node.getEdges() as DirectedEdgeStar).linkResultDirectedEdges();
-  }
+  static void linkResultDirectedEdgesStatic(List nodes) {
+    for (Iterator nodeit = nodes.iterator; nodeit.moveNext();) {
+      Node node = nodeit.current;
+      (node.getEdges() as DirectedEdgeStar).linkResultDirectedEdges();
+    }
   }
 
-   List edges        = [];
-   NodeMap nodes;
-   List edgeEndList  = [];
+  List edges = [];
+  NodeMap nodes;
+  List edgeEndList = [];
 
-   PlanarGraph.withFactory(NodeFactory nodeFact) {
+  PlanarGraph.withFactory(NodeFactory nodeFact) {
     nodes = new NodeMap(nodeFact);
   }
 
-   PlanarGraph() {
+  PlanarGraph() {
     nodes = new NodeMap(new NodeFactory());
   }
 
-   Iterator getEdgeIterator() { return edges.iterator; }
-   List getEdgeEnds() { return edgeEndList; }
+  Iterator getEdgeIterator() {
+    return edges.iterator;
+  }
 
-   bool isBoundaryNode(int geomIndex, Coordinate coord)
-  {
+  List getEdgeEnds() {
+    return edgeEndList;
+  }
+
+  bool isBoundaryNode(int geomIndex, Coordinate coord) {
     Node node = nodes.find(coord);
     if (node == null) return false;
     Label label = node.getLabel();
     if (label != null && label.getLocation(geomIndex) == Location.BOUNDARY) return true;
     return false;
   }
-   void insertEdge(Edge e)
-  {
+
+  void insertEdge(Edge e) {
     edges.add(e);
   }
-   void add(EdgeEnd e)
-  {
+
+  void add(EdgeEnd e) {
     nodes.add(e);
     edgeEndList.add(e);
   }
 
-   Iterator getNodeIterator() { return nodes.iterator(); }
-   List getNodes() { return nodes.values(); }
-   Node addNode(Node node) { return nodes.addNode(node); }
-   Node addNodeFromCoordinate(Coordinate coord) { return nodes.addNodeFromCoordinate(coord); }
+  Iterator getNodeIterator() {
+    return nodes.iterator();
+  }
+
+  List getNodes() {
+    return nodes.values();
+  }
+
+  Node addNode(Node node) {
+    return nodes.addNode(node);
+  }
+
+  Node addNodeFromCoordinate(Coordinate coord) {
+    return nodes.addNodeFromCoordinate(coord);
+  }
+
   /**
    * @return the node if found; null otherwise
    */
-   Node find(Coordinate coord) { return nodes.find(coord); }
+  Node find(Coordinate coord) {
+    return nodes.find(coord);
+  }
 
   /**
    * Add a set of edges to the graph.  For each edge two DirectedEdges
    * will be created.  DirectedEdges are NOT linked by this method.
    */
-   void addEdges(List edgesToAdd)
-  {
+  void addEdges(List edgesToAdd) {
     // create all the nodes for the edges
-    for (Iterator it = edgesToAdd.iterator; it.moveNext(); ) {
-      Edge e =  it.current as Edge;
+    for (Iterator it = edgesToAdd.iterator; it.moveNext();) {
+      Edge e = it.current as Edge;
       edges.add(e);
 
       DirectedEdge de1 = new DirectedEdge(e, true);
@@ -214,25 +218,25 @@ part of dart_jts;
    * This allows clients to link only a subset of nodes in the graph, for
    * efficiency (because they know that only a subset is of interest).
    */
-   void linkResultDirectedEdges()
-  {
-    for (Iterator nodeit = nodes.iterator(); nodeit.moveNext(); ) {
+  void linkResultDirectedEdges() {
+    for (Iterator nodeit = nodes.iterator(); nodeit.moveNext();) {
       Node node = nodeit.current as Node;
-      ( node.getEdges() as DirectedEdgeStar).linkResultDirectedEdges();
+      (node.getEdges() as DirectedEdgeStar).linkResultDirectedEdges();
+    }
   }
-  }
+
   /**
    * Link the DirectedEdges at the nodes of the graph.
    * This allows clients to link only a subset of nodes in the graph, for
    * efficiency (because they know that only a subset is of interest).
    */
-   void linkAllDirectedEdges()
-  {
-    for (Iterator nodeit = nodes.iterator(); nodeit.moveNext(); ) {
-      Node node =  nodeit.current as Node;
-      ( node.getEdges() as DirectedEdgeStar).linkAllDirectedEdges();
+  void linkAllDirectedEdges() {
+    for (Iterator nodeit = nodes.iterator(); nodeit.moveNext();) {
+      Node node = nodeit.current as Node;
+      (node.getEdges() as DirectedEdgeStar).linkAllDirectedEdges();
+    }
   }
-  }
+
   /**
    * Returns the EdgeEnd which has edge e as its base edge
    * (MD 18 Feb 2002 - this should return a pair of edges)
@@ -240,12 +244,10 @@ part of dart_jts;
    * @return the edge, if found
    *    <code>null</code> if the edge was not found
    */
-   EdgeEnd findEdgeEnd(Edge e)
-  {
-    for (Iterator i = getEdgeEnds().iterator; i.moveNext(); ) {
+  EdgeEnd findEdgeEnd(Edge e) {
+    for (Iterator i = getEdgeEnds().iterator; i.moveNext();) {
       EdgeEnd ee = i.current as EdgeEnd;
-      if (ee.getEdge() == e)
-        return ee;
+      if (ee.getEdge() == e) return ee;
     }
     return null;
   }
@@ -256,16 +258,15 @@ part of dart_jts;
    * @return the edge, if found
    *    <code>null</code> if the edge was not found
    */
-   Edge findEdge(Coordinate p0, Coordinate p1)
-  {
+  Edge findEdge(Coordinate p0, Coordinate p1) {
     for (int i = 0; i < edges.length; i++) {
       Edge e = edges[i] as Edge;
       List<Coordinate> eCoord = e.getCoordinates();
-      if (p0.equals(eCoord[0]) && p1.equals(eCoord[1]) )
-        return e;
+      if (p0.equals(eCoord[0]) && p1.equals(eCoord[1])) return e;
     }
     return null;
   }
+
   /**
    * Returns the edge which starts at p0 and whose first segment is
    * parallel to p1
@@ -273,17 +274,14 @@ part of dart_jts;
    * @return the edge, if found
    *    <code>null</code> if the edge was not found
    */
-   Edge findEdgeInSameDirection(Coordinate p0, Coordinate p1)
-  {
+  Edge findEdgeInSameDirection(Coordinate p0, Coordinate p1) {
     for (int i = 0; i < edges.length; i++) {
       Edge e = edges[i];
 
       List<Coordinate> eCoord = e.getCoordinates();
-      if (matchInSameDirection(p0, p1, eCoord[0], eCoord[1]) )
-        return e;
+      if (matchInSameDirection(p0, p1, eCoord[0], eCoord[1])) return e;
 
-      if (matchInSameDirection(p0, p1, eCoord[eCoord.length - 1], eCoord[eCoord.length - 2]) )
-        return e;
+      if (matchInSameDirection(p0, p1, eCoord[eCoord.length - 1], eCoord[eCoord.length - 2])) return e;
     }
     return null;
   }
@@ -293,14 +291,10 @@ part of dart_jts;
    * E.g. the segments are parallel and in the same quadrant
    * (as opposed to parallel and opposite!).
    */
-   bool matchInSameDirection(Coordinate p0, Coordinate p1, Coordinate ep0, Coordinate ep1)
-  {
-    if (! p0.equals(ep0))
-      return false;
+  bool matchInSameDirection(Coordinate p0, Coordinate p1, Coordinate ep0, Coordinate ep1) {
+    if (!p0.equals(ep0)) return false;
 
-    if (Orientation.index(p0, p1, ep1) == Orientation.COLLINEAR
-        && Quadrant.quadrantFromCoords(p0, p1) == Quadrant.quadrantFromCoords(ep0, ep1) )
-      return true;
+    if (Orientation.index(p0, p1, ep1) == Orientation.COLLINEAR && Quadrant.quadrantFromCoords(p0, p1) == Quadrant.quadrantFromCoords(ep0, ep1)) return true;
     return false;
   }
 
@@ -314,26 +308,21 @@ part of dart_jts;
 //      e.eiList.print(out);
 //    }
 //  }
-  void debugPrint(Object o)
-  {
+  void debugPrint(Object o) {
     print(o);
   }
-  void debugPrintln(Object o)
-  {
+
+  void debugPrintln(Object o) {
     print(o);
     print("\n");
   }
-
 }
-
 
 /**
  * A GeometryGraph is a graph that models a given Geometry
  * @version 1.7
  */
- class GeometryGraph
-    extends PlanarGraph
-{
+class GeometryGraph extends PlanarGraph {
   /**
    * This method implements the Boundary Determination Rule
    * for determining whether
@@ -358,39 +347,37 @@ part of dart_jts;
   }
 */
 
-   static int determineBoundary(BoundaryNodeRule boundaryNodeRule, int boundaryCount)
-  {
-    return boundaryNodeRule.isInBoundary(boundaryCount)
-        ? Location.BOUNDARY : Location.INTERIOR;
+  static int determineBoundary(BoundaryNodeRule boundaryNodeRule, int boundaryCount) {
+    return boundaryNodeRule.isInBoundary(boundaryCount) ? Location.BOUNDARY : Location.INTERIOR;
   }
 
-   Geometry parentGeom;
+  Geometry parentGeom;
 
   /**
    * The lineEdgeMap is a map of the linestring components of the
    * parentGeometry to the edges which are derived from them.
    * This is used to efficiently perform findEdge queries
    */
-   Map<LineString, Edge> lineEdgeMap = {};
+  Map<LineString, Edge> lineEdgeMap = {};
 
-   BoundaryNodeRule boundaryNodeRule = null;
+  BoundaryNodeRule boundaryNodeRule = null;
 
   /**
    * If this flag is true, the Boundary Determination Rule will used when deciding
    * whether nodes are in the boundary or not
    */
-   bool useBoundaryDeterminationRule = true;
-   int argIndex;  // the index of this geometry as an argument to a spatial function (used for labelling)
-   List boundaryNodes;
-   bool _hasTooFewPoints = false;
-   Coordinate invalidPoint = null;
+  bool useBoundaryDeterminationRule = true;
+  int argIndex; // the index of this geometry as an argument to a spatial function (used for labelling)
+  List boundaryNodes;
+  bool _hasTooFewPoints = false;
+  Coordinate invalidPoint = null;
 
-   PointOnGeometryLocator areaPtLocator = null;
+  PointOnGeometryLocator areaPtLocator = null;
+
   // for use if geometry is not Polygonal
-   final PointLocator ptLocator = new PointLocator();
+  final PointLocator ptLocator = new PointLocator();
 
-   EdgeSetIntersector createEdgeSetIntersector()
-  {
+  EdgeSetIntersector createEdgeSetIntersector() {
     // various options for computing intersections, from slowest to fastest
 
     // EdgeSetIntersector esi = new SimpleEdgeSetIntersector();
@@ -403,12 +390,9 @@ part of dart_jts;
     return new SimpleMCSweepLineIntersector();
   }
 
-   GeometryGraph(int argIndex, Geometry parentGeom): this.args3(argIndex, parentGeom,
-        BoundaryNodeRule.OGC_SFS_BOUNDARY_RULE
-    );
+  GeometryGraph(int argIndex, Geometry parentGeom) : this.args3(argIndex, parentGeom, BoundaryNodeRule.OGC_SFS_BOUNDARY_RULE);
 
-
-   GeometryGraph.args3(int argIndex, Geometry parentGeom, BoundaryNodeRule boundaryNodeRule) {
+  GeometryGraph.args3(int argIndex, Geometry parentGeom, BoundaryNodeRule boundaryNodeRule) {
     this.argIndex = argIndex;
     this.parentGeom = parentGeom;
     this.boundaryNodeRule = boundaryNodeRule;
@@ -435,78 +419,86 @@ part of dart_jts;
 //  }
 //   int getSRID() { return SRID; }
 
-   bool hasTooFewPoints() { return _hasTooFewPoints; }
+  bool hasTooFewPoints() {
+    return _hasTooFewPoints;
+  }
 
-   Coordinate getInvalidPoint() { return invalidPoint; }
+  Coordinate getInvalidPoint() {
+    return invalidPoint;
+  }
 
-   Geometry getGeometry() { return parentGeom; }
+  Geometry getGeometry() {
+    return parentGeom;
+  }
 
-   BoundaryNodeRule getBoundaryNodeRule() { return boundaryNodeRule; }
+  BoundaryNodeRule getBoundaryNodeRule() {
+    return boundaryNodeRule;
+  }
 
-   List getBoundaryNodes()
-  {
-    if (boundaryNodes == null)
-      boundaryNodes = nodes.getBoundaryNodes(argIndex);
+  List getBoundaryNodes() {
+    if (boundaryNodes == null) boundaryNodes = nodes.getBoundaryNodes(argIndex);
     return boundaryNodes;
   }
 
-   List<Coordinate> getBoundaryPoints()
-  {
+  List<Coordinate> getBoundaryPoints() {
     List coll = getBoundaryNodes();
     List<Coordinate> pts = new List(coll.length);
     int i = 0;
-    for (Iterator it = coll.iterator; it.moveNext(); ) {
-      Node node =  it.current as Node;
+    for (Iterator it = coll.iterator; it.moveNext();) {
+      Node node = it.current as Node;
       pts[i++] = node.getCoordinate().copy();
     }
     return pts;
   }
 
-   Edge findEdgeFromLine(LineString line)
-  {
-    return  lineEdgeMap[line];
+  Edge findEdgeFromLine(LineString line) {
+    return lineEdgeMap[line];
   }
 
-   void computeSplitEdges(List edgelist)
-  {
-    for (Iterator i = edges.iterator; i.moveNext(); ) {
-      Edge e =  i.current as Edge;
+  void computeSplitEdges(List edgelist) {
+    for (Iterator i = edges.iterator; i.moveNext();) {
+      Edge e = i.current as Edge;
       e.eiList.addSplitEdges(edgelist);
     }
   }
 
-  void addGeometry(Geometry g)
-  {
+  void addGeometry(Geometry g) {
     if (g.isEmpty()) return;
 
     // check if this Geometry should obey the Boundary Determination Rule
     // all collections except MultiPolygons obey the rule
-    if (g is MultiPolygon)
-      useBoundaryDeterminationRule = false;
+    if (g is MultiPolygon) useBoundaryDeterminationRule = false;
 
-    if (g is Polygon)                 addPolygon( g);
+    if (g is Polygon)
+      addPolygon(g);
     // LineString also handles LinearRings
-    else if (g is LineString)         addLineString( g);
-    else if (g is Point)              addPoint( g);
-    else if (g is MultiPoint)         addCollection( g);
-    else if (g is MultiLineString)    addCollection( g);
-    else if (g is MultiPolygon)       addCollection( g);
-    else if (g is GeometryCollection) addCollection( g);
-    else  throw new UnsupportedError(g.runtimeType.toString());
+    else if (g is LineString)
+      addLineString(g);
+    else if (g is Point)
+      addPoint(g);
+    else if (g is MultiPoint)
+      addCollection(g);
+    else if (g is MultiLineString)
+      addCollection(g);
+    else if (g is MultiPolygon)
+      addCollection(g);
+    else if (g is GeometryCollection)
+      addCollection(g);
+    else
+      throw new UnsupportedError(g.runtimeType.toString());
   }
 
-   void addCollection(GeometryCollection gc)
-  {
+  void addCollection(GeometryCollection gc) {
     for (int i = 0; i < gc.getNumGeometries(); i++) {
       Geometry g = gc.getGeometryN(i);
       addGeometry(g);
     }
   }
+
   /**
    * Add a Point to the graph.
    */
-   void addPoint(Point p)
-  {
+  void addPoint(Point p) {
     Coordinate coord = p.getCoordinate();
     insertPoint(argIndex, coord, Location.INTERIOR);
   }
@@ -519,8 +511,7 @@ part of dart_jts;
    * If the ring is in the opposite orientation,
    * the left and right locations must be interchanged.
    */
-   void addPolygonRing(LinearRing lr, int cwLeft, int cwRight)
-  {
+  void addPolygonRing(LinearRing lr, int cwLeft, int cwRight) {
     // don't bother adding empty holes
     if (lr.isEmpty()) return;
 
@@ -532,27 +523,22 @@ part of dart_jts;
       return;
     }
 
-    int left  = cwLeft;
+    int left = cwLeft;
     int right = cwRight;
     if (Orientation.isCCW(coord)) {
       left = cwRight;
       right = cwLeft;
     }
-    Edge e =  Edge(coord,
-        Label.args4(argIndex, Location.BOUNDARY, left, right));
-    lineEdgeMap[lr]= e;
+    Edge e = Edge(coord, Label.args4(argIndex, Location.BOUNDARY, left, right));
+    lineEdgeMap[lr] = e;
 
     insertEdge(e);
     // insert the endpoint as a node, to mark that it is on the boundary
     insertPoint(argIndex, coord[0], Location.BOUNDARY);
   }
 
-   void addPolygon(Polygon p)
-  {
-    addPolygonRing(
-        p.getExteriorRing(),
-        Location.EXTERIOR,
-        Location.INTERIOR);
+  void addPolygon(Polygon p) {
+    addPolygonRing(p.getExteriorRing(), Location.EXTERIOR, Location.INTERIOR);
 
     for (int i = 0; i < p.getNumInteriorRing(); i++) {
       LinearRing hole = p.getInteriorRingN(i);
@@ -560,15 +546,11 @@ part of dart_jts;
       // Holes are topologically labelled opposite to the shell, since
       // the interior of the polygon lies on their opposite side
       // (on the left, if the hole is oriented CW)
-      addPolygonRing(
-          hole,
-          Location.INTERIOR,
-          Location.EXTERIOR);
+      addPolygonRing(hole, Location.INTERIOR, Location.EXTERIOR);
     }
   }
 
-   void addLineString(LineString line)
-  {
+  void addLineString(LineString line) {
     List<Coordinate> coord = CoordinateArrays.removeRepeatedPoints(line.getCoordinates());
 
     if (coord.length < 2) {
@@ -580,7 +562,7 @@ part of dart_jts;
     // add the edge for the LineString
     // line edges do not have locations for their left and right sides
     Edge e = new Edge(coord, new Label.args2(argIndex, Location.INTERIOR));
-    lineEdgeMap[line]= e;
+    lineEdgeMap[line] = e;
     insertEdge(e);
     /**
      * Add the boundary points of the LineString, if any.
@@ -590,15 +572,13 @@ part of dart_jts;
     assert(coord.length >= 2, "found LineString with single point");
     insertBoundaryPoint(argIndex, coord[0]);
     insertBoundaryPoint(argIndex, coord[coord.length - 1]);
-
   }
 
   /**
    * Add an Edge computed externally.  The label on the Edge is assumed
    * to be correct.
    */
-   void addEdge(Edge e)
-  {
+  void addEdge(Edge e) {
     insertEdge(e);
     List<Coordinate> coord = e.getCoordinates();
     // insert the endpoint as a node, to mark that it is on the boundary
@@ -610,8 +590,7 @@ part of dart_jts;
    * Add a point computed externally.  The point is assumed to be a
    * Point Geometry part, which has a location of INTERIOR.
    */
-   void addPointFromCoordinate(Coordinate pt)
-  {
+  void addPointFromCoordinate(Coordinate pt) {
     insertPoint(argIndex, pt, Location.INTERIOR);
   }
 
@@ -624,8 +603,7 @@ part of dart_jts;
    * @param computeRingSelfNodes if <code>false</code>, intersection checks are optimized to not test rings for self-intersection
    * @return the computed SegmentIntersector containing information about the intersections found
    */
-   SegmentIntersector computeSelfNodes(LineIntersector li, bool computeRingSelfNodes)
-  {
+  SegmentIntersector computeSelfNodes(LineIntersector li, bool computeRingSelfNodes) {
     return computeSelfNodes3(li, computeRingSelfNodes, false);
   }
 
@@ -639,28 +617,21 @@ part of dart_jts;
    * @param isDoneIfProperInt short-circuit the intersection computation if a proper intersection is found
    * @return the computed SegmentIntersector containing information about the intersections found
    */
-   SegmentIntersector computeSelfNodes3(LineIntersector li, bool computeRingSelfNodes, bool isDoneIfProperInt)
-  {
+  SegmentIntersector computeSelfNodes3(LineIntersector li, bool computeRingSelfNodes, bool isDoneIfProperInt) {
     SegmentIntersector si = new SegmentIntersector(li, true, false);
     si.setIsDoneIfProperInt(isDoneIfProperInt);
     EdgeSetIntersector esi = createEdgeSetIntersector();
     // optimize intersection search for valid Polygons and LinearRings
-    bool isRings = parentGeom is LinearRing
-    || parentGeom is Polygon
-  || parentGeom is MultiPolygon;
-  bool computeAllSegments = computeRingSelfNodes || ! isRings;
-  esi.computeIntersections(edges, si, computeAllSegments);
+    bool isRings = parentGeom is LinearRing || parentGeom is Polygon || parentGeom is MultiPolygon;
+    bool computeAllSegments = computeRingSelfNodes || !isRings;
+    esi.computeIntersections(edges, si, computeAllSegments);
 
-  //System.out.println("SegmentIntersector # tests = " + si.numTests);
-  addSelfIntersectionNodes(argIndex);
+    //System.out.println("SegmentIntersector # tests = " + si.numTests);
+    addSelfIntersectionNodes(argIndex);
     return si;
   }
 
-   SegmentIntersector computeEdgeIntersections(
-      GeometryGraph g,
-      LineIntersector li,
-      bool includeProper)
-  {
+  SegmentIntersector computeEdgeIntersections(GeometryGraph g, LineIntersector li, bool includeProper) {
     SegmentIntersector si = new SegmentIntersector(li, includeProper, true);
     si.setBoundaryNodes(this.getBoundaryNodes(), g.getBoundaryNodes());
 
@@ -675,14 +646,12 @@ Debug.print(e.getEdgeIntersectionList());
     return si;
   }
 
-   void insertPoint(int argIndex, Coordinate coord, int onLocation)
-  {
+  void insertPoint(int argIndex, Coordinate coord, int onLocation) {
     Node n = nodes.addNodeFromCoordinate(coord);
     Label lbl = n.getLabel();
     if (lbl == null) {
       n.label = new Label.args2(argIndex, onLocation);
-    }
-    else
+    } else
       lbl.setLocationWithIndex(argIndex, onLocation);
   }
 
@@ -691,8 +660,7 @@ Debug.print(e.getEdgeIntersectionList());
    * This is used to add the boundary
    * points of dim-1 geometries (Curves/MultiCurves).
    */
-   void insertBoundaryPoint(int argIndex, Coordinate coord)
-  {
+  void insertBoundaryPoint(int argIndex, Coordinate coord) {
     Node n = nodes.addNodeFromCoordinate(coord);
     // nodes always have labels
     Label lbl = n.getLabel();
@@ -708,25 +676,24 @@ Debug.print(e.getEdgeIntersectionList());
     lbl.setLocationWithIndex(argIndex, newLoc);
   }
 
-   void addSelfIntersectionNodes(int argIndex)
-  {
-    for (Iterator i = edges.iterator; i.moveNext(); ) {
-      Edge e =  i.current;
+  void addSelfIntersectionNodes(int argIndex) {
+    for (Iterator i = edges.iterator; i.moveNext();) {
+      Edge e = i.current;
       int eLoc = e.getLabel().getLocation(argIndex);
-      for (Iterator eiIt = e.eiList.iterator(); eiIt.moveNext(); ) {
-        EdgeIntersection ei =  eiIt.current as EdgeIntersection;
+      for (Iterator eiIt = e.eiList.iterator(); eiIt.moveNext();) {
+        EdgeIntersection ei = eiIt.current as EdgeIntersection;
         addSelfIntersectionNode(argIndex, ei.coord, eLoc);
       }
     }
   }
+
   /**
    * Add a node for a self-intersection.
    * If the node is a potential boundary node (e.g. came from an edge which
    * is a boundary) then insert it as a potential boundary node.
    * Otherwise, just add it as a regular node.
    */
-   void addSelfIntersectionNode(int argIndex, Coordinate coord, int loc)
-  {
+  void addSelfIntersectionNode(int argIndex, Coordinate coord, int loc) {
     // if this node is already a boundary node, don't change it
     if (isBoundaryNode(argIndex, coord)) return;
     if (loc == Location.BOUNDARY && useBoundaryDeterminationRule)
@@ -743,15 +710,14 @@ Debug.print(e.getEdgeIntersectionList());
    * @param pt the point to test
    * @return the location of the point in the geometry
    */
-   int locate(Coordinate pt)
-  {
+  int locate(Coordinate pt) {
     if (parentGeom is Polygonal && parentGeom.getNumGeometries() > 50) {
-  // lazily init point locator
-  if (areaPtLocator == null) {
-  areaPtLocator = new IndexedPointInAreaLocator(parentGeom);
-  }
-  return areaPtLocator.locate(pt);
-  }
+      // lazily init point locator
+      if (areaPtLocator == null) {
+        areaPtLocator = new IndexedPointInAreaLocator(parentGeom);
+      }
+      return areaPtLocator.locate(pt);
+    }
     return ptLocator.locate(pt, parentGeom);
   }
 }
@@ -1101,7 +1067,6 @@ class DirectedEdgeStar extends EdgeEndStar {
 //  }
 }
 
-
 /**
  * Represents a point on an
  * edge which intersects with another edge.
@@ -1112,38 +1077,40 @@ class DirectedEdgeStar extends EdgeEndStar {
  *
  * @version 1.7
  */
- class EdgeIntersection
-    implements Comparable
-{
+class EdgeIntersection implements Comparable {
+  Coordinate coord; // the point of intersection
+  int segmentIndex; // the index of the containing line segment in the parent edge
+  double dist; // the edge distance of this point along the containing line segment
 
-   Coordinate coord;   // the point of intersection
-   int segmentIndex;   // the index of the containing line segment in the parent edge
-   double dist;        // the edge distance of this point along the containing line segment
-
-   EdgeIntersection(Coordinate coord, int segmentIndex, double dist) {
+  EdgeIntersection(Coordinate coord, int segmentIndex, double dist) {
     this.coord = new Coordinate.fromCoordinate(coord);
     this.segmentIndex = segmentIndex;
     this.dist = dist;
   }
 
-   Coordinate getCoordinate() { return coord; }
+  Coordinate getCoordinate() {
+    return coord;
+  }
 
-   int getSegmentIndex() { return segmentIndex; }
+  int getSegmentIndex() {
+    return segmentIndex;
+  }
 
-   double getDistance() { return dist; }
+  double getDistance() {
+    return dist;
+  }
 
-   int compareTo(Object obj)
-  {
-    EdgeIntersection other =  obj as EdgeIntersection;
+  int compareTo(Object obj) {
+    EdgeIntersection other = obj as EdgeIntersection;
     return compare(other.segmentIndex, other.dist);
   }
+
   /**
    * @return -1 this EdgeIntersection is located before the argument location
    * @return 0 this EdgeIntersection is at the argument location
    * @return 1 this EdgeIntersection is located after the argument location
    */
-   int compare(int segmentIndex, double dist)
-  {
+  int compare(int segmentIndex, double dist) {
     if (this.segmentIndex < segmentIndex) return -1;
     if (this.segmentIndex > segmentIndex) return 1;
     if (this.dist < dist) return -1;
@@ -1151,8 +1118,7 @@ class DirectedEdgeStar extends EdgeEndStar {
     return 0;
   }
 
-   bool isEndPoint(int maxSegmentIndex)
-  {
+  bool isEndPoint(int maxSegmentIndex) {
     if (segmentIndex == 0 && dist == 0.0) return true;
     if (segmentIndex == maxSegmentIndex) return true;
     return false;
@@ -1164,8 +1130,7 @@ class DirectedEdgeStar extends EdgeEndStar {
 //    out.print(" seg # = " + segmentIndex);
 //    out.println(" dist = " + dist);
 //  }
-   String toString()
-  {
+  String toString() {
     return "$coord seg # = $segmentIndex dist = $dist";
   }
 }
@@ -2076,10 +2041,9 @@ abstract class EdgeEndStar {
         // if there is a right location, that is the next location to propagate
         if (rightLoc != Location.NONE) {
 //Debug.print(rightLoc != currLoc, this);
-          if (rightLoc != currLoc)
-            throw new TopologyException("side location conflict ${e.getCoordinate()}");
+          if (rightLoc != currLoc) throw new TopologyException("side location conflict ${e.getCoordinate()}");
           if (leftLoc == Location.NONE) {
-            Assert.shouldNeverReachHereWithMsg("found single null side (at ${e.getCoordinate()})");
+            Assert.shouldNeverReachHere("found single null side (at ${e.getCoordinate()})");
           }
           currLoc = leftLoc;
         } else {
@@ -2127,7 +2091,6 @@ abstract class EdgeEndStar {
     return buf.toString();
   }
 }
-
 
 /**
  * A list of edge intersections along an {@link Edge}.
@@ -3219,4 +3182,88 @@ abstract class GraphComponent {
 //  TODO  Assert.isTrue(label.getGeometryCount() >= 2, "found partial label");
     computeIM(im);
   }
+}
+
+/**
+ * A EdgeList is a list of Edges.  It supports locating edges
+ * that are pointwise equals to a target edge.
+ * @version 1.7
+ */
+class EdgeList {
+  List edges = [];
+
+  /**
+   * An index of the edges, for fast lookup.
+   *
+   */
+  Map ocaMap = new SplayTreeMap();
+
+  EdgeList() {}
+
+  /**
+   * Insert an edge unless it is already in the list
+   */
+  void add(Edge e) {
+    edges.add(e);
+    OrientedCoordinateArray oca = new OrientedCoordinateArray(e.getCoordinates());
+    ocaMap[oca] = e;
+  }
+
+  void addAll(List<Edge> edgeColl) {
+    for (var e in edgeColl) {
+      add(e);
+    }
+  }
+
+  List getEdges() {
+    return edges;
+  }
+
+  /**
+   * If there is an edge equal to e already in the list, return it.
+   * Otherwise return null.
+   * @return  equal edge, if there is one already in the list
+   *          null otherwise
+   */
+  Edge findEqualEdge(Edge e) {
+    OrientedCoordinateArray oca = new OrientedCoordinateArray(e.getCoordinates());
+    // will return null if no edge matches
+    Edge matchEdge = ocaMap[oca];
+    return matchEdge;
+  }
+
+  Iterator iterator() {
+    return edges.iterator;
+  }
+
+  Edge get(int i) {
+    return edges[i];
+  }
+
+  /**
+   * If the edge e is already in the list, return its index.
+   * @return  index, if e is already in the list
+   *          -1 otherwise
+   */
+  int findEdgeIndex(Edge e) {
+    return edges.indexOf(e);
+  }
+
+//   void print(PrintStream out)
+//  {
+//    out.print("MULTILINESTRING ( ");
+//    for (int j = 0; j < edges.size(); j++) {
+//      Edge e = (Edge) edges.get(j);
+//      if (j > 0) out.print(",");
+//      out.print("(");
+//      Coordinate[] pts = e.getCoordinates();
+//      for (int i = 0; i < pts.length; i++) {
+//        if (i > 0) out.print(",");
+//        out.print(pts[i].x + " " + pts[i].y);
+//      }
+//      out.println(")");
+//    }
+//    out.print(")  ");
+//  }
+
 }

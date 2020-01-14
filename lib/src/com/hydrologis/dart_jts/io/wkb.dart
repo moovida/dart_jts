@@ -681,7 +681,7 @@ class WKBWriter {
     else if (geom is GeometryCollection)
       writeGeometryCollection(WKBConstants.wkbGeometryCollection, geom, os);
     else {
-      Assert.shouldNeverReachHereWithMsg("Unknown Geometry type");
+      Assert.shouldNeverReachHere("Unknown Geometry type");
     }
   }
 

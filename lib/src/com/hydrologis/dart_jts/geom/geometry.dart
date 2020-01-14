@@ -409,8 +409,7 @@ abstract class Geometry implements Comparable {
    * @return a {@link Point} which is the centroid of this Geometry
    */
   Point getCentroid() {
-    if (isEmpty())
-      return geomFactory.createPointEmpty();
+    if (isEmpty()) return geomFactory.createPointEmpty();
     Coordinate centPt = Centroid.getCentroidStatic(this);
     return createPointFromInternalCoord(centPt, this);
   }
@@ -1055,8 +1054,7 @@ abstract class Geometry implements Comparable {
    * @see #buffer(double, int, int)
    */
   Geometry buffer(double distance) {
-    throw UnimplementedError("Not implemented yet"); // TODO
-//    return BufferOp.bufferOp(this, distance);
+    return BufferOp.bufferOp(this, distance);
   }
 
   /**
@@ -1089,8 +1087,7 @@ abstract class Geometry implements Comparable {
    * @see #buffer(double, int, int)
    */
   Geometry buffer2(double distance, int quadrantSegments) {
-    throw UnimplementedError("Not implemented yet"); // TODO
-//    return BufferOp.bufferOp(this, distance, quadrantSegments);
+    return BufferOp.bufferOp3(this, distance, quadrantSegments);
   }
 
   /**
@@ -1128,8 +1125,7 @@ abstract class Geometry implements Comparable {
    * @see BufferOp
    */
   Geometry buffer3(double distance, int quadrantSegments, int endCapStyle) {
-    throw UnimplementedError("Not implemented yet"); // TODO
-//    return BufferOp.bufferOp(this, distance, quadrantSegments, endCapStyle);
+    return BufferOp.bufferOp4(this, distance, quadrantSegments, endCapStyle);
   }
 
   /**
@@ -2210,7 +2206,7 @@ class GeometryFactory {
       } else if (geom0 is Point) {
         return createMultiPoint(geomList);
       }
-      Assert.shouldNeverReachHereWithMsg("Unhandled class: ${geom0.runtimeType}");
+      Assert.shouldNeverReachHere("Unhandled class: ${geom0.runtimeType}");
     }
     return geom0;
   }

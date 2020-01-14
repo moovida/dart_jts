@@ -317,7 +317,7 @@ class RelateComputer {
       Node n = ni.current;
       Label label = n.getLabel();
       // isolated nodes should always have at least one geometry in their label
-      Assert.isTrueWithMsg(label.getGeometryCount() > 0, "node with empty label found");
+      Assert.isTrue(label.getGeometryCount() > 0, "node with empty label found");
       if (n.isIsolated()) {
         if (label.isNull(0))
           labelIsolatedNode(n, 0);

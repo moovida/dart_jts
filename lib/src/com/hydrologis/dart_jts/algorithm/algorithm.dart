@@ -2138,3 +2138,418 @@ class MonoValentEndPointBoundaryNodeRule implements BoundaryNodeRule {
   }
 }
 
+/**
+ * Utility functions for working with angles.
+ * Unless otherwise noted, methods in this class express angles in radians.
+ */
+class Angle {
+  /**
+   * The value of 2*Pi
+   */
+  static final double PI_TIMES_2 = 2.0 * math.pi;
+
+  /**
+   * The value of Pi/2
+   */
+  static final double PI_OVER_2 = math.pi / 2.0;
+
+  /**
+   * The value of Pi/4
+   */
+  static final double PI_OVER_4 = math.pi / 4.0;
+
+  /** Constant representing counterclockwise orientation */
+  static final int COUNTERCLOCKWISE = Orientation.COUNTERCLOCKWISE;
+
+  /** Constant representing clockwise orientation */
+  static final int CLOCKWISE = Orientation.CLOCKWISE;
+
+  /** Constant representing no orientation */
+  static final int NONE = Orientation.COLLINEAR;
+
+  Angle() {}
+
+  /**
+   * Converts from radians to degrees.
+   * @param radians an angle in radians
+   * @return the angle in degrees
+   */
+  static double toDegrees(double radians) {
+    return (radians * 180) / (math.pi);
+  }
+
+  /**
+   * Converts from degrees to radians.
+   *
+   * @param angleDegrees an angle in degrees
+   * @return the angle in radians
+   */
+  static double toRadians(double angleDegrees) {
+    return (angleDegrees * math.pi) / 180.0;
+  }
+
+  /**
+   * Returns the angle of the vector from p0 to p1,
+   * relative to the positive X-axis.
+   * The angle is normalized to be in the range [ -Pi, Pi ].
+   *
+   * @param p0 the initial point of the vector
+   * @param p1 the terminal point of the vector
+   * @return the normalized angle (in radians) that p0-p1 makes with the positive x-axis.
+   */
+  static double angle2C(Coordinate p0, Coordinate p1) {
+    double dx = p1.x - p0.x;
+    double dy = p1.y - p0.y;
+    return math.atan2(dy, dx);
+  }
+
+  /**
+   * Returns the angle of the vector from (0,0) to p,
+   * relative to the positive X-axis.
+   * The angle is normalized to be in the range ( -Pi, Pi ].
+   *
+   * @param p the terminal point of the vector
+   * @return the normalized angle (in radians) that p makes with the positive x-axis.
+   */
+  static double angle(Coordinate p) {
+    return math.atan2(p.y, p.x);
+  }
+
+  /**
+   * Tests whether the angle between p0-p1-p2 is acute.
+   * An angle is acute if it is less than 90 degrees.
+   * <p>
+   * Note: this implementation is not precise (deterministic) for angles very close to 90 degrees.
+   *
+   * @param p0 an endpoint of the angle
+   * @param p1 the base of the angle
+   * @param p2 the other endpoint of the angle
+   * @return true if the angle is acute
+   */
+  static bool isAcute(Coordinate p0, Coordinate p1, Coordinate p2) {
+    // relies on fact that A dot B is positive iff A ang B is acute
+    double dx0 = p0.x - p1.x;
+    double dy0 = p0.y - p1.y;
+    double dx1 = p2.x - p1.x;
+    double dy1 = p2.y - p1.y;
+    double dotprod = dx0 * dx1 + dy0 * dy1;
+    return dotprod > 0;
+  }
+
+  /**
+   * Tests whether the angle between p0-p1-p2 is obtuse.
+   * An angle is obtuse if it is greater than 90 degrees.
+   * <p>
+   * Note: this implementation is not precise (deterministic) for angles very close to 90 degrees.
+   *
+   * @param p0 an endpoint of the angle
+   * @param p1 the base of the angle
+   * @param p2 the other endpoint of the angle
+   * @return true if the angle is obtuse
+   */
+  static bool isObtuse(Coordinate p0, Coordinate p1, Coordinate p2) {
+    // relies on fact that A dot B is negative iff A ang B is obtuse
+    double dx0 = p0.x - p1.x;
+    double dy0 = p0.y - p1.y;
+    double dx1 = p2.x - p1.x;
+    double dy1 = p2.y - p1.y;
+    double dotprod = dx0 * dx1 + dy0 * dy1;
+    return dotprod < 0;
+  }
+
+  /**
+   * Returns the unoriented smallest angle between two vectors.
+   * The computed angle will be in the range [0, Pi).
+   *
+   * @param tip1 the tip of one vector
+   * @param tail the tail of each vector
+   * @param tip2 the tip of the other vector
+   * @return the angle between tail-tip1 and tail-tip2
+   */
+  static double angleBetween(Coordinate tip1, Coordinate tail, Coordinate tip2) {
+    double a1 = angle2C(tail, tip1);
+    double a2 = angle2C(tail, tip2);
+
+    return diff(a1, a2);
+  }
+
+  /**
+   * Returns the oriented smallest angle between two vectors.
+   * The computed angle will be in the range (-Pi, Pi].
+   * A positive result corresponds to a counterclockwise
+   * (CCW) rotation
+   * from v1 to v2;
+   * a negative result corresponds to a clockwise (CW) rotation;
+   * a zero result corresponds to no rotation.
+   *
+   * @param tip1 the tip of v1
+   * @param tail the tail of each vector
+   * @param tip2 the tip of v2
+   * @return the angle between v1 and v2, relative to v1
+   */
+  static double angleBetweenOriented(Coordinate tip1, Coordinate tail, Coordinate tip2) {
+    double a1 = angle2C(tail, tip1);
+    double a2 = angle2C(tail, tip2);
+    double angDel = a2 - a1;
+
+    // normalize, maintaining orientation
+    if (angDel <= -math.pi) return angDel + PI_TIMES_2;
+    if (angDel > math.pi) return angDel - PI_TIMES_2;
+    return angDel;
+  }
+
+  /**
+   * Computes the interior angle between two segments of a ring. The ring is
+   * assumed to be oriented in a clockwise direction. The computed angle will be
+   * in the range [0, 2Pi]
+   *
+   * @param p0
+   *          a point of the ring
+   * @param p1
+   *          the next point of the ring
+   * @param p2
+   *          the next point of the ring
+   * @return the interior angle based at <code>p1</code>
+   */
+  static double interiorAngle(Coordinate p0, Coordinate p1, Coordinate p2) {
+    double anglePrev = Angle.angle2C(p1, p0);
+    double angleNext = Angle.angle2C(p1, p2);
+    return (angleNext - anglePrev).abs();
+  }
+
+  /**
+   * Returns whether an angle must turn clockwise or counterclockwise
+   * to overlap another angle.
+   *
+   * @param ang1 an angle (in radians)
+   * @param ang2 an angle (in radians)
+   * @return whether a1 must turn CLOCKWISE, COUNTERCLOCKWISE or NONE to
+   * overlap a2.
+   */
+  static int getTurn(double ang1, double ang2) {
+    double crossproduct = math.sin(ang2 - ang1);
+
+    if (crossproduct > 0) {
+      return COUNTERCLOCKWISE;
+    }
+    if (crossproduct < 0) {
+      return CLOCKWISE;
+    }
+    return NONE;
+  }
+
+  /**
+   * Computes the normalized value of an angle, which is the
+   * equivalent angle in the range ( -Pi, Pi ].
+   *
+   * @param angle the angle to normalize
+   * @return an equivalent angle in the range (-Pi, Pi]
+   */
+  static double normalize(double angle) {
+    while (angle > math.pi) angle -= PI_TIMES_2;
+    while (angle <= -math.pi) angle += PI_TIMES_2;
+    return angle;
+  }
+
+  /**
+   * Computes the normalized positive value of an angle, which is the
+   * equivalent angle in the range [ 0, 2*Pi ).
+   * E.g.:
+   * <ul>
+   * <li>normalizePositive(0.0) = 0.0
+   * <li>normalizePositive(-PI) = PI
+   * <li>normalizePositive(-2PI) = 0.0
+   * <li>normalizePositive(-3PI) = PI
+   * <li>normalizePositive(-4PI) = 0
+   * <li>normalizePositive(PI) = PI
+   * <li>normalizePositive(2PI) = 0.0
+   * <li>normalizePositive(3PI) = PI
+   * <li>normalizePositive(4PI) = 0.0
+   * </ul>
+   *
+   * @param angle the angle to normalize, in radians
+   * @return an equivalent positive angle
+   */
+  static double normalizePositive(double angle) {
+    if (angle < 0.0) {
+      while (angle < 0.0) angle += PI_TIMES_2;
+      // in case round-off error bumps the value over
+      if (angle >= PI_TIMES_2) angle = 0.0;
+    } else {
+      while (angle >= PI_TIMES_2) angle -= PI_TIMES_2;
+      // in case round-off error bumps the value under
+      if (angle < 0.0) angle = 0.0;
+    }
+    return angle;
+  }
+
+  /**
+   * Computes the unoriented smallest difference between two angles.
+   * The angles are assumed to be normalized to the range [-Pi, Pi].
+   * The result will be in the range [0, Pi].
+   *
+   * @param ang1 the angle of one vector (in [-Pi, Pi] )
+   * @param ang2 the angle of the other vector (in range [-Pi, Pi] )
+   * @return the angle (in radians) between the two vectors (in range [0, Pi] )
+   */
+  static double diff(double ang1, double ang2) {
+    double delAngle;
+
+    if (ang1 < ang2) {
+      delAngle = ang2 - ang1;
+    } else {
+      delAngle = ang1 - ang2;
+    }
+
+    if (delAngle > math.pi) {
+      delAngle = (2 * math.pi) - delAngle;
+    }
+
+    return delAngle;
+  }
+}
+
+/**
+ * Represents a homogeneous coordinate in a 2-D coordinate space.
+ * In JTS {@link HCoordinate}s are used as a clean way
+ * of computing intersections between line segments.
+ *
+ * @author David Skea
+ * @version 1.7
+ */
+class HCoordinate {
+  /**
+   * Computes the (approximate) intersection point between two line segments
+   * using homogeneous coordinates.
+   * <p>
+   * Note that this algorithm is
+   * not numerically stable; i.e. it can produce intersection points which
+   * lie outside the envelope of the line segments themselves.  In order
+   * to increase the precision of the calculation input points should be normalized
+   * before passing them to this routine.
+   *
+   * @deprecated use {@link Intersection#intersection(Coordinate, Coordinate, Coordinate, Coordinate)}
+   */
+  static Coordinate intersection(Coordinate p1, Coordinate p2, Coordinate q1, Coordinate q2) {
+    // unrolled computation
+    double px = p1.y - p2.y;
+    double py = p2.x - p1.x;
+    double pw = p1.x * p2.y - p2.x * p1.y;
+
+    double qx = q1.y - q2.y;
+    double qy = q2.x - q1.x;
+    double qw = q1.x * q2.y - q2.x * q1.y;
+
+    double x = py * qw - qy * pw;
+    double y = qx * pw - px * qw;
+    double w = px * qy - qx * py;
+
+    double xInt = x / w;
+    double yInt = y / w;
+
+    if ((xInt.isNaN) || (xInt.isInfinite || yInt.isNaN) || (yInt.isInfinite)) {
+      throw new RuntimeException("NotRepresentableException");
+    }
+
+    return new Coordinate(xInt, yInt);
+  }
+
+/*
+   static Coordinate OLDintersection(
+      Coordinate p1, Coordinate p2,
+      Coordinate q1, Coordinate q2)
+      throws NotRepresentableException
+  {
+    HCoordinate l1 = new HCoordinate(p1, p2);
+    HCoordinate l2 = new HCoordinate(q1, q2);
+    HCoordinate intHCoord = new HCoordinate(l1, l2);
+    Coordinate intPt = intHCoord.getCoordinate();
+    return intPt;
+  }
+  */
+
+  double x, y, w;
+
+  HCoordinate() {
+    x = 0.0;
+    y = 0.0;
+    w = 1.0;
+  }
+
+  HCoordinate.xyw(double _x, double _y, double _w) {
+    x = _x;
+    y = _y;
+    w = _w;
+  }
+
+  HCoordinate.xy(double _x, double _y) {
+    x = _x;
+    y = _y;
+    w = 1.0;
+  }
+
+  HCoordinate.c(Coordinate p) {
+    x = p.x;
+    y = p.y;
+    w = 1.0;
+  }
+
+  HCoordinate.from2Hc(HCoordinate p1, HCoordinate p2) {
+    x = p1.y * p2.w - p2.y * p1.w;
+    y = p2.x * p1.w - p1.x * p2.w;
+    w = p1.x * p2.y - p2.x * p1.y;
+  }
+
+  /**
+   * Constructs a homogeneous coordinate which is the intersection of the lines
+   * define by the homogenous coordinates represented by two
+   * {@link Coordinate}s.
+   *
+   * @param p1
+   * @param p2
+   */
+  HCoordinate.from2c(Coordinate p1, Coordinate p2) {
+    // optimization when it is known that w = 1
+    x = p1.y - p2.y;
+    y = p2.x - p1.x;
+    w = p1.x * p2.y - p2.x * p1.y;
+  }
+
+  HCoordinate.from4c(Coordinate p1, Coordinate p2, Coordinate q1, Coordinate q2) {
+    // unrolled computation
+    double px = p1.y - p2.y;
+    double py = p2.x - p1.x;
+    double pw = p1.x * p2.y - p2.x * p1.y;
+
+    double qx = q1.y - q2.y;
+    double qy = q2.x - q1.x;
+    double qw = q1.x * q2.y - q2.x * q1.y;
+
+    x = py * qw - qy * pw;
+    y = qx * pw - px * qw;
+    w = px * qy - qx * py;
+  }
+
+  double getX() {
+    double a = x / w;
+    if ((a.isNaN) || (a.isInfinite)) {
+      throw new RuntimeException("NotRepresentableException");
+    }
+    return a;
+  }
+
+  double getY() {
+    double a = y / w;
+    if ((a.isNaN) || (a.isInfinite)) {
+      throw new RuntimeException("NotRepresentableException");
+    }
+    return a;
+  }
+
+  Coordinate getCoordinate() {
+    Coordinate p = new Coordinate.empty2D();
+    p.x = getX();
+    p.y = getY();
+    return p;
+  }
+}

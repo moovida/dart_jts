@@ -1699,7 +1699,7 @@ class GeometryEditor {
       return operation.edit(geometry, _geomFactory);
     }
 
-    Assert.shouldNeverReachHereWithMsg("Unsupported Geometry class: ${geometry.runtimeType.toString()}");
+    Assert.shouldNeverReachHere("Unsupported Geometry class: ${geometry.runtimeType.toString()}");
     return null;
   }
 

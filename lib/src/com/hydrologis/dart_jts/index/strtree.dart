@@ -520,7 +520,7 @@ abstract class AbstractSTRtree {
    * @param nodeCapacity the maximum number of child nodes in a node
    */
   AbstractSTRtree.withCapacity(int nodeCapacity) {
-    Assert.isTrueWithMsg(nodeCapacity > 1, "Node capacity must be greater than 1");
+    Assert.isTrue(nodeCapacity > 1, "Node capacity must be greater than 1");
     this.nodeCapacity = nodeCapacity;
   }
 
@@ -661,7 +661,7 @@ abstract class AbstractSTRtree {
   }
 
   void insertObj(Object bounds, Object item) {
-    Assert.isTrueWithMsg(!built, "Cannot insert items into an STR packed R-tree after it has been built.");
+    Assert.isTrue(!built, "Cannot insert items into an STR packed R-tree after it has been built.");
     itemBoundables.add(new ItemBoundable(bounds, item));
   }
 

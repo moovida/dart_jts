@@ -249,7 +249,7 @@ class ConnectedInteriorTester {
     } else if (de.getSym().getLabel().getLocationWithPosIndex(0, Position.RIGHT) == Location.INTERIOR) {
       intDe = de.getSym();
     }
-    Assert.isTrueWithMsg(intDe != null, "unable to find dirEdge with Interior on RHS");
+    Assert.isTrue(intDe != null, "unable to find dirEdge with Interior on RHS");
 
     visitLinkedDirectedEdges(intDe);
   }
@@ -258,7 +258,7 @@ class ConnectedInteriorTester {
     DirectedEdge startDe = start;
     DirectedEdge de = start;
     do {
-      Assert.isTrueWithMsg(de != null, "found null Directed Edge");
+      Assert.isTrue(de != null, "found null Directed Edge");
       de.setVisited(true);
       de = de.getNext();
     } while (de != startDe);
