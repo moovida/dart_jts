@@ -1217,6 +1217,7 @@ class SegmentNodeList {
     List<int> collapsedVertexIndex = List(1);
     Iterator it = iterator();
     // there should always be at least two entries in the list, since the endpoints are nodes
+    it.moveNext();
     SegmentNode eiPrev = it.current;
     while (it.moveNext()) {
       SegmentNode ei = it.current;
@@ -1258,6 +1259,7 @@ class SegmentNodeList {
 
     Iterator it = iterator();
     // there should always be at least two entries in the list, since the endpoints are nodes
+    it.moveNext();
     SegmentNode eiPrev = it.current;
     while (it.moveNext()) {
       SegmentNode ei = it.current;
@@ -1713,9 +1715,9 @@ class InteriorIntersectionFinderAdder implements SegmentIntersectorN {
  */
 class ScaledNoder implements Noder {
   Noder noder;
-  double scaleFactor;
-  double offsetX;
-  double offsetY;
+  double scaleFactor = 0;
+  double offsetX = 0;
+  double offsetY = 0;
   bool isScaled = false;
 
   ScaledNoder(Noder noder, double scaleFactor) : this.withOffests(noder, scaleFactor, 0, 0);
@@ -1744,9 +1746,9 @@ class ScaledNoder implements Noder {
   }
 
   List scale(List segStrings) {
-    List nodedSegmentStrings = List(segStrings.length);
+    List<NodedSegmentString> nodedSegmentStrings = [];
     for (SegmentString ss in segStrings) {
-      nodedSegmentStrings.add(new NodedSegmentString(scale(ss.getCoordinates()), ss.getData()));
+      nodedSegmentStrings.add(new NodedSegmentString(scaleCoords(ss.getCoordinates()), ss.getData()));
     }
     return nodedSegmentStrings;
   }
@@ -1768,7 +1770,7 @@ class ScaledNoder implements Noder {
 
   void rescale(List segStrings) {
     for (SegmentString ss in segStrings) {
-      rescale(ss.getCoordinates());
+      rescaleCoords(ss.getCoordinates());
     }
   }
 

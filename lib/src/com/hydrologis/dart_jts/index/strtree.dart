@@ -909,7 +909,7 @@ class STRtree extends AbstractSTRtree implements SpatialIndex {
    *
    */
 
-  static Comparator<Boundable> xComparator = (o1, o2) {
+  static Comparator<dynamic> xComparator = (o1, o2) {
     return AbstractSTRtree.compareDoubles(centreX((o1 as Boundable).getBounds() as Envelope), centreX((o2 as Boundable).getBounds() as Envelope));
   };
 
@@ -920,7 +920,7 @@ class STRtree extends AbstractSTRtree implements SpatialIndex {
 //  centreX((Envelope)((Boundable)o2).getBounds()));
 //  }
 //  };
-  static Comparator yComparator = (o1, o2) {
+  static Comparator<dynamic> yComparator = (o1, o2) {
     return AbstractSTRtree.compareDoubles(centreY((o1 as Boundable).getBounds() as Envelope), centreY((o2 as Boundable).getBounds() as Envelope));
   };
 

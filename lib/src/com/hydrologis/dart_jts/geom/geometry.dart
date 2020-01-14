@@ -2164,7 +2164,7 @@ class GeometryFactory {
    *      type-specific" class that can contain the elements of <code>geomList</code>
    *      .
    */
-  Geometry buildGeometry(List geomList) {
+  Geometry buildGeometry(List<Geometry> geomList) {
     /**
      * Determine some facts about the geometries in the list
      */

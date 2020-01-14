@@ -187,9 +187,9 @@ abstract class IntervalRTreeNode {
   }
 }
 
-Comparator<IntervalRTreeNode> nodeComparator = (o1, o2) {
-  IntervalRTreeNode n1 = o1;
-  IntervalRTreeNode n2 = o2;
+Comparator nodeComparator = (o1, o2) {
+  IntervalRTreeNode n1 = o1 as IntervalRTreeNode;
+  IntervalRTreeNode n2 = o2 as IntervalRTreeNode;
   double mid1 = (n1.min + n1.max) / 2;
   double mid2 = (n2.min + n2.max) / 2;
   if (mid1 < mid2) return -1;

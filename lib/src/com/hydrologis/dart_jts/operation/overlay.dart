@@ -115,8 +115,8 @@ class PolygonBuilder {
     //Assert: every hole on freeHoleList has a shell assigned to it
   }
 
-  List getPolygons() {
-    List resultPolyList = computePolygons(shellList);
+  List<Polygon> getPolygons() {
+    List<Polygon> resultPolyList = computePolygons(shellList);
     return resultPolyList;
   }
 
@@ -290,8 +290,8 @@ class PolygonBuilder {
     return minShell;
   }
 
-  List computePolygons(List shellList) {
-    List resultPolyList = [];
+  List<Polygon> computePolygons(List shellList) {
+    List<Polygon> resultPolyList = [];
     // add Polygons for all shells
     for (EdgeRing er in shellList) {
       Polygon poly = er.toPolygon(geometryFactory);

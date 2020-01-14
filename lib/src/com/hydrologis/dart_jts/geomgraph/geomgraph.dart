@@ -1427,7 +1427,9 @@ class DirectedEdge extends EdgeEnd {
 //      if (depth[position] != depthVal) {
 //        Debug.print(this);
 //      }
-      if (depth[position] != depthVal) throw new TopologyException("assigned depths do not match ${getCoordinate()}");
+      if (depth[position] != depthVal) {
+        throw new TopologyException("assigned depths do not match ${getCoordinate()}");
+      }
       //Assert.isTrue(depth[position] == depthVal, "assigned depths do not match at " + getCoordinate());
     }
     depth[position] = depthVal;
@@ -2169,6 +2171,7 @@ class EdgeIntersectionList {
 
     Iterator it = iterator();
     // there should always be at least two entries in the list
+    it.moveNext();
     EdgeIntersection eiPrev = it.current;
     while (it.moveNext()) {
       EdgeIntersection ei = it.current;

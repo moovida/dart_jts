@@ -516,7 +516,7 @@ class BufferOp {
   BufferParameters bufParams = new BufferParameters();
 
   Geometry resultGeometry = null;
-  RuntimeException saveException; // debugging only
+  Exception saveException; // debugging only
 
   /**
    * Initializes a buffer computation for the given geometry
@@ -734,7 +734,7 @@ class BufferBuilder {
     List subgraphList = createSubgraphs(graph);
     PolygonBuilder polyBuilder = new PolygonBuilder(geomFact);
     buildSubgraphs(subgraphList, polyBuilder);
-    List resultPolyList = polyBuilder.getPolygons();
+    List<Polygon> resultPolyList = polyBuilder.getPolygons();
 
     // just in case...
     if (resultPolyList.isEmpty) {
@@ -829,13 +829,16 @@ class BufferBuilder {
         subgraphList.add(subgraph);
       }
     }
+
     /**
      * Sort the subgraphs in descending order of their rightmost coordinate.
      * This ensures that when the Polygons for the subgraphs are built,
      * subgraphs for shells will have been built before the subgraphs for
      * any holes they contain.
      */
-    return subgraphList.reversed;
+    subgraphList.sort((o1,o2)=> (o1 as BufferSubgraph).compareTo((o2 as BufferSubgraph)));
+    var list = subgraphList.reversed.toList();
+    return list;
   }
 
   /**
