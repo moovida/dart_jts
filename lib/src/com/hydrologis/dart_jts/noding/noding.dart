@@ -1178,14 +1178,14 @@ class SegmentNodeList {
    * the vertex at the base of a collapsed pair must also be added as a node.
    */
   void addCollapsedNodes() {
-    List collapsedVertexIndexes = [];
+    List<int> collapsedVertexIndexes = [];
 
     findCollapsesFromInsertedNodes(collapsedVertexIndexes);
     findCollapsesFromExistingVertices(collapsedVertexIndexes);
 
     // node the collapses
     for (Iterator it = collapsedVertexIndexes.iterator; it.moveNext();) {
-      int vertexIndex = (it.current).intValue();
+      int vertexIndex = it.current;
       add(edge.getCoordinate(vertexIndex), vertexIndex);
     }
   }
@@ -1194,7 +1194,7 @@ class SegmentNodeList {
    * Adds nodes for any collapsed edge pairs
    * which are pre-existing in the vertex list.
    */
-  void findCollapsesFromExistingVertices(List collapsedVertexIndexes) {
+  void findCollapsesFromExistingVertices(List<int> collapsedVertexIndexes) {
     for (int i = 0; i < edge.size() - 2; i++) {
       Coordinate p0 = edge.getCoordinate(i);
       Coordinate p1 = edge.getCoordinate(i + 1);
@@ -1213,7 +1213,7 @@ class SegmentNodeList {
    * To provide the correct fully noded semantics,
    * the vertex must be added as a node as well.
    */
-  void findCollapsesFromInsertedNodes(List collapsedVertexIndexes) {
+  void findCollapsesFromInsertedNodes(List<int> collapsedVertexIndexes) {
     List<int> collapsedVertexIndex = List(1);
     Iterator it = iterator();
     // there should always be at least two entries in the list, since the endpoints are nodes
