@@ -205,6 +205,92 @@ class Distance {
   }
 }
 
+
+/**
+ * Contains a pair of points and the distance between them.
+ * Provides methods to update with a new point pair with
+ * either maximum or minimum distance.
+ */
+ class PointPairDistance {
+
+   List<Coordinate> pt = [ new Coordinate.empty2D(), new Coordinate.empty2D() ];
+   double distance = double.nan;
+   bool isNull = true;
+
+   PointPairDistance()
+  {
+  }
+
+   void initialize() { isNull = true; }
+
+   void initialize2C(Coordinate p0, Coordinate p1)
+  {
+    pt[0].setCoordinate(p0);
+    pt[1].setCoordinate(p1);
+    distance = p0.distance(p1);
+    isNull = false;
+  }
+
+  /**
+   * Initializes the points, avoiding recomputing the distance.
+   * @param p0
+   * @param p1
+   * @param distance the distance between p0 and p1
+   */
+   void initialize2CD(Coordinate p0, Coordinate p1, double distance)
+  {
+    pt[0].setCoordinate(p0);
+    pt[1].setCoordinate(p1);
+    this.distance = distance;
+    isNull = false;
+  }
+
+   double getDistance() { return distance; }
+
+   List<Coordinate> getCoordinates() { return pt; }
+
+   Coordinate getCoordinate(int i) { return pt[i]; }
+
+   void setMaximum(PointPairDistance ptDist)
+  {
+    setMaximum2C(ptDist.pt[0], ptDist.pt[1]);
+  }
+
+   void setMaximum2C(Coordinate p0, Coordinate p1)
+  {
+    if (isNull) {
+      initialize2C(p0, p1);
+      return;
+    }
+    double dist = p0.distance(p1);
+    if (dist > distance)
+      initialize2CD(p0, p1, dist);
+  }
+
+   void setMinimum(PointPairDistance ptDist)
+  {
+    setMinimum2C(ptDist.pt[0], ptDist.pt[1]);
+  }
+
+   void setMinimum2C(Coordinate p0, Coordinate p1)
+  {
+    if (isNull) {
+      initialize2C(p0, p1);
+      return;
+    }
+    double dist = p0.distance(p1);
+    if (dist < distance)
+      initialize2CD(p0, p1, dist);
+  }
+
+   String toString()
+  {
+    return WKTWriter.toLineStringFromCoords(pt[0], pt[1]);
+  }
+}
+
+
+
 /**
  * Represents the location of a point on a Geometry.
  * Maintains both the actual point location
@@ -640,3 +726,238 @@ class DistanceOp {
     }
   }
 }
+
+/**
+ * An algorithm for computing a distance metric
+ * which is an approximation to the Hausdorff Distance
+ * based on a discretization of the input {@link Geometry}.
+ * The algorithm computes the Hausdorff distance restricted to discrete points
+ * for one of the geometries.
+ * The points can be either the vertices of the geometries (the default),
+ * or the geometries with line segments densified by a given fraction.
+ * Also determines two points of the Geometries which are separated by the computed distance.
+ * <p>
+ * This algorithm is an approximation to the standard Hausdorff distance.
+ * Specifically,
+ * <pre>
+ *    for all geometries a, b:    DHD(a, b) &lt;= HD(a, b)
+ * </pre>
+ * The approximation can be made as close as needed by densifying the input geometries.
+ * In the limit, this value will approach the true Hausdorff distance:
+ * <pre>
+ *    DHD(A, B, densifyFactor) -&gt; HD(A, B) as densifyFactor -&gt; 0.0
+ * </pre>
+ * The default approximation is exact or close enough for a large subset of useful cases.
+ * Examples of these are:
+ * <ul>
+ * <li>computing distance between Linestrings that are roughly parallel to each other,
+ * and roughly equal in length.  This occurs in matching linear networks.
+ * <li>Testing similarity of geometries.
+ * </ul>
+ * An example where the default approximation is not close is:
+ * <pre>
+ *   A = LINESTRING (0 0, 100 0, 10 100, 10 100)
+ *   B = LINESTRING (0 100, 0 10, 80 10)
+ *
+ *   DHD(A, B) = 22.360679774997898
+ *   HD(A, B) ~= 47.8
+ * </pre>
+ */
+class DiscreteHausdorffDistance {
+  static double distanceStatic(Geometry g0, Geometry g1) {
+    DiscreteHausdorffDistance dist = new DiscreteHausdorffDistance(g0, g1);
+    return dist.distance();
+  }
+
+  static double distanceStaticDF(Geometry g0, Geometry g1, double densifyFrac) {
+    DiscreteHausdorffDistance dist = new DiscreteHausdorffDistance(g0, g1);
+    dist.setDensifyFraction(densifyFrac);
+    return dist.distance();
+  }
+
+  Geometry g0;
+  Geometry g1;
+  PointPairDistance ptDist = new PointPairDistance();
+
+  /**
+   * Value of 0.0 indicates that no densification should take place
+   */
+  double densifyFrac = 0.0;
+
+  DiscreteHausdorffDistance(Geometry g0, Geometry g1) {
+    this.g0 = g0;
+    this.g1 = g1;
+  }
+
+  /**
+   * Sets the fraction by which to densify each segment.
+   * Each segment will be (virtually) split into a number of equal-length
+   * subsegments, whose fraction of the total length is closest
+   * to the given fraction.
+   *
+   * @param densifyFrac
+   */
+  void setDensifyFraction(double densifyFrac) {
+    if (densifyFrac > 1.0 || densifyFrac <= 0.0) throw ArgumentError("Fraction is not in range (0.0 - 1.0]");
+
+    this.densifyFrac = densifyFrac;
+  }
+
+  double distance() {
+    compute(g0, g1);
+    return ptDist.getDistance();
+  }
+
+  double orientedDistance() {
+    computeOrientedDistance(g0, g1, ptDist);
+    return ptDist.getDistance();
+  }
+
+  List<Coordinate> getCoordinates() {
+    return ptDist.getCoordinates();
+  }
+
+  void compute(Geometry g0, Geometry g1) {
+    computeOrientedDistance(g0, g1, ptDist);
+    computeOrientedDistance(g1, g0, ptDist);
+  }
+
+  void computeOrientedDistance(Geometry discreteGeom, Geometry geom, PointPairDistance ptDist) {
+    MaxPointDistanceFilter distFilter = new MaxPointDistanceFilter(geom);
+    discreteGeom.applyCF(distFilter);
+    ptDist.setMaximum(distFilter.getMaxPointDistance());
+
+    if (densifyFrac > 0) {
+      MaxDensifiedByFractionDistanceFilter fracFilter = new MaxDensifiedByFractionDistanceFilter(geom, densifyFrac);
+      discreteGeom.applyCSF(fracFilter);
+      ptDist.setMaximum(fracFilter.getMaxPointDistance());
+    }
+  }
+}
+
+class MaxDensifiedByFractionDistanceFilter implements CoordinateSequenceFilter {
+  PointPairDistance maxPtDist = new PointPairDistance();
+  PointPairDistance minPtDist = new PointPairDistance();
+  Geometry geom;
+  int numSubSegs = 0;
+
+  MaxDensifiedByFractionDistanceFilter(Geometry geom, double fraction) {
+    this.geom = geom;
+    numSubSegs = (1.0 / fraction).round(); // TODO this should be Math.rint(a)
+  }
+
+  void filter(CoordinateSequence seq, int index) {
+    /**
+     * This logic also handles skipping Point geometries
+     */
+    if (index == 0) return;
+
+    Coordinate p0 = seq.getCoordinate(index - 1);
+    Coordinate p1 = seq.getCoordinate(index);
+
+    double delx = (p1.x - p0.x) / numSubSegs;
+    double dely = (p1.y - p0.y) / numSubSegs;
+
+    for (int i = 0; i < numSubSegs; i++) {
+      double x = p0.x + i * delx;
+      double y = p0.y + i * dely;
+      Coordinate pt = new Coordinate(x, y);
+      minPtDist.initialize();
+      DistanceToPoint.computeDistance(geom, pt, minPtDist);
+      maxPtDist.setMaximum(minPtDist);
+    }
+  }
+
+  bool isGeometryChanged() {
+    return false;
+  }
+
+  bool isDone() {
+    return false;
+  }
+
+  PointPairDistance getMaxPointDistance() {
+    return maxPtDist;
+  }
+}
+
+class MaxPointDistanceFilter  implements CoordinateFilter{
+  PointPairDistance maxPtDist = new PointPairDistance();
+  PointPairDistance minPtDist = new PointPairDistance();
+  DistanceToPoint euclideanDist = new DistanceToPoint();
+  Geometry geom;
+
+  MaxPointDistanceFilter(Geometry geom) {
+    this.geom = geom;
+  }
+
+  void filter(Coordinate pt) {
+    minPtDist.initialize();
+    DistanceToPoint.computeDistance(geom, pt, minPtDist);
+    maxPtDist.setMaximum(minPtDist);
+  }
+
+  PointPairDistance getMaxPointDistance() {
+    return maxPtDist;
+  }
+}
+
+
+
+/**
+ * Computes the Euclidean distance (L2 metric) from a {@link Coordinate} to a {@link Geometry}.
+ * Also computes two points on the geometry which are separated by the distance found.
+ */
+ class DistanceToPoint
+{
+
+   DistanceToPoint() {
+  }
+
+   static void computeDistance(Geometry geom, Coordinate pt, PointPairDistance ptDist)
+  {
+    if (geom is LineString) {
+      computeDistance( geom as LineString, pt, ptDist);
+    }
+    else if (geom is Polygon) {
+      computeDistance( geom as Polygon, pt, ptDist);
+    }
+    else if (geom is GeometryCollection) {
+      GeometryCollection gc =  geom as GeometryCollection;
+      for (int i = 0; i < gc.getNumGeometries(); i++) {
+        Geometry g = gc.getGeometryN(i);
+        computeDistance(g, pt, ptDist);
+      }
+    }
+    else { // assume geom is Point
+      ptDist.setMinimum2C(geom.getCoordinate(), pt);
+    }
+  }
+
+   static void computeDistanceL(LineString line, Coordinate pt, PointPairDistance ptDist)
+  {
+    LineSegment tempSegment = new LineSegment.empty();
+    var coords = line.getCoordinates();
+    for (int i = 0; i < coords.length - 1; i++) {
+      tempSegment.setCoordinates(coords[i], coords[i + 1]);
+      // this is somewhat inefficient - could do better
+      Coordinate closestPt = tempSegment.closestPoint(pt);
+      ptDist.setMinimum2C(closestPt, pt);
+    }
+  }
+
+   static void computeDistanceLS(LineSegment segment, Coordinate pt, PointPairDistance ptDist)
+  {
+    Coordinate closestPt = segment.closestPoint(pt);
+    ptDist.setMinimum2C(closestPt, pt);
+  }
+
+   static void computeDistanceP(Polygon poly, Coordinate pt, PointPairDistance ptDist)
+  {
+    computeDistance(poly.getExteriorRing(), pt, ptDist);
+    for (int i = 0; i < poly.getNumInteriorRing(); i++) {
+      computeDistance(poly.getInteriorRingN(i), pt, ptDist);
+    }
+  }
+}
+

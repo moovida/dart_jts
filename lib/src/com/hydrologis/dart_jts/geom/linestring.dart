@@ -202,9 +202,9 @@ class LineString extends Geometry implements Lineal {
     return true;
   }
 
-  void applyCF(CoordinateFilter filter) {
+  void applyCF(CoordinateFilter cf) {
     for (int i = 0; i < points.size(); i++) {
-      filter(points.getCoordinate(i));
+      cf.filter(points.getCoordinate(i));
     }
   }
 

@@ -27,13 +27,12 @@ assertEquals(actual, matcher) {
   expect(actual, matcher);
 }
 
-assertEqualsD(double n1, double n2, double tolerance) {
-  expect(NumberUtils.equalsWithTolerance(n1, n2, tolerance), true);
+assertEqualsD(double n1, double n2, double tolerance, [String msg]) {
+  expect(NumberUtils.equalsWithTolerance(n1, n2, tolerance), true, reason: msg);
 }
 
 assertEqualsExact(Geometry expectedValue, Geometry actualValue) {
-  assertTrueMsg("Expected $expectedValue but encountered $actualValue",
-      actualValue.equalsExactGeom(expectedValue));
+  assertTrueMsg("Expected $expectedValue but encountered $actualValue", actualValue.equalsExactGeom(expectedValue));
 }
 
 assertTrue(actual) {

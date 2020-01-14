@@ -795,20 +795,20 @@ class IsValidOp {
     if (g.isEmpty()) return;
 
     if (g is Point)
-      checkValid(g);
+      checkValidP(g);
     else if (g is MultiPoint)
-      checkValid(g);
+      checkValidMP(g);
     // LineString also handles LinearRings
     else if (g is LinearRing)
-      checkValid(g);
+      checkValidLR(g);
     else if (g is LineString)
-      checkValid(g);
+      checkValidL(g);
     else if (g is Polygon)
-      checkValid(g);
+      checkValidPol(g);
     else if (g is MultiPolygon)
-      checkValid(g);
+      checkValidMPol(g);
     else if (g is GeometryCollection)
-      checkValid(g);
+      checkValidGC(g);
     else
       throw new UnsupportedError(g.runtimeType.toString());
   }

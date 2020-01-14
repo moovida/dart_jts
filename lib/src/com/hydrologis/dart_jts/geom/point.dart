@@ -128,11 +128,11 @@ class Point extends Geometry implements Puntal {
     return equal((other as Point).getCoordinate(), this.getCoordinate(), tolerance);
   }
 
-  void applyCF(CoordinateFilter filter) {
+  void applyCF(CoordinateFilter cf) {
     if (isEmpty()) {
       return;
     }
-    filter(getCoordinate());
+    cf.filter(getCoordinate());
   }
 
   void applyCSF(CoordinateSequenceFilter filter) {

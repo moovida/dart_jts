@@ -811,9 +811,7 @@ class WKBTest {
   }
 
   void setZ(Geometry g) {
-    g.applyCF((coord) {
-      coord.setZ((coord.x + coord.y) / 2);
-    });
+    g.applyCF(Cf());
   }
 
 //static Comparator comp2D = new Coordinate.DimensionalComparator();
@@ -853,6 +851,14 @@ class WKBTest {
       assertTrue(isSRIDEqual);
     }
   }
+}
+
+class Cf implements CoordinateFilter{
+  @override
+  void filter(Coordinate coord) {
+    coord.setZ((coord.x + coord.y) / 2);
+  }
+
 }
 
 /**

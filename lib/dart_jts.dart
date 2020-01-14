@@ -24,6 +24,7 @@ part 'src/com/hydrologis/dart_jts/operation/relate.dart';
 part 'src/com/hydrologis/dart_jts/operation/overlay.dart';
 part 'src/com/hydrologis/dart_jts/operation/predicate.dart';
 part 'src/com/hydrologis/dart_jts/operation/buffer.dart';
+part 'src/com/hydrologis/dart_jts/operation/buffer_validate.dart';
 part 'src/com/hydrologis/dart_jts/noding/noding.dart';
 part "src/com/hydrologis/dart_jts/math/math.dart";
 part "src/com/hydrologis/dart_jts/geomgraph/geomgraph.dart";

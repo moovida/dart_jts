@@ -210,7 +210,10 @@ abstract class CoordinateSequenceFilter {
 //  void filter(Coordinate coord);
 //}
 
-typedef CoordinateFilter<Coordinate> = void Function(Coordinate coordinate);
+//typedef CoordinateFilter<Coordinate> = void Function(Coordinate coordinate);
+abstract class CoordinateFilter {
+  void filter(Coordinate coordinate);
+}
 
 ///  <code>GeometryCollection</code> classes support the concept of
 ///  applying a <code>GeometryFilter</code> to the <code>Geometry</code>.

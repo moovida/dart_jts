@@ -424,10 +424,7 @@ void main() {
     test("testInvalidateEnvelope", () {
       Geometry g = reader.read("POLYGON ((0 0, 0 50, 50 50, 50 0, 0 0))");
       assertEquals(Envelope(0, 50, 0, 50), g.getEnvelopeInternal());
-      g.applyCF((coord) {
-        coord.x += 1;
-        coord.y += 1;
-      });
+      g.applyCF(CfPlusOne());
       assertEquals(Envelope(0, 50, 0, 50), g.getEnvelopeInternal());
       g.geometryChanged();
       assertEquals(Envelope(1, 51, 1, 51), g.getEnvelopeInternal());
@@ -538,6 +535,15 @@ void main() {
       assertTrue(gc2.intersects(gc1));
     });
   });
+}
+
+class CfPlusOne implements CoordinateFilter{
+  @override
+  void filter(Coordinate coord) {
+    coord.x += 1;
+    coord.y += 1;
+  }
+
 }
 
 void doTestEqualsExact(Geometry x, Geometry somethingExactlyEqual, Geometry somethingNotEqualButSameClass, Geometry sameClassButEmpty,
