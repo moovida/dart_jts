@@ -1853,7 +1853,7 @@ class Centroid {
       addLineSegments(geom.getCoordinates());
     } else if (geom is Polygon) {
       Polygon poly = geom;
-      add(poly);
+      addPolygon(poly);
     } else if (geom is GeometryCollection) {
       GeometryCollection gc = geom;
       for (int i = 0; i < gc.getNumGeometries(); i++) {
