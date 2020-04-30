@@ -985,7 +985,7 @@ class STRtree extends AbstractSTRtree implements SpatialIndex {
     for (int j = 0; j < sliceCount; j++) {
       slices[j] = [];
       int boundablesAddedToSlice = 0;
-      while (i.moveNext() && boundablesAddedToSlice < sliceCapacity) {
+      while (boundablesAddedToSlice < sliceCapacity && i.moveNext()) {
         Boundable childBoundable = i.current as Boundable;
         slices[j].add(childBoundable);
         boundablesAddedToSlice++;
