@@ -1,6 +1,6 @@
 import 'package:dart_jts/dart_jts.dart';
 
-main() {
+void main() {
   String polygon1Wkt = "POLYGON (( 0 0, 100 0, 100 100, 0 100, 0 0 ))";
   String polygon2Wkt = "POLYGON (( 50 50, 150 50, 150 150, 50 150, 50 50 ))";
 

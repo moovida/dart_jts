@@ -5,7 +5,8 @@ class RuntimeException implements Exception {
 
   RuntimeException(this.msg);
 
-  String toString() => "RuntimeException: " + msg;
+  @override
+  String toString() => 'RuntimeException: ' + msg;
 }
 
 class IOException implements Exception {
@@ -13,7 +14,8 @@ class IOException implements Exception {
 
   IOException(this.msg);
 
-  String toString() => "IOException: " + msg;
+  @override
+  String toString() => 'IOException: ' + msg;
 }
 
 class ParseException implements Exception {
@@ -21,7 +23,8 @@ class ParseException implements Exception {
 
   ParseException(this.msg);
 
-  String toString() => "ParseException: " + msg;
+  @override
+  String toString() => 'ParseException: ' + msg;
 }
 
 class FormattingUtils {}
@@ -51,7 +54,7 @@ class CollectionsUtils {
 
   /// CHecks if there are subsequent repeating items.
   static bool hasRepeated<T>(List<T> list) {
-    for (int i = 1; i < list.length; i++) {
+    for (var i = 1; i < list.length; i++) {
       if (list[i - 1] == list[i]) {
         return true;
       }
