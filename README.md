@@ -13,7 +13,7 @@ Contributions are very welcome. Please, if you port some code over from JTS java
 
 ## Project License
 
-Copyright (C) 2019 HydroloGIS
+Copyright (C) 2020 HydroloGIS
 
 The project is distributed under the Eclipse Distribution License - v 1.0, the same as the JTS project itself.
 
