@@ -7,7 +7,7 @@ dart_jts is an ongoing effort to port the Java Topology Suite to the dart progra
 
 dart_jts is derivative work of __[JTS Topology Suite](https://github.com/locationtech/jts)__.
 
-This is currently developed by [HydroloGIS](http://www.hydrologis.com).
+This is currently developed by [HydroloGIS](https://www.hydrologis.com).
 
 Contributions are very welcome. Please, if you port some code over from JTS java, also bring in the testcases. Without them we will not accept the pull requests. Thank you!
 
