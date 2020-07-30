@@ -1,4 +1,8 @@
 
+== Version 0.0.5+6
+
+Added geometry type enumeration utility class.
+
 == Version 0.0.5+4
 
 Added a community contributed example.
