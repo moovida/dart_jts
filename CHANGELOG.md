@@ -1,4 +1,8 @@
 
+== Version 0.0.6
+
+Added affine transformation classes.
+
 == Version 0.0.5+6
 
 Added geometry type enumeration utility class.
