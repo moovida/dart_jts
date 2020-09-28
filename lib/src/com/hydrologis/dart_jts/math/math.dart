@@ -81,22 +81,26 @@ class DD implements Comparable {
   /**
    * The value nearest to the constant Pi.
    */
-  static final DD PI = new DD.withHiLo(3.141592653589793116e+00, 1.224646799147353207e-16);
+  static final DD PI =
+      new DD.withHiLo(3.141592653589793116e+00, 1.224646799147353207e-16);
 
   /**
    * The value nearest to the constant 2 * Pi.
    */
-  static final DD TWO_PI = new DD.withHiLo(6.283185307179586232e+00, 2.449293598294706414e-16);
+  static final DD TWO_PI =
+      new DD.withHiLo(6.283185307179586232e+00, 2.449293598294706414e-16);
 
   /**
    * The value nearest to the constant Pi / 2.
    */
-  static final DD PI_2 = new DD.withHiLo(1.570796326794896558e+00, 6.123233995736766036e-17);
+  static final DD PI_2 =
+      new DD.withHiLo(1.570796326794896558e+00, 6.123233995736766036e-17);
 
   /**
    * The value nearest to the constant e (the natural logarithm base).
    */
-  static final DD E = new DD.withHiLo(2.718281828459045091e+00, 1.445646891729250158e-16);
+  static final DD E =
+      new DD.withHiLo(2.718281828459045091e+00, 1.445646891729250158e-16);
 
   /**
    * A value representing the result of an operation which does not return a valid number.
@@ -469,7 +473,8 @@ class DD implements Comparable {
     C = hi * yhi;
     hy = c - hy;
     ty = yhi - hy;
-    c = ((((hx * hy - C) + hx * ty) + tx * hy) + tx * ty) + (hi * ylo + lo * yhi);
+    c = ((((hx * hy - C) + hx * ty) + tx * hy) + tx * ty) +
+        (hi * ylo + lo * yhi);
     double zhi = C + c;
     hx = C - zhi;
     double zlo = c + hx;
@@ -1111,7 +1116,8 @@ class DD implements Comparable {
    * @param decimalPointPos the position in which to insert a decimal point
    * @return the string containing the significant digits and possibly a decimal point
    */
-  String extractSignificantDigits(bool insertDecimalPoint, List<int> magnitudeList) {
+  String extractSignificantDigits(
+      bool insertDecimalPoint, List<int> magnitudeList) {
     DD y = this.abs();
 // compute *correct* magnitude of y
     int mag = magnitude(y.hi);
@@ -1181,7 +1187,8 @@ class DD implements Comparable {
        * Do this by comparing the magnitude of the remainder with the expected precision.
        */
       int remMag = magnitude(y.hi);
-      if (remMag < 0 && remMag.abs() >= (numDigits - i)) continueExtractingDigits = false;
+      if (remMag < 0 && remMag.abs() >= (numDigits - i))
+        continueExtractingDigits = false;
       if (!continueExtractingDigits) break;
     }
     magnitudeList[0] = mag;
@@ -1296,7 +1303,8 @@ class DD implements Comparable {
         }
         break;
       }
-      throw new ArgumentError("Unexpected character '$ch' at position $i in string $str");
+      throw new ArgumentError(
+          "Unexpected character '$ch' at position $i in string $str");
     }
     DD val2 = val;
 
@@ -1319,5 +1327,94 @@ class DD implements Comparable {
       return val2.negate();
     }
     return val2;
+  }
+}
+
+/*
+ * Copyright (c) 2016 Martin Davis.
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License 2.0
+ * and Eclipse Distribution License v. 1.0 which accompanies this distribution.
+ * The Eclipse Public License is available at http://www.eclipse.org/legal/epl-v20.html
+ * and the Eclipse Distribution License is available at
+ *
+ * http://www.eclipse.org/org/documents/edl-v10.php.
+ */
+/**
+ * Implements some 2D matrix operations 
+ * (in particular, solving systems of linear equations).
+ * 
+ * @author Martin Davis
+ *
+ */
+class Matrix {
+  static void swapRows(List<List<double>> m, int i, int j) {
+    if (i == j) return;
+    for (int col = 0; col < m[0].length; col++) {
+      double temp = m[i][col];
+      m[i][col] = m[j][col];
+      m[j][col] = temp;
+    }
+  }
+
+  static void swapRowsList(List<double> m, int i, int j) {
+    if (i == j) return;
+    double temp = m[i];
+    m[i] = m[j];
+    m[j] = temp;
+  }
+
+  /**
+   * Solves a system of equations using Gaussian Elimination.
+   * In order to avoid overhead the algorithm runs in-place
+   * on A - if A should not be modified the client must supply a copy.
+   * 
+   * @param a an nxn matrix in row/column order )modified by this method)
+   * @param b a vector of length n
+   * 
+   * @return a vector containing the solution (if any)
+   * or null if the system has no or no unique solution
+   * 
+   * @throws IllegalArgumentException if the matrix is the wrong size 
+   */
+  static List<double> solve(List<List<double>> a, List<double> b) {
+    int n = b.length;
+    if (a.length != n || a[0].length != n)
+      throw ArgumentError("Matrix A is incorrectly sized");
+
+    // Use Gaussian Elimination with partial pivoting.
+    // Iterate over each row
+    for (int i = 0; i < n; i++) {
+      // Find the largest pivot in the rows below the current one.
+      int maxElementRow = i;
+      for (int j = i + 1; j < n; j++)
+        if (a[j][i].abs() > a[maxElementRow][i].abs()) maxElementRow = j;
+
+      if (a[maxElementRow][i] == 0.0) return null;
+
+      // Exchange current row and maxElementRow in A and b.
+      swapRows(a, i, maxElementRow);
+      swapRowsList(b, i, maxElementRow);
+
+      // Eliminate using row i
+      for (int j = i + 1; j < n; j++) {
+        double rowFactor = a[j][i] / a[i][i];
+        for (int k = n - 1; k >= i; k--) a[j][k] -= a[i][k] * rowFactor;
+        b[j] -= b[i] * rowFactor;
+      }
+    }
+
+    /**
+     * A is now (virtually) in upper-triangular form.
+     * The solution vector is determined by back-substitution.
+     */
+    List<double> solution = List(n);
+    for (int j = n - 1; j >= 0; j--) {
+      double t = 0.0;
+      for (int k = j + 1; k < n; k++) t += a[j][k] * solution[k];
+      solution[j] = (b[j] - t) / a[j][j];
+    }
+    return solution;
   }
 }
