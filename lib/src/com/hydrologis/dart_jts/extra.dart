@@ -173,6 +173,102 @@ class EGeometryType {
     return false;
   }
 
+  int getTypeCode([Geometry geometry]) {
+    bool hasZ = false;
+    bool hasM = false;
+    if (geometry != null) {
+      var coord = geometry.getCoordinate();
+      hasZ = coord.z != null && !coord.z.isNaN;
+      hasM = coord.getM() != null && !coord.getM().isNaN;
+    }
+
+    if (hasZ && !hasM) {
+      switch (this) {
+        case GEOMETRY:
+          return 1000;
+        case POINT:
+          return 1001;
+        case LINESTRING:
+          return 1002;
+        case POLYGON:
+          return 1003;
+        case MULTIPOINT:
+          return 1004;
+        case MULTILINESTRING:
+          return 1005;
+        case MULTIPOLYGON:
+          return 1006;
+        case GEOMETRYCOLLECTION:
+          return 1007;
+        default:
+          return 1000;
+      }
+    } else if (!hasZ && hasM) {
+      switch (this) {
+        case GEOMETRY:
+          return 2000;
+        case POINT:
+          return 2001;
+        case LINESTRING:
+          return 2002;
+        case POLYGON:
+          return 2003;
+        case MULTIPOINT:
+          return 2004;
+        case MULTILINESTRING:
+          return 2005;
+        case MULTIPOLYGON:
+          return 2006;
+        case GEOMETRYCOLLECTION:
+          return 2007;
+        default:
+          return 2000;
+      }
+    } else if (hasZ && hasM) {
+      switch (this) {
+        case GEOMETRY:
+          return 3000;
+        case POINT:
+          return 3001;
+        case LINESTRING:
+          return 3002;
+        case POLYGON:
+          return 3003;
+        case MULTIPOINT:
+          return 3004;
+        case MULTILINESTRING:
+          return 3005;
+        case MULTIPOLYGON:
+          return 3006;
+        case GEOMETRYCOLLECTION:
+          return 3007;
+        default:
+          return 3000;
+      }
+    } else {
+      switch (this) {
+        case GEOMETRY:
+          return 0;
+        case POINT:
+          return 1;
+        case LINESTRING:
+          return 2;
+        case POLYGON:
+          return 3;
+        case MULTIPOINT:
+          return 4;
+        case MULTILINESTRING:
+          return 5;
+        case MULTIPOLYGON:
+          return 6;
+        case GEOMETRYCOLLECTION:
+          return 7;
+        default:
+          return 0;
+      }
+    }
+  }
+
   /// Returns the [EGeometryType] for a spatialite geometries types [value].
   static EGeometryType fromGeometryTypeCode(int value) {
     switch (value) {
