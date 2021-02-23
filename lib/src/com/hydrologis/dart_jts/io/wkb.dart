@@ -153,7 +153,8 @@ class WKBReader {
 //    return nib;
 //  }
 
-  static final String INVALID_GEOM_TYPE_MSG = "Invalid geometry type encountered in ";
+  static final String INVALID_GEOM_TYPE_MSG =
+      "Invalid geometry type encountered in ";
 
   GeometryFactory factory;
   CoordinateSequenceFactory csFactory;
@@ -226,7 +227,8 @@ class WKBReader {
     } else if (byteOrderWKB == WKBConstants.wkbXDR) {
       dis.setOrder(Endian.big);
     } else if (isStrict) {
-      throw new ParseException("Unknown geometry byte order (not NDR or XDR): $byteOrderWKB");
+      throw new ParseException(
+          "Unknown geometry byte order (not NDR or XDR): $byteOrderWKB");
     }
 //if not strict and not XDR or NDR, then we just use the dis default set at the
 //start of the geometry (if a multi-geometry).  This  allows WBKReader to work
@@ -240,10 +242,14 @@ class WKBReader {
 // handle 3D and 4D WKB geometries
 // geometries with Z coordinates have the 0x80 flag (postgis EWKB)
 // or are in the 1000 range (Z) or in the 3000 range (ZM) of geometry type (OGC 06-103r4)
-    bool hasZ = ((typeInt & 0x80000000) != 0 || (typeInt & 0xffff) / 1000 == 1 || (typeInt & 0xffff) / 1000 == 3);
+    bool hasZ = ((typeInt & 0x80000000) != 0 ||
+        (typeInt & 0xffff) / 1000 == 1 ||
+        (typeInt & 0xffff) / 1000 == 3);
 // geometries with M coordinates have the 0x40 flag (postgis EWKB)
 // or are in the 1000 range (M) or in the 3000 range (ZM) of geometry type (OGC 06-103r4)
-    bool hasM = ((typeInt & 0x40000000) != 0 || (typeInt & 0xffff) / 1000 == 2 || (typeInt & 0xffff) / 1000 == 3);
+    bool hasM = ((typeInt & 0x40000000) != 0 ||
+        (typeInt & 0xffff) / 1000 == 2 ||
+        (typeInt & 0xffff) / 1000 == 3);
 //System.out.println(typeInt + " - " + geometryType + " - hasZ:" + hasZ);
     inputDimension = 2 + (hasZ ? 1 : 0) + (hasM ? 1 : 0);
 
@@ -255,7 +261,8 @@ class WKBReader {
     }
 
 // only allocate ordValues buffer if necessary
-    if (ordValues == null || ordValues.length < inputDimension) ordValues = List(inputDimension);
+    if (ordValues == null || ordValues.length < inputDimension)
+      ordValues = List(inputDimension);
 
     Geometry geom = null;
     switch (geometryType) {
@@ -332,7 +339,8 @@ class WKBReader {
     List<Point> geoms = List(numGeom);
     for (int i = 0; i < numGeom; i++) {
       Geometry g = readGeometry();
-      if (!(g is Point)) throw new ParseException(INVALID_GEOM_TYPE_MSG + "MultiPoint");
+      if (!(g is Point))
+        throw new ParseException(INVALID_GEOM_TYPE_MSG + "MultiPoint");
       geoms[i] = g;
     }
     return factory.createMultiPoint(geoms);
@@ -343,7 +351,8 @@ class WKBReader {
     List<LineString> geoms = List(numGeom);
     for (int i = 0; i < numGeom; i++) {
       Geometry g = readGeometry();
-      if (!(g is LineString)) throw new ParseException(INVALID_GEOM_TYPE_MSG + "MultiLineString");
+      if (!(g is LineString))
+        throw new ParseException(INVALID_GEOM_TYPE_MSG + "MultiLineString");
       geoms[i] = g;
     }
     return factory.createMultiLineString(geoms);
@@ -355,7 +364,8 @@ class WKBReader {
 
     for (int i = 0; i < numGeom; i++) {
       Geometry g = readGeometry();
-      if (!(g is Polygon)) throw new ParseException(INVALID_GEOM_TYPE_MSG + "MultiPolygon");
+      if (!(g is Polygon))
+        throw new ParseException(INVALID_GEOM_TYPE_MSG + "MultiPolygon");
       geoms[i] = g;
     }
     return factory.createMultiPolygon(geoms);
@@ -593,7 +603,8 @@ class WKBWriter {
    *
    * @param outputDimension the coordinate dimension to output (2 or 3)
    */
-  WKBWriter.withDim(int outputDimension) : this.withDimOrder(outputDimension, Endian.big);
+  WKBWriter.withDim(int outputDimension)
+      : this.withDimOrder(outputDimension, Endian.big);
 
   /**
    * Creates a writer that writes {@link Geometry}s with
@@ -607,7 +618,8 @@ class WKBWriter {
    * @param outputDimension the coordinate dimension to output (2 or 3)
    * @param includeSRID indicates whether SRID should be written
    */
-  WKBWriter.withDimSrid(int outputDimension, bool includeSRID) : this.withDimOrderSrid(outputDimension, Endian.big, includeSRID);
+  WKBWriter.withDimSrid(int outputDimension, bool includeSRID)
+      : this.withDimOrderSrid(outputDimension, Endian.big, includeSRID);
 
   /**
    * Creates a writer that writes {@link Geometry}s with
@@ -619,7 +631,8 @@ class WKBWriter {
    * @param outputDimension the coordinate dimension to output (2 or 3)
    * @param byteOrder the byte ordering to use
    */
-  WKBWriter.withDimOrder(int outputDimension, Endian byteOrder) : this.withDimOrderSrid(outputDimension, byteOrder, false);
+  WKBWriter.withDimOrder(int outputDimension, Endian byteOrder)
+      : this.withDimOrderSrid(outputDimension, byteOrder, false);
 
   /**
    * Creates a writer that writes {@link Geometry}s with
@@ -633,12 +646,14 @@ class WKBWriter {
    * @param byteOrder the byte ordering to use
    * @param includeSRID indicates whether SRID should be written
    */
-  WKBWriter.withDimOrderSrid(int outputDimension, Endian byteOrder, bool includeSRID) {
+  WKBWriter.withDimOrderSrid(
+      int outputDimension, Endian byteOrder, bool includeSRID) {
     this.outputDimension = outputDimension;
     this.byteOrder = byteOrder;
     this.includeSRID = includeSRID;
 
-    if (outputDimension < 2 || outputDimension > 3) throw ArgumentError("Output dimension must be 2 or 3");
+    if (outputDimension < 2 || outputDimension > 3)
+      throw ArgumentError("Output dimension must be 2 or 3");
   }
 
   /**
@@ -686,7 +701,8 @@ class WKBWriter {
   }
 
   void writePoint(Point pt, List<int> os) {
-    if (pt.getCoordinateSequence().size() == 0) throw ArgumentError("Empty Points cannot be represented in WKB");
+    if (pt.getCoordinateSequence().size() == 0)
+      throw ArgumentError("Empty Points cannot be represented in WKB");
     writeByteOrder(os);
     writeGeometryType(WKBConstants.wkbPoint, pt, os);
     writeCoordinateSequence(pt.getCoordinateSequence(), false, os);
@@ -702,13 +718,16 @@ class WKBWriter {
     writeByteOrder(os);
     writeGeometryType(WKBConstants.wkbPolygon, poly, os);
     writeInt(poly.getNumInteriorRing() + 1, os);
-    writeCoordinateSequence(poly.getExteriorRing().getCoordinateSequence(), true, os);
+    writeCoordinateSequence(
+        poly.getExteriorRing().getCoordinateSequence(), true, os);
     for (int i = 0; i < poly.getNumInteriorRing(); i++) {
-      writeCoordinateSequence(poly.getInteriorRingN(i).getCoordinateSequence(), true, os);
+      writeCoordinateSequence(
+          poly.getInteriorRingN(i).getCoordinateSequence(), true, os);
     }
   }
 
-  void writeGeometryCollection(int geometryType, GeometryCollection gc, List<int> os) {
+  void writeGeometryCollection(
+      int geometryType, GeometryCollection gc, List<int> os) {
     writeByteOrder(os);
     writeGeometryType(geometryType, gc, os);
     writeInt(gc.getNumGeometries(), os);
@@ -739,7 +758,8 @@ class WKBWriter {
     os.addAll(buf.sublist(0, 4));
   }
 
-  void writeCoordinateSequence(CoordinateSequence seq, bool writeSize, List<int> os) {
+  void writeCoordinateSequence(
+      CoordinateSequence seq, bool writeSize, List<int> os) {
     if (writeSize) writeInt(seq.size(), os);
 
     for (int i = 0; i < seq.size(); i++) {

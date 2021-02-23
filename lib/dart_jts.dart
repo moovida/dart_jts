@@ -2,14 +2,15 @@
 library dart_jts;
 
 import 'dart:collection';
+import 'dart:convert';
 import 'dart:core';
 import 'dart:typed_data';
 import 'package:intl/intl.dart';
 import 'dart:math' as math;
 import 'package:collection/collection.dart' show ListEquality;
-import 'package:hex/hex.dart';
 
 part 'src/com/hydrologis/dart_jts/io/io.dart';
+part 'src/com/hydrologis/dart_jts/io/hex.dart';
 part 'src/com/hydrologis/dart_jts/io/wkb.dart';
 part 'src/com/hydrologis/dart_jts/geom/coordinate.dart';
 part 'src/com/hydrologis/dart_jts/geom/envelope.dart';
