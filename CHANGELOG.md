@@ -1,3 +1,6 @@
+== Version 0.0.7
+
+Dependencies upgrade.
 
 == Version 0.0.6
 
