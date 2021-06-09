@@ -56,3 +56,4 @@ part 'src/com/hydrologis/dart_jts/linearref/lineargeometrybuilder.dart';
 part 'src/com/hydrologis/dart_jts/linearref/lengthindexofpoint.dart';
 part 'src/com/hydrologis/dart_jts/linearref/locationindexofline.dart';
 part 'src/com/hydrologis/dart_jts/linearref/locationindexofpoint.dart';
+part 'src/com/hydrologis/dart_jts/linearref/locationindexedline.dart';

@@ -19,7 +19,7 @@ part of dart_jts;
  */
 class LinearGeometryBuilder {
   GeometryFactory geomFact;
-  List lines = [];
+  List<LineString> lines = [];
   CoordinateList coordList = null;
 
   bool ignoreInvalidLines = false;
