@@ -986,7 +986,7 @@ class DD implements Comparable {
    * @return -1,0 or 1 depending on whether this value is less than, equal to
    * or greater than the value of <tt>o</tt>
    */
-  int compareTo(Object o) {
+  int compareTo(dynamic o) {
     DD other = o;
 
     if (hi < other.hi) return -1;
@@ -1035,10 +1035,10 @@ class DD implements Comparable {
    * @return the string representation in standard notation
    */
   String toStandardNotation() {
-    String specialStr = getSpecialNumberString();
+    String? specialStr = getSpecialNumberString();
     if (specialStr != null) return specialStr;
 
-    List<int> magnitude = List(1);
+    List<int> magnitude = []..length = 1;
     String sigDigits = extractSignificantDigits(true, magnitude);
     int decimalPointPos = magnitude[0] + 1;
 
@@ -1084,10 +1084,10 @@ class DD implements Comparable {
 // special case zero, to allow as
     if (isZero()) return SCI_NOT_ZERO;
 
-    String specialStr = getSpecialNumberString();
+    String? specialStr = getSpecialNumberString();
     if (specialStr != null) return specialStr;
 
-    List<int> magnitudeList = List(1);
+    List<int> magnitudeList = []..length = (1);
     String digits = extractSignificantDigits(false, magnitudeList);
     String expStr = "$SCI_NOT_EXPONENT_CHAR${magnitudeList[0]}";
 
@@ -1202,7 +1202,7 @@ class DD implements Comparable {
    * @return the string for this special number
    * or null if the number is not a special number
    */
-  String getSpecialNumberString() {
+  String? getSpecialNumberString() {
     if (isZero()) return "0.0";
     if (isNaN()) return "NaN ";
     return null;
@@ -1225,7 +1225,7 @@ class DD implements Comparable {
      * in the computed magnitude.
      * Following tests that magnitude is correct, and adjusts it if not
      */
-    double xApprox = math.pow(10, xMag);
+    double xApprox = math.pow(10, xMag).toDouble();
     if (xApprox * 10 <= xAbs) xMag += 1;
 
     return xMag;
@@ -1409,7 +1409,7 @@ class Matrix {
      * A is now (virtually) in upper-triangular form.
      * The solution vector is determined by back-substitution.
      */
-    List<double> solution = List(n);
+    List<double> solution = []..length = (n);
     for (int j = n - 1; j >= 0; j--) {
       double t = 0.0;
       for (int k = j + 1; k < n; k++) t += a[j][k] * solution[k];
