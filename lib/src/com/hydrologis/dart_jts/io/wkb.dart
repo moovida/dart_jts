@@ -23,7 +23,7 @@ class WKBConstants {
  */
 class ByteOrderDataInStream {
   Endian _byteOrder = Endian.big;
-  Uint8List _bytesList;
+  late Uint8List _bytesList;
 
   int _readOffset = 0;
 
@@ -156,9 +156,9 @@ class WKBReader {
   static final String INVALID_GEOM_TYPE_MSG =
       "Invalid geometry type encountered in ";
 
-  GeometryFactory factory;
-  CoordinateSequenceFactory csFactory;
-  PrecisionModel precisionModel;
+  late GeometryFactory factory;
+  late CoordinateSequenceFactory csFactory;
+  late PrecisionModel precisionModel;
 
   // default dimension - will be set on read
   int inputDimension = 2;
@@ -170,9 +170,9 @@ class WKBReader {
    * At some point this could be made client-controllable.
    */
   bool isStrict = false;
-  List<double> ordValues;
+  List<double>? ordValues;
 
-  ByteOrderDataInStream dis;
+  late ByteOrderDataInStream dis;
 
   WKBReader() : this.withFactory(new GeometryFactory.defaultPrecision());
 
@@ -261,10 +261,10 @@ class WKBReader {
     }
 
 // only allocate ordValues buffer if necessary
-    if (ordValues == null || ordValues.length < inputDimension)
-      ordValues = List(inputDimension);
+    if (ordValues == null || ordValues!.length < inputDimension)
+      ordValues = []..length = (inputDimension);
 
-    Geometry geom = null;
+    late Geometry geom;
     switch (geometryType) {
       case WKBConstants.wkbPoint:
         geom = readPoint();
@@ -324,19 +324,19 @@ class WKBReader {
 
   Polygon readPolygon() {
     int numRings = dis.readInt();
-    List<LinearRing> holes = null;
-    if (numRings > 1) holes = List(numRings - 1);
+    List<LinearRing>? holes;
+    if (numRings > 1) holes = []..length = (numRings - 1);
 
     LinearRing shell = readLinearRing();
     for (int i = 0; i < numRings - 1; i++) {
-      holes[i] = readLinearRing();
+      holes![i] = readLinearRing();
     }
     return factory.createPolygon(shell, holes);
   }
 
   MultiPoint readMultiPoint() {
     int numGeom = dis.readInt();
-    List<Point> geoms = List(numGeom);
+    List<Point> geoms = []..length = (numGeom);
     for (int i = 0; i < numGeom; i++) {
       Geometry g = readGeometry();
       if (!(g is Point))
@@ -348,7 +348,7 @@ class WKBReader {
 
   MultiLineString readMultiLineString() {
     int numGeom = dis.readInt();
-    List<LineString> geoms = List(numGeom);
+    List<LineString> geoms = []..length = (numGeom);
     for (int i = 0; i < numGeom; i++) {
       Geometry g = readGeometry();
       if (!(g is LineString))
@@ -360,7 +360,7 @@ class WKBReader {
 
   MultiPolygon readMultiPolygon() {
     int numGeom = dis.readInt();
-    List<Polygon> geoms = List(numGeom);
+    List<Polygon> geoms = []..length = (numGeom);
 
     for (int i = 0; i < numGeom; i++) {
       Geometry g = readGeometry();
@@ -373,7 +373,7 @@ class WKBReader {
 
   GeometryCollection readGeometryCollection() {
     int numGeom = dis.readInt();
-    List<Geometry> geoms = List(numGeom);
+    List<Geometry> geoms = []..length = (numGeom);
     for (int i = 0; i < numGeom; i++) {
       geoms[i] = readGeometry();
     }
@@ -387,7 +387,7 @@ class WKBReader {
     for (int i = 0; i < size; i++) {
       readCoordinate();
       for (int j = 0; j < targetDim; j++) {
-        seq.setOrdinate(i, j, ordValues[j]);
+        seq.setOrdinate(i, j, ordValues![j]);
       }
     }
     return seq;
@@ -415,9 +415,9 @@ class WKBReader {
   void readCoordinate() {
     for (int i = 0; i < inputDimension; i++) {
       if (i <= 1) {
-        ordValues[i] = precisionModel.makePrecise(dis.readDouble());
+        ordValues![i] = precisionModel.makePrecise(dis.readDouble());
       } else {
-        ordValues[i] = dis.readDouble();
+        ordValues![i] = dis.readDouble();
       }
     }
   }
@@ -583,7 +583,7 @@ class WKBWriter {
   int outputDimension = 2;
   Endian byteOrder;
   bool includeSRID = false;
-  List<int> byteArrayOutStream;
+  late List<int> byteArrayOutStream;
 
   // holds output data values
   List<int> buf = List.from([0, 0, 0, 0, 0, 0, 0, 0]);
@@ -647,11 +647,7 @@ class WKBWriter {
    * @param includeSRID indicates whether SRID should be written
    */
   WKBWriter.withDimOrderSrid(
-      int outputDimension, Endian byteOrder, bool includeSRID) {
-    this.outputDimension = outputDimension;
-    this.byteOrder = byteOrder;
-    this.includeSRID = includeSRID;
-
+      this.outputDimension, this.byteOrder, this.includeSRID) {
     if (outputDimension < 2 || outputDimension > 3)
       throw ArgumentError("Output dimension must be 2 or 3");
   }
