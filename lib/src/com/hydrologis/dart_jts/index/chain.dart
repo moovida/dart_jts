@@ -118,9 +118,9 @@ class MonotoneChainI {
   List<Coordinate> pts;
   int start;
   int end;
-  Envelope env = null;
-  Object context = null; // user-defined information
-  int id; // useful for optimizing chain comparisons
+  Envelope? env = null;
+  Object? context; // user-defined information
+  int id = 0; // useful for optimizing chain comparisons
 
   /**
    * Creates a new MonotoneChain based on the given array of points.
@@ -129,12 +129,7 @@ class MonotoneChainI {
    * @param end the index of the last coordinate in the chain
    * @param context a user-defined data object
    */
-  MonotoneChainI(List<Coordinate> pts, int start, int end, Object context) {
-    this.pts = pts;
-    this.start = start;
-    this.end = end;
-    this.context = context;
-  }
+  MonotoneChainI(this.pts, this.start, this.end, this.context);
 
   /**
    * Sets the id of this chain.
@@ -161,7 +156,7 @@ class MonotoneChainI {
    *
    * @return a data value
    */
-  Object getContext() {
+  Object? getContext() {
     return context;
   }
 
@@ -179,7 +174,7 @@ class MonotoneChainI {
       Coordinate p1 = pts[end];
       env = new Envelope.fromCoordinates(p0, p1);
     }
-    return env;
+    return env!;
   }
 
   /**
@@ -218,7 +213,7 @@ class MonotoneChainI {
    * Allocates a new array to hold the Coordinates
    */
   List<Coordinate> getCoordinates() {
-    List<Coordinate> coord = List(end - start + 1);
+    List<Coordinate> coord = []..length = end - start + 1;
     int index = 0;
     for (int i = start; i <= end; i++) {
       coord[index++] = pts[i];
@@ -245,7 +240,8 @@ class MonotoneChainI {
     computeSelect(searchEnv, start, end, mcs);
   }
 
-  void computeSelect(Envelope searchEnv, int start0, int end0, MonotoneChainSelectAction mcs) {
+  void computeSelect(
+      Envelope searchEnv, int start0, int end0, MonotoneChainSelectAction mcs) {
     Coordinate p0 = pts[start0];
     Coordinate p1 = pts[end0];
 
@@ -302,7 +298,8 @@ class MonotoneChainI {
    * @param end1 the end index of the target chain section
    * @param mco the overlap action to execute on selected segments
    */
-  void computeOverlaps6(int start0, int end0, MonotoneChainI mc, int start1, int end1, MonotoneChainOverlapAction mco) {
+  void computeOverlaps6(int start0, int end0, MonotoneChainI mc, int start1,
+      int end1, MonotoneChainOverlapAction mco) {
 //Debug.println("computeIntersectsForChain:" + p00 + p01 + p10 + p11);
     // terminating condition for the recursion
     if (end0 - start0 == 1 && end1 - start1 == 1) {
@@ -344,7 +341,8 @@ class MonotoneChainI {
    * @return true if the section envelopes overlap
    */
   bool overlaps(int start0, int end0, MonotoneChainI mc, int start1, int end1) {
-    return Envelope.intersectsEnvelopeCoords(pts[start0], pts[end0], mc.pts[start1], mc.pts[end1]);
+    return Envelope.intersectsEnvelopeCoords(
+        pts[start0], pts[end0], mc.pts[start1], mc.pts[end1]);
   }
 }
 
@@ -375,12 +373,13 @@ class MonotoneChainBuilder {
    * @param context a data object to attach to each chain
    * @return a list of the monotone chains for the points
    */
-  static List getChainsWithContext(List<Coordinate> pts, Object context) {
+  static List getChainsWithContext(List<Coordinate> pts, Object? context) {
     List mcList = [];
     int chainStart = 0;
     do {
       int chainEnd = findChainEnd(pts, chainStart);
-      MonotoneChainI mc = new MonotoneChainI(pts, chainStart, chainEnd, context);
+      MonotoneChainI mc =
+          new MonotoneChainI(pts, chainStart, chainEnd, context);
       mcList.add(mc);
       chainStart = chainEnd;
     } while (chainStart < pts.length - 1);
@@ -402,7 +401,8 @@ class MonotoneChainBuilder {
     int safeStart = start;
     // skip any zero-length segments at the start of the sequence
     // (since they cannot be used to establish a quadrant)
-    while (safeStart < pts.length - 1 && pts[safeStart].equals2D(pts[safeStart + 1])) {
+    while (safeStart < pts.length - 1 &&
+        pts[safeStart].equals2D(pts[safeStart + 1])) {
       safeStart++;
     }
     // check if there are NO non-zero-length segments
@@ -410,7 +410,8 @@ class MonotoneChainBuilder {
       return pts.length - 1;
     }
     // determine overall quadrant for chain (which is the starting quadrant)
-    int chainQuad = Quadrant.quadrantFromCoords(pts[safeStart], pts[safeStart + 1]);
+    int chainQuad =
+        Quadrant.quadrantFromCoords(pts[safeStart], pts[safeStart + 1]);
     int last = start + 1;
     while (last < pts.length) {
       // skip zero-length segments, but include them in the chain
