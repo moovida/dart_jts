@@ -1383,7 +1383,7 @@ class LinearComponentExtracter implements GeometryComponentFilter {
    * @param lines the collection to add the extracted linear components to
    * @return the collection of linear components (LineStrings or LinearRings)
    */
-  static List getLinesLL(List geoms, List lines) {
+  static List getLinesLL(List geoms, List<LineString> lines) {
     for (Iterator i = geoms.iterator; i.moveNext();) {
       Geometry g = i.current as Geometry;
       getLinesGL(g, lines);
@@ -1400,7 +1400,8 @@ class LinearComponentExtracter implements GeometryComponentFilter {
    * @param forceToLineString true if LinearRings should be converted to LineStrings
    * @return the collection of linear components (LineStrings or LinearRings)
    */
-  static List getLinesLLF(List geoms, List lines, bool forceToLineString) {
+  static List getLinesLLF(
+      List geoms, List<LineString> lines, bool forceToLineString) {
     for (Iterator i = geoms.iterator; i.moveNext();) {
       Geometry g = i.current as Geometry;
       getLinesGLF(g, lines, forceToLineString);
@@ -1416,7 +1417,7 @@ class LinearComponentExtracter implements GeometryComponentFilter {
    * @param lines the List to add the extracted linear components to
    * @return the List of linear components (LineStrings or LinearRings)
    */
-  static List getLinesGL(Geometry geom, List lines) {
+  static List getLinesGL(Geometry geom, List<LineString> lines) {
     if (geom is LineString) {
       lines.add(geom);
     } else {
@@ -1434,7 +1435,8 @@ class LinearComponentExtracter implements GeometryComponentFilter {
    * @param forceToLineString true if LinearRings should be converted to LineStrings
    * @return the List of linear components (LineStrings or LinearRings)
    */
-  static List getLinesGLF(Geometry geom, List lines, bool forceToLineString) {
+  static List getLinesGLF(
+      Geometry geom, List<LineString> lines, bool forceToLineString) {
     geom.applyGCF(
         new LinearComponentExtracter.withForced(lines, forceToLineString));
     return lines;
@@ -1464,7 +1466,7 @@ class LinearComponentExtracter implements GeometryComponentFilter {
    * @return the list of linear components
    */
   static List<Geometry> getLinesGF(Geometry geom, bool forceToLineString) {
-    List<Geometry> lines = [];
+    List<LineString> lines = [];
     geom.applyGCF(
         new LinearComponentExtracter.withForced(lines, forceToLineString));
     return lines;
@@ -1493,7 +1495,7 @@ class LinearComponentExtracter implements GeometryComponentFilter {
     return geom.getFactory().buildGeometry(getLinesGF(geom, forceToLineString));
   }
 
-  List lines;
+  List<LineString> lines;
   bool isForcedToLineString = false;
 
   /**

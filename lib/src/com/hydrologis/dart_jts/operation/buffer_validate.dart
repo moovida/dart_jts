@@ -25,7 +25,8 @@ class BufferResultValidator {
   static final double MAX_ENV_DIFF_FRAC = .012;
 
   static bool isValidGDG(Geometry g, double distance, Geometry result) {
-    BufferResultValidator validator = new BufferResultValidator(g, distance, result);
+    BufferResultValidator validator =
+        new BufferResultValidator(g, distance, result);
     if (validator.isValid()) return true;
     return false;
   }
@@ -40,25 +41,22 @@ class BufferResultValidator {
    * @return an appropriate error message
    * or null if the buffer is valid
    */
-  static String isValidMsg(Geometry g, double distance, Geometry result) {
-    BufferResultValidator validator = new BufferResultValidator(g, distance, result);
+  static String? isValidMsg(Geometry g, double distance, Geometry result) {
+    BufferResultValidator validator =
+        new BufferResultValidator(g, distance, result);
     if (!validator.isValid()) return validator.getErrorMessage();
     return null;
   }
 
   Geometry input;
-  double distance;
+  double distance = 0.0;
   Geometry result;
   bool _isValid = true;
-  String errorMsg = null;
-  Coordinate errorLocation = null;
-  Geometry errorIndicator = null;
+  String? errorMsg = null;
+  Coordinate? errorLocation = null;
+  Geometry? errorIndicator = null;
 
-  BufferResultValidator(Geometry input, double distance, Geometry result) {
-    this.input = input;
-    this.distance = distance;
-    this.result = result;
-  }
+  BufferResultValidator(this.input, this.distance, this.result);
 
   bool isValid() {
     checkPolygonal();
@@ -73,11 +71,11 @@ class BufferResultValidator {
     return _isValid;
   }
 
-  String getErrorMessage() {
+  String? getErrorMessage() {
     return errorMsg;
   }
 
-  Coordinate getErrorLocation() {
+  Coordinate? getErrorLocation() {
     return errorLocation;
   }
 
@@ -91,7 +89,7 @@ class BufferResultValidator {
    * @return a geometric error indicator
    * or null if no error was found
    */
-  Geometry getErrorIndicator() {
+  Geometry? getErrorIndicator() {
     return errorIndicator;
   }
 
@@ -128,7 +126,8 @@ class BufferResultValidator {
     double padding = distance * MAX_ENV_DIFF_FRAC;
     if (padding == 0.0) padding = 0.001;
 
-    Envelope expectedEnv = new Envelope.fromEnvelope(input.getEnvelopeInternal());
+    Envelope expectedEnv =
+        new Envelope.fromEnvelope(input.getEnvelopeInternal());
     expectedEnv.expandByDistance(distance);
 
     Envelope bufEnv = new Envelope.fromEnvelope(result.getEnvelopeInternal());
@@ -160,7 +159,8 @@ class BufferResultValidator {
   }
 
   void checkDistance() {
-    BufferDistanceValidator distValid = new BufferDistanceValidator(input, distance, result);
+    BufferDistanceValidator distValid =
+        new BufferDistanceValidator(input, distance, result);
     if (!distValid.isValid()) {
       _isValid = false;
       errorMsg = distValid.getErrorMessage();
@@ -199,22 +199,18 @@ class BufferDistanceValidator {
   double bufDistance;
   Geometry result;
 
-  double minValidDistance;
-  double maxValidDistance;
+  double minValidDistance = 0.0;
+  double maxValidDistance = 0.0;
 
-  double minDistanceFound;
-  double maxDistanceFound;
+  double minDistanceFound = 0.0;
+  double maxDistanceFound = 0.0;
 
   bool _isValid = true;
-  String errMsg = null;
-  Coordinate errorLocation = null;
-  Geometry errorIndicator = null;
+  String? errMsg = null;
+  Coordinate? errorLocation = null;
+  Geometry? errorIndicator = null;
 
-  BufferDistanceValidator(Geometry input, double bufDistance, Geometry result) {
-    this.input = input;
-    this.bufDistance = bufDistance;
-    this.result = result;
-  }
+  BufferDistanceValidator(this.input, this.bufDistance, this.result);
 
   bool isValid() {
     double posDistance = bufDistance.abs();
@@ -237,11 +233,11 @@ class BufferDistanceValidator {
     return _isValid;
   }
 
-  String getErrorMessage() {
+  String? getErrorMessage() {
     return errMsg;
   }
 
-  Coordinate getErrorLocation() {
+  Coordinate? getErrorLocation() {
     return errorLocation;
   }
 
@@ -254,7 +250,7 @@ class BufferDistanceValidator {
    * @return a geometric error indicator
    * or null if no error was found
    */
-  Geometry getErrorIndicator() {
+  Geometry? getErrorIndicator() {
     return errorIndicator;
   }
 
@@ -270,7 +266,9 @@ class BufferDistanceValidator {
     // Assert: only polygonal inputs can be checked for negative buffers
 
     // MD - could generalize this to handle GCs too
-    if (!(input is Polygon || input is MultiPolygon || input is GeometryCollection)) {
+    if (!(input is Polygon ||
+        input is MultiPolygon ||
+        input is GeometryCollection)) {
       return;
     }
     Geometry inputCurve = getPolygonLines(input);
@@ -281,8 +279,9 @@ class BufferDistanceValidator {
   }
 
   Geometry getPolygonLines(Geometry g) {
-    List lines = [];
-    LinearComponentExtracter lineExtracter = new LinearComponentExtracter(lines);
+    List<LineString> lines = [];
+    LinearComponentExtracter lineExtracter =
+        new LinearComponentExtracter(lines);
     List polys = PolygonExtracter.getPolygons(g);
     for (Polygon poly in polys) {
       poly.applyGCF(lineExtracter);
@@ -306,7 +305,10 @@ class BufferDistanceValidator {
       List<Coordinate> pts = distOp.nearestPoints();
       errorLocation = distOp.nearestPoints()[1];
       errorIndicator = g1.getFactory().createLineString(pts);
-      errMsg = "Distance between buffer curve and input is too small " + "($minDistanceFound at " + WKTWriter.toLineStringFromCoords(pts[0], pts[1]) + " )";
+      errMsg = "Distance between buffer curve and input is too small " +
+          "($minDistanceFound at " +
+          WKTWriter.toLineStringFromCoords(pts[0], pts[1]) +
+          " )";
     }
   }
 
@@ -325,7 +327,8 @@ class BufferDistanceValidator {
 //    BufferCurveMaximumDistanceFinder maxDistFinder = new BufferCurveMaximumDistanceFinder(input);
 //    maxDistanceFound = maxDistFinder.findDistance(bufCurve);
 
-    DiscreteHausdorffDistance haus = new DiscreteHausdorffDistance(bufCurve, input);
+    DiscreteHausdorffDistance haus =
+        new DiscreteHausdorffDistance(bufCurve, input);
     haus.setDensifyFraction(0.25);
     maxDistanceFound = haus.orientedDistance();
 
@@ -334,7 +337,10 @@ class BufferDistanceValidator {
       List<Coordinate> pts = haus.getCoordinates();
       errorLocation = pts[1];
       errorIndicator = input.getFactory().createLineString(pts);
-      errMsg = "Distance between buffer curve and input is too large " + "($maxDistanceFound at " + WKTWriter.toLineStringFromCoords(pts[0], pts[1]) + ")";
+      errMsg = "Distance between buffer curve and input is too large " +
+          "($maxDistanceFound at " +
+          WKTWriter.toLineStringFromCoords(pts[0], pts[1]) +
+          ")";
     }
   }
 

@@ -27,21 +27,19 @@ class ConsistentAreaTester {
   RelateNodeGraph nodeGraph = new RelateNodeGraph();
 
   // the intersection point found (if any)
-  Coordinate invalidPoint;
+  Coordinate? invalidPoint;
 
   /**
    * Creates a new tester for consistent areas.
    *
    * @param geomGraph the topology graph of the area geometry
    */
-  ConsistentAreaTester(GeometryGraph geomGraph) {
-    this.geomGraph = geomGraph;
-  }
+  ConsistentAreaTester(this.geomGraph);
 
   /**
    * @return the intersection point, or <code>null</code> if none was found
    */
-  Coordinate getInvalidPoint() {
+  Coordinate? getInvalidPoint() {
     return invalidPoint;
   }
 
@@ -55,7 +53,8 @@ class ConsistentAreaTester {
      * To fully check validity, it is necessary to
      * compute ALL intersections, including self-intersections within a single edge.
      */
-    SegmentIntersector intersector = geomGraph.computeSelfNodes3(li, true, true);
+    SegmentIntersector intersector =
+        geomGraph.computeSelfNodes3(li, true, true);
     /**
      * A proper intersection means that the area is not consistent.
      */
@@ -78,7 +77,7 @@ class ConsistentAreaTester {
   bool isNodeEdgeAreaLabelsConsistent() {
     for (Iterator nodeIt = nodeGraph.getNodeIterator(); nodeIt.moveNext();) {
       RelateNode node = nodeIt.current as RelateNode;
-      if (!node.getEdges().isAreaLabelsConsistent(geomGraph)) {
+      if (!node.getEdges()!.isAreaLabelsConsistent(geomGraph)) {
         invalidPoint = node.getCoordinate().copy();
         return false;
       }
@@ -104,7 +103,7 @@ class ConsistentAreaTester {
   bool hasDuplicateRings() {
     for (Iterator nodeIt = nodeGraph.getNodeIterator(); nodeIt.moveNext();) {
       RelateNode node = nodeIt.current as RelateNode;
-      for (Iterator i = node.getEdges().iterator(); i.moveNext();) {
+      for (Iterator i = node.getEdges()!.iterator(); i.moveNext();) {
         EdgeEndBundle eeb = i.current as EdgeEndBundle;
         if (eeb.getEdgeEnds().length > 1) {
           invalidPoint = eeb.getEdge().getCoordinateWithIndex(0);
@@ -131,7 +130,7 @@ class ConsistentAreaTester {
  * @version 1.7
  */
 class ConnectedInteriorTester {
-  static Coordinate findDifferentPoint(List<Coordinate> coord, Coordinate pt) {
+  static Coordinate? findDifferentPoint(List<Coordinate> coord, Coordinate pt) {
     for (int i = 0; i < coord.length; i++) {
       if (!coord[i].equals(pt)) return coord[i];
     }
@@ -144,13 +143,11 @@ class ConnectedInteriorTester {
 
   // save a coordinate for any disconnected interior found
   // the coordinate will be somewhere on the ring surrounding the disconnected interior
-  Coordinate disconnectedRingcoord;
+  Coordinate? disconnectedRingcoord;
 
-  ConnectedInteriorTester(GeometryGraph geomGraph) {
-    this.geomGraph = geomGraph;
-  }
+  ConnectedInteriorTester(this.geomGraph);
 
-  Coordinate getCoordinate() {
+  Coordinate? getCoordinate() {
     return disconnectedRingcoord;
   }
 
@@ -185,7 +182,8 @@ class ConnectedInteriorTester {
   void setInteriorEdgesInResult(PlanarGraph graph) {
     for (Iterator it = graph.getEdgeEnds().iterator; it.moveNext();) {
       DirectedEdge de = it.current as DirectedEdge;
-      if (de.getLabel().getLocationWithPosIndex(0, Position.RIGHT) == Location.INTERIOR) {
+      if (de.getLabel()!.getLocationWithPosIndex(0, Position.RIGHT) ==
+          Location.INTERIOR) {
         de.setInResult(true);
       }
     }
@@ -218,15 +216,13 @@ class ConnectedInteriorTester {
    * Only ONE ring gets marked for each shell - if there are others which remain unmarked
    * this indicates a disconnected interior.
    */
-  void visitShellInteriors(Geometry g, PlanarGraph graph) {
+  void visitShellInteriors(Geometry? g, PlanarGraph graph) {
     if (g is Polygon) {
-      Polygon p = g as Polygon;
-      visitInteriorRing(p.getExteriorRing(), graph);
+      visitInteriorRing(g.getExteriorRing(), graph);
     }
     if (g is MultiPolygon) {
-      MultiPolygon mp = g;
-      for (int i = 0; i < mp.getNumGeometries(); i++) {
-        Polygon p = mp.getGeometryN(i);
+      for (int i = 0; i < g.getNumGeometries(); i++) {
+        Polygon p = g.getGeometryN(i) as Polygon;
         visitInteriorRing(p.getExteriorRing(), graph);
       }
     }
@@ -240,27 +236,32 @@ class ConnectedInteriorTester {
      * Find first point in coord list different to initial point.
      * Need special check since the first point may be repeated.
      */
-    Coordinate pt1 = findDifferentPoint(pts, pt0);
-    Edge e = graph.findEdgeInSameDirection(pt0, pt1);
+    Coordinate pt1 = findDifferentPoint(pts, pt0)!;
+    Edge e = graph.findEdgeInSameDirection(pt0, pt1)!;
     DirectedEdge de = graph.findEdgeEnd(e) as DirectedEdge;
-    DirectedEdge intDe = null;
-    if (de.getLabel().getLocationWithPosIndex(0, Position.RIGHT) == Location.INTERIOR) {
+    DirectedEdge? intDe = null;
+    if (de.getLabel()!.getLocationWithPosIndex(0, Position.RIGHT) ==
+        Location.INTERIOR) {
       intDe = de;
-    } else if (de.getSym().getLabel().getLocationWithPosIndex(0, Position.RIGHT) == Location.INTERIOR) {
+    } else if (de
+            .getSym()
+            .getLabel()!
+            .getLocationWithPosIndex(0, Position.RIGHT) ==
+        Location.INTERIOR) {
       intDe = de.getSym();
     }
     Assert.isTrue(intDe != null, "unable to find dirEdge with Interior on RHS");
 
-    visitLinkedDirectedEdges(intDe);
+    visitLinkedDirectedEdges(intDe!);
   }
 
-  void visitLinkedDirectedEdges(DirectedEdge start) {
-    DirectedEdge startDe = start;
-    DirectedEdge de = start;
+  void visitLinkedDirectedEdges(DirectedEdge? start) {
+    DirectedEdge? startDe = start;
+    DirectedEdge? de = start;
     do {
       Assert.isTrue(de != null, "found null Directed Edge");
-      de.setVisited(true);
-      de = de.getNext();
+      de!.setVisited(true);
+      de = de!.getNext();
     } while (de != startDe);
   }
 
@@ -283,7 +284,8 @@ class ConnectedInteriorTester {
       DirectedEdge de = edges[0] as DirectedEdge;
       // don't check CW rings which are holes
       // (MD - this check may now be irrelevant)
-      if (de.getLabel().getLocationWithPosIndex(0, Position.RIGHT) != Location.INTERIOR) continue;
+      if (de.getLabel()!.getLocationWithPosIndex(0, Position.RIGHT) !=
+          Location.INTERIOR) continue;
 
       /**
        * the edgeRing is CW ring which surrounds the INT of the area, so check all

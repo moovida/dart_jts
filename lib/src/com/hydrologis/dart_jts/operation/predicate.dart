@@ -1,6 +1,5 @@
 part of dart_jts;
 
-
 /**
  * Optimized implementation of the <tt>contains</tt> spatial predicate
  * for cases where the first {@link Geometry} is a rectangle.
@@ -14,8 +13,7 @@ part of dart_jts;
  *
  * @version 1.7
  */
- class RectangleContains {
-
+class RectangleContains {
   /**
    * Tests whether a rectangle contains a given geometry.
    *
@@ -23,57 +21,51 @@ part of dart_jts;
    * @param b a Geometry of any type
    * @return true if the geometries intersect
    */
-   static bool containsStatic(Polygon rectangle, Geometry b)
-  {
+  static bool containsStatic(Polygon rectangle, Geometry b) {
     RectangleContains rc = new RectangleContains(rectangle);
     return rc.contains(b);
   }
 
-   Envelope rectEnv;
+  late Envelope rectEnv;
 
   /**
    * Create a new contains computer for two geometries.
    *
    * @param rectangle a rectangular geometry
    */
-   RectangleContains(Polygon rectangle) {
+  RectangleContains(Polygon rectangle) {
     rectEnv = rectangle.getEnvelopeInternal();
   }
 
-   bool contains(Geometry geom)
-  {
+  bool contains(Geometry geom) {
     // the test geometry must be wholly contained in the rectangle envelope
-    if (! rectEnv.containsEnvelope(geom.getEnvelopeInternal()))
-      return false;
+    if (!rectEnv.containsEnvelope(geom.getEnvelopeInternal())) return false;
 
     /**
      * Check that geom is not contained entirely in the rectangle boundary.
      * According to the somewhat odd spec of the SFS, if this
      * is the case the geometry is NOT contained.
      */
-    if (isContainedInBoundary(geom))
-      return false;
+    if (isContainedInBoundary(geom)) return false;
     return true;
   }
 
-   bool isContainedInBoundary(Geometry geom)
-  {
+  bool isContainedInBoundary(Geometry geom) {
     // polygons can never be wholely contained in the boundary
     if (geom is Polygon) return false;
-    if (geom is Point) return isPointContainedInBoundary( geom as Point);
-    if (geom is LineString) return isLineStringContainedInBoundary( geom as LineString);
+    if (geom is Point) return isPointContainedInBoundary(geom as Point);
+    if (geom is LineString)
+      return isLineStringContainedInBoundary(geom as LineString);
 
     for (int i = 0; i < geom.getNumGeometries(); i++) {
       Geometry comp = geom.getGeometryN(i);
-      if (! isContainedInBoundary(comp))
-        return false;
+      if (!isContainedInBoundary(comp)) return false;
     }
     return true;
   }
 
-   bool isPointContainedInBoundary(Point point)
-  {
-    return isPointContainedInBoundaryCoord(point.getCoordinate());
+  bool isPointContainedInBoundary(Point point) {
+    return isPointContainedInBoundaryCoord(point.getCoordinate()!);
   }
 
   /**
@@ -82,17 +74,16 @@ part of dart_jts;
    * @param pt the point to test
    * @return true if the point is contained in the boundary
    */
-   bool isPointContainedInBoundaryCoord(Coordinate pt)
-  {
+  bool isPointContainedInBoundaryCoord(Coordinate pt) {
     /**
      * contains = false iff the point is properly contained in the rectangle.
      *
      * This code assumes that the point lies in the rectangle envelope
      */
-    return pt.x == rectEnv.getMinX()
-        || pt.x == rectEnv.getMaxX()
-        || pt.y == rectEnv.getMinY()
-        || pt.y == rectEnv.getMaxY();
+    return pt.x == rectEnv.getMinX() ||
+        pt.x == rectEnv.getMaxX() ||
+        pt.y == rectEnv.getMinY() ||
+        pt.y == rectEnv.getMaxY();
   }
 
   /**
@@ -100,8 +91,7 @@ part of dart_jts;
    * @param line the linestring to test
    * @return true if the linestring is contained in the boundary
    */
-   bool isLineStringContainedInBoundary(LineString line)
-  {
+  bool isLineStringContainedInBoundary(LineString line) {
     CoordinateSequence seq = line.getCoordinateSequence();
     Coordinate p0 = new Coordinate.empty2D();
     Coordinate p1 = new Coordinate.empty2D();
@@ -109,8 +99,7 @@ part of dart_jts;
       seq.getCoordinateInto(i, p0);
       seq.getCoordinateInto(i + 1, p1);
 
-      if (! isLineSegmentContainedInBoundary(p0, p1))
-        return false;
+      if (!isLineSegmentContainedInBoundary(p0, p1)) return false;
     }
     return true;
   }
@@ -121,21 +110,14 @@ part of dart_jts;
    * @param p1 an endpoint of the segment
    * @return true if the line segment is contained in the boundary
    */
-   bool isLineSegmentContainedInBoundary(Coordinate p0, Coordinate p1)
-  {
-    if (p0.equals(p1))
-      return isPointContainedInBoundaryCoord(p0);
+  bool isLineSegmentContainedInBoundary(Coordinate p0, Coordinate p1) {
+    if (p0.equals(p1)) return isPointContainedInBoundaryCoord(p0);
 
     // we already know that the segment is contained in the rectangle envelope
     if (p0.x == p1.x) {
-      if (p0.x == rectEnv.getMinX() ||
-          p0.x == rectEnv.getMaxX() )
-        return true;
-    }
-    else if (p0.y == p1.y) {
-      if (p0.y == rectEnv.getMinY() ||
-          p0.y == rectEnv.getMaxY() )
-        return true;
+      if (p0.x == rectEnv.getMinX() || p0.x == rectEnv.getMaxX()) return true;
+    } else if (p0.y == p1.y) {
+      if (p0.y == rectEnv.getMinY() || p0.y == rectEnv.getMaxY()) return true;
     }
     /**
      * Either
@@ -147,10 +129,7 @@ part of dart_jts;
      */
     return false;
   }
-
 }
-
-
 
 /**
  * Implementation of the <tt>intersects</tt> spatial predicate
@@ -165,8 +144,7 @@ part of dart_jts;
  *
  * @version 1.7
  */
- class RectangleIntersects
-{
+class RectangleIntersects {
   /**
    * Tests whether a rectangle intersects a given geometry.
    *
@@ -176,15 +154,14 @@ part of dart_jts;
    *          a Geometry of any type
    * @return true if the geometries intersect
    */
-   static bool intersectsStatic(Polygon rectangle, Geometry b)
-  {
+  static bool intersectsStatic(Polygon rectangle, Geometry b) {
     RectangleIntersects rp = new RectangleIntersects(rectangle);
     return rp.intersects(b);
   }
 
-   Polygon rectangle;
+  Polygon rectangle;
 
-   Envelope rectEnv;
+  late Envelope rectEnv;
 
   /**
    * Create a new intersects computer for a rectangle.
@@ -192,9 +169,7 @@ part of dart_jts;
    * @param rectangle
    *          a rectangular Polygon
    */
-   RectangleIntersects(Polygon rectangle)
-  {
-    this.rectangle = rectangle;
+  RectangleIntersects(this.rectangle) {
     rectEnv = rectangle.getEnvelopeInternal();
   }
 
@@ -205,10 +180,8 @@ part of dart_jts;
    * @param geom the Geometry to test (may be of any type)
    * @return true if the geometry intersects the query rectangle
    */
-   bool intersects(Geometry geom)
-  {
-    if (!rectEnv.intersectsEnvelope(geom.getEnvelopeInternal()))
-      return false;
+  bool intersects(Geometry geom) {
+    if (!rectEnv.intersectsEnvelope(geom.getEnvelopeInternal())) return false;
 
     /**
      * Test if rectangle envelope intersects any component envelope.
@@ -216,24 +189,23 @@ part of dart_jts;
      */
     EnvelopeIntersectsVisitor visitor = new EnvelopeIntersectsVisitor(rectEnv);
     visitor.applyTo(geom);
-    if (visitor.intersects())
-      return true;
+    if (visitor.intersects()) return true;
 
     /**
      * Test if any rectangle vertex is contained in the target geometry
      */
-    GeometryContainsPointVisitor ecpVisitor = new GeometryContainsPointVisitor(rectangle);
+    GeometryContainsPointVisitor ecpVisitor =
+        new GeometryContainsPointVisitor(rectangle);
     ecpVisitor.applyTo(geom);
-    if (ecpVisitor.containsPoint())
-      return true;
+    if (ecpVisitor.containsPoint()) return true;
 
     /**
      * Test if any target geometry line segment intersects the rectangle
      */
-    RectangleIntersectsSegmentVisitor riVisitor = new RectangleIntersectsSegmentVisitor(rectangle);
+    RectangleIntersectsSegmentVisitor riVisitor =
+        new RectangleIntersectsSegmentVisitor(rectangle);
     riVisitor.applyTo(geom);
-    if (riVisitor.intersects())
-      return true;
+    if (riVisitor.intersects()) return true;
 
     return false;
   }
@@ -246,16 +218,12 @@ part of dart_jts;
  * @author Martin Davis
  * @version 1.7
  */
-class EnvelopeIntersectsVisitor extends ShortCircuitedGeometryVisitor
-{
-   Envelope rectEnv;
+class EnvelopeIntersectsVisitor extends ShortCircuitedGeometryVisitor {
+  Envelope rectEnv;
 
-   bool _intersects = false;
+  bool _intersects = false;
 
-   EnvelopeIntersectsVisitor(Envelope rectEnv)
-  {
-    this.rectEnv = rectEnv;
-  }
+  EnvelopeIntersectsVisitor(this.rectEnv);
 
   /**
    * Reports whether it can be concluded that an intersection occurs,
@@ -264,13 +232,11 @@ class EnvelopeIntersectsVisitor extends ShortCircuitedGeometryVisitor
    * @return true if an intersection must occur
    * or false if no conclusion about intersection can be made
    */
-   bool intersects()
-  {
+  bool intersects() {
     return _intersects;
   }
 
-   void visit(Geometry element)
-  {
+  void visit(Geometry element) {
     Envelope elementEnv = element.getEnvelopeInternal();
 
     // disjoint => no intersection
@@ -291,20 +257,19 @@ class EnvelopeIntersectsVisitor extends ShortCircuitedGeometryVisitor
      * completely bisected. In this case it is not possible to make a conclusion
      * about the presence of an intersection.
      */
-    if (elementEnv.getMinX() >= rectEnv.getMinX()
-        && elementEnv.getMaxX() <= rectEnv.getMaxX()) {
+    if (elementEnv.getMinX() >= rectEnv.getMinX() &&
+        elementEnv.getMaxX() <= rectEnv.getMaxX()) {
       _intersects = true;
       return;
     }
-    if (elementEnv.getMinY() >= rectEnv.getMinY()
-        && elementEnv.getMaxY() <= rectEnv.getMaxY()) {
+    if (elementEnv.getMinY() >= rectEnv.getMinY() &&
+        elementEnv.getMaxY() <= rectEnv.getMaxY()) {
       _intersects = true;
       return;
     }
   }
 
-   bool isDone()
-  {
+  bool isDone() {
     return intersects == true;
   }
 }
@@ -317,16 +282,14 @@ class EnvelopeIntersectsVisitor extends ShortCircuitedGeometryVisitor
  * @author Martin Davis
  * @version 1.7
  */
-class GeometryContainsPointVisitor extends ShortCircuitedGeometryVisitor
-{
-   CoordinateSequence rectSeq;
+class GeometryContainsPointVisitor extends ShortCircuitedGeometryVisitor {
+  late CoordinateSequence rectSeq;
 
-   Envelope rectEnv;
+  late Envelope rectEnv;
 
-   bool _containsPoint = false;
+  bool _containsPoint = false;
 
-   GeometryContainsPointVisitor(Polygon rectangle)
-  {
+  GeometryContainsPointVisitor(Polygon rectangle) {
     this.rectSeq = rectangle.getExteriorRing().getCoordinateSequence();
     rectEnv = rectangle.getEnvelopeInternal();
   }
@@ -338,44 +301,37 @@ class GeometryContainsPointVisitor extends ShortCircuitedGeometryVisitor
    * @return true if a corner point is contained
    * or false if no conclusion about intersection can be made
    */
-   bool containsPoint()
-  {
+  bool containsPoint() {
     return _containsPoint;
   }
 
-   void visit(Geometry geom)
-  {
+  void visit(Geometry geom) {
     // if test geometry is not polygonal this check is not needed
-    if (!(geom is Polygon))
-      return;
+    if (!(geom is Polygon)) return;
 
     // skip if envelopes do not intersect
     Envelope elementEnv = geom.getEnvelopeInternal();
-    if (!rectEnv.intersectsEnvelope(elementEnv))
-      return;
+    if (!rectEnv.intersectsEnvelope(elementEnv)) return;
 
     // test each corner of rectangle for inclusion
     Coordinate rectPt = new Coordinate.empty2D();
     for (int i = 0; i < 4; i++) {
       rectSeq.getCoordinateInto(i, rectPt);
-      if (!elementEnv.containsCoordinate(rectPt))
-        continue;
+      if (!elementEnv.containsCoordinate(rectPt)) continue;
       // check rect point in poly (rect is known not to touch polygon at this
       // point)
-      if (SimplePointInAreaLocator.containsPointInPolygon(rectPt,
-           geom as Polygon)) {
+      if (SimplePointInAreaLocator.containsPointInPolygon(
+          rectPt, geom as Polygon)) {
         _containsPoint = true;
         return;
       }
     }
   }
 
-   bool isDone()
-  {
+  bool isDone() {
     return containsPoint == true;
   }
 }
-
 
 /**
  * A visitor to test for intersection between the query
@@ -384,14 +340,13 @@ class GeometryContainsPointVisitor extends ShortCircuitedGeometryVisitor
  * @author Martin Davis
  *
  */
-class RectangleIntersectsSegmentVisitor extends ShortCircuitedGeometryVisitor
-{
-   Envelope rectEnv;
-   RectangleLineIntersector rectIntersector;
+class RectangleIntersectsSegmentVisitor extends ShortCircuitedGeometryVisitor {
+  late Envelope rectEnv;
+  late RectangleLineIntersector rectIntersector;
 
-   bool hasIntersection = false;
-   Coordinate p0 = new Coordinate.empty2D();
-   Coordinate p1 = new Coordinate.empty2D();
+  bool hasIntersection = false;
+  Coordinate p0 = new Coordinate.empty2D();
+  Coordinate p1 = new Coordinate.empty2D();
 
   /**
    * Creates a visitor for checking rectangle intersection
@@ -399,8 +354,7 @@ class RectangleIntersectsSegmentVisitor extends ShortCircuitedGeometryVisitor
    *
    * @param rectangle the query rectangle
    */
-   RectangleIntersectsSegmentVisitor(Polygon rectangle)
-  {
+  RectangleIntersectsSegmentVisitor(Polygon rectangle) {
     rectEnv = rectangle.getEnvelopeInternal();
     rectIntersector = new RectangleLineIntersector(rectEnv);
   }
@@ -411,21 +365,18 @@ class RectangleIntersectsSegmentVisitor extends ShortCircuitedGeometryVisitor
    * @return true if a segment intersection exists
    * or false if no segment intersection exists
    */
-   bool intersects()
-  {
+  bool intersects() {
     return hasIntersection;
   }
 
-   void visit(Geometry geom)
-  {
+  void visit(Geometry geom) {
     /**
      * It may be the case that the rectangle and the
      * envelope of the geometry component are disjoint,
      * so it is worth checking this simple condition.
      */
     Envelope elementEnv = geom.getEnvelopeInternal();
-    if (!rectEnv.intersectsEnvelope(elementEnv))
-      return;
+    if (!rectEnv.intersectsEnvelope(elementEnv)) return;
 
     // check segment intersections
     // get all lines from geometry component
@@ -434,22 +385,19 @@ class RectangleIntersectsSegmentVisitor extends ShortCircuitedGeometryVisitor
     checkIntersectionWithLineStrings(lines);
   }
 
-   void checkIntersectionWithLineStrings(List lines)
-  {
-    for (Iterator i = lines.iterator; i.moveNext(); ) {
-      LineString testLine =  i.current as LineString;
+  void checkIntersectionWithLineStrings(List lines) {
+    for (Iterator i = lines.iterator; i.moveNext();) {
+      LineString testLine = i.current as LineString;
       checkIntersectionWithSegments(testLine);
-      if (hasIntersection)
-        return;
+      if (hasIntersection) return;
     }
   }
 
-   void checkIntersectionWithSegments(LineString testLine)
-  {
+  void checkIntersectionWithSegments(LineString testLine) {
     CoordinateSequence seq1 = testLine.getCoordinateSequence();
     for (int j = 1; j < seq1.size(); j++) {
       seq1.getCoordinateInto(j - 1, p0);
-      seq1.getCoordinateInto(j,     p1);
+      seq1.getCoordinateInto(j, p1);
 
       if (rectIntersector.intersects(p0, p1)) {
         hasIntersection = true;
@@ -458,8 +406,7 @@ class RectangleIntersectsSegmentVisitor extends ShortCircuitedGeometryVisitor
     }
   }
 
-   bool isDone()
-  {
+  bool isDone() {
     return hasIntersection == true;
   }
 }
