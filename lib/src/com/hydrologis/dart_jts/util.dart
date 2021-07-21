@@ -32,9 +32,11 @@ class FormattingUtils {}
 /// Utilities for collections
 class CollectionsUtils {
   /// Shift a list of items from a given [index] to the first position.
-  static List<T> shiftToFirst<T>(List<T> list, int index) {
+  static List<T>? shiftToFirst<T>(List<T>? list, int index) {
     if (list == null || list.isEmpty) return list;
-    if (index > list.length - 1) throw ArgumentError("The shift index can't be bigger than the list size.");
+    if (index > list.length - 1)
+      throw ArgumentError(
+          "The shift index can't be bigger than the list size.");
     return list.sublist(index)..addAll(list.sublist(0, index));
   }
 
@@ -65,7 +67,9 @@ class CollectionsUtils {
   static bool addIfNotEqualToLast<T>(List<T> list, T item) {
     if (list.isEmpty || list.last == item) {
       list.add(item);
+      return true;
     }
+    return false;
   }
 
   static bool areEqual<T>(List<T> listA, List<T> listB) {
@@ -82,18 +86,22 @@ class StringUtils {
   }
 
   static String replaceCharAt(String oldString, int index, String newChar) {
-    return oldString.substring(0, index) + newChar + oldString.substring(index + 1);
+    return oldString.substring(0, index) +
+        newChar +
+        oldString.substring(index + 1);
   }
 }
 
 class MatrixUtils {
   static List<List<int>> createIntMatrix(int rows, int cols) {
-    final grid = List<List<int>>.generate(rows, (i) => List<int>.generate(cols, (j) => i * cols + j));
+    final grid = List<List<int>>.generate(
+        rows, (i) => List<int>.generate(cols, (j) => i * cols + j));
     return grid;
   }
 
   static List<List<T>> createMatrix<T>(int rows, int cols, T defaultValue) {
-    final grid = List<List<T>>.generate(rows, (i) => List<T>.generate(cols, (j) => defaultValue));
+    final grid = List<List<T>>.generate(
+        rows, (i) => List<T>.generate(cols, (j) => defaultValue));
     return grid;
   }
 }
@@ -186,9 +194,11 @@ class NumberUtils {
 
 /// Lists used for data convertion (alias each other).
 final Uint8List _unisgnedByteBuffer = Uint8List(8);
-final Float64List _unsignedFloat64Buffer = Float64List.view(_unisgnedByteBuffer.buffer);
+final Float64List _unsignedFloat64Buffer =
+    Float64List.view(_unisgnedByteBuffer.buffer);
 final Int8List _signedBytesBuffer = Int8List(8);
-final Float64List _signedFloat64Buffer = Float64List.view(_signedBytesBuffer.buffer);
+final Float64List _signedFloat64Buffer =
+    Float64List.view(_signedBytesBuffer.buffer);
 
 class Byteutils {
   static int doubleToLongBits(double value) {
@@ -251,7 +261,8 @@ class Byteutils {
     }
   }
 
-  static void putFloat64(double value, List<int> buf, Endian byteOrder, {position = 0}) {
+  static void putFloat64(double value, List<int> buf, Endian byteOrder,
+      {position = 0}) {
     ByteData bdata = ByteData.view(_signedBytesBuffer.buffer);
     bdata.setFloat64(0, value, byteOrder);
     buf.setAll(0, _signedBytesBuffer);
@@ -259,10 +270,16 @@ class Byteutils {
 
   static int getInt32(List<int> buf, Endian byteOrder) {
     if (byteOrder == Endian.big) {
-      return ((buf[0] & 0xff) << 24) | ((buf[1] & 0xff) << 16) | ((buf[2] & 0xff) << 8) | ((buf[3] & 0xff));
+      return ((buf[0] & 0xff) << 24) |
+          ((buf[1] & 0xff) << 16) |
+          ((buf[2] & 0xff) << 8) |
+          ((buf[3] & 0xff));
     } else {
       // LITTLE_ENDIAN
-      return ((buf[3] & 0xff) << 24) | ((buf[2] & 0xff) << 16) | ((buf[1] & 0xff) << 8) | ((buf[0] & 0xff));
+      return ((buf[3] & 0xff) << 24) |
+          ((buf[2] & 0xff) << 16) |
+          ((buf[1] & 0xff) << 8) |
+          ((buf[0] & 0xff));
     }
   }
 

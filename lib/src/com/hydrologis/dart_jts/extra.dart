@@ -173,13 +173,13 @@ class EGeometryType {
     return false;
   }
 
-  int getTypeCode([Geometry geometry]) {
+  int getTypeCode([Geometry? geometry]) {
     bool hasZ = false;
     bool hasM = false;
     if (geometry != null) {
-      var coord = geometry.getCoordinate();
-      hasZ = coord.z != null && !coord.z.isNaN;
-      hasM = coord.getM() != null && !coord.getM().isNaN;
+      var coord = geometry.getCoordinate()!;
+      hasZ = !coord.z.isNaN;
+      hasM = !coord.getM().isNaN;
     }
 
     if (hasZ && !hasM) {
