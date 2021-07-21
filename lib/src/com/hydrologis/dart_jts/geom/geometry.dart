@@ -411,8 +411,8 @@ abstract class Geometry implements Comparable {
    */
   Point getCentroid() {
     if (isEmpty()) return geomFactory.createPointEmpty();
-    Coordinate centPt = Centroid.getCentroidStatic(this);
-    return createPointFromInternalCoord(centPt, this);
+    Coordinate? centPt = Centroid.getCentroidStatic(this);
+    return createPointFromInternalCoord(centPt!, this);
   }
 
   /**

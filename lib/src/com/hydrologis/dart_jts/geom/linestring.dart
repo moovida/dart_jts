@@ -933,8 +933,8 @@ class LineSegment implements Comparable {
    *
    * @see RobustLineIntersector
    */
-  Coordinate lineIntersection(LineSegment line) {
-    Coordinate intPt = Intersection.intersection(p0, p1, line.p0, line.p1);
+  Coordinate? lineIntersection(LineSegment line) {
+    Coordinate? intPt = Intersection.intersection(p0, p1, line.p0, line.p1);
     return intPt;
   }
 

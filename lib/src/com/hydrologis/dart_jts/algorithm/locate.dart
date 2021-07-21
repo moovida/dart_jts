@@ -19,7 +19,7 @@ part of dart_jts;
  *
  */
 class IndexedPointInAreaLocator implements PointOnGeometryLocator {
-  IntervalIndexedGeometry index;
+  late IntervalIndexedGeometry index;
 
   /**
    * Creates a new locator for a given {@link Geometry}.
@@ -29,7 +29,8 @@ class IndexedPointInAreaLocator implements PointOnGeometryLocator {
    * @param g the Geometry to locate in
    */
   IndexedPointInAreaLocator(Geometry g) {
-    if (!(g is Polygonal || g is LinearRing)) throw new ArgumentError("Argument must be Polygonal or LinearRing");
+    if (!(g is Polygonal || g is LinearRing))
+      throw new ArgumentError("Argument must be Polygonal or LinearRing");
     index = new IntervalIndexedGeometry(g);
   }
 
@@ -58,9 +59,7 @@ class IndexedPointInAreaLocator implements PointOnGeometryLocator {
 class SegmentVisitor implements ItemVisitor {
   RayCrossingCounter counter;
 
-  SegmentVisitor(RayCrossingCounter counter) {
-    this.counter = counter;
-  }
+  SegmentVisitor(this.counter);
 
   void visitItem(Object item) {
     LineSegment seg = item as LineSegment;
@@ -167,7 +166,8 @@ class SimplePointInAreaLocator implements PointOnGeometryLocator {
     /**
      * Do a fast check against the geometry envelope first
      */
-    if (!geom.getEnvelopeInternal().intersectsCoordinate(p)) return Location.EXTERIOR;
+    if (!geom.getEnvelopeInternal().intersectsCoordinate(p))
+      return Location.EXTERIOR;
 
     return locateInGeometry(p, geom);
   }
@@ -264,7 +264,8 @@ class SimplePointInAreaLocator implements PointOnGeometryLocator {
    */
   static int locatePointInRing(Coordinate p, LinearRing ring) {
     // short-circuit if point is not in ring envelope
-    if (!ring.getEnvelopeInternal().intersectsCoordinate(p)) return Location.EXTERIOR;
+    if (!ring.getEnvelopeInternal().intersectsCoordinate(p))
+      return Location.EXTERIOR;
     return PointLocation.locateInRing(p, ring.getCoordinates());
   }
 
@@ -276,9 +277,7 @@ class SimplePointInAreaLocator implements PointOnGeometryLocator {
    *
    * @param geom the areal geometry to locate in
    */
-  SimplePointInAreaLocator(Geometry geom) {
-    this.geom = geom;
-  }
+  SimplePointInAreaLocator(this.geom);
 
   /**
    * Determines the {@link Location} of a point in an areal {@link Geometry}.

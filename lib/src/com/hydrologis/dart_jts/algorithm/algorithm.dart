@@ -30,7 +30,10 @@ class CGAlgorithmsDD {
     DD dy2 = DD.valueOf(q.y).selfAdd(-p2.y);
 
     // sign of determinant - unrolled for performance
-    return dx1.selfMultiplyDD(dy2).selfSubtractDD(dy1.selfMultiplyDD(dx2)).signum();
+    return dx1
+        .selfMultiplyDD(dy2)
+        .selfSubtractDD(dy1.selfMultiplyDD(dx2))
+        .signum();
   }
 
   /// Computes the sign of the determinant of the 2x2 matrix
@@ -82,7 +85,8 @@ class CGAlgorithmsDD {
   /// @param pc a coordinate
   /// @return the orientation index if it can be computed safely
   /// @return i > 1 if the orientation index cannot be computed safely
-  static int orientationIndexFilter(Coordinate pa, Coordinate pb, Coordinate pc) {
+  static int orientationIndexFilter(
+      Coordinate pa, Coordinate pb, Coordinate pc) {
     double detsum;
 
     double detleft = (pa.x - pc.x) * (pb.y - pc.y);
@@ -129,14 +133,19 @@ class CGAlgorithmsDD {
   /// @param q1 an endpoint of line segment 2
   /// @param q2 an endpoint of line segment 2
   /// @return an intersection point if one exists, or null if the lines are parallel
-  static Coordinate intersection(Coordinate p1, Coordinate p2, Coordinate q1, Coordinate q2) {
+  static Coordinate? intersection(
+      Coordinate p1, Coordinate p2, Coordinate q1, Coordinate q2) {
     DD px = new DD(p1.y).selfSubtract(p2.y);
     DD py = new DD(p2.x).selfSubtract(p1.x);
-    DD pw = new DD(p1.x).selfMultiply(p2.y).selfSubtractDD(DD(p2.x).selfMultiply(p1.y));
+    DD pw = new DD(p1.x)
+        .selfMultiply(p2.y)
+        .selfSubtractDD(DD(p2.x).selfMultiply(p1.y));
 
     DD qx = new DD(q1.y).selfSubtract(q2.y);
     DD qy = new DD(q2.x).selfSubtract(q1.x);
-    DD qw = new DD(q1.x).selfMultiply(q2.y).selfSubtractDD(new DD(q2.x).selfMultiply(q1.y));
+    DD qw = new DD(q1.x)
+        .selfMultiply(q2.y)
+        .selfSubtractDD(new DD(q2.x).selfMultiply(q1.y));
 
     DD x = py.multiplyDD(qw).selfSubtractDD(qy.multiplyDD(pw));
     DD y = qx.multiplyDD(pw).selfSubtractDD(px.multiplyDD(qw));
@@ -258,7 +267,9 @@ class Orientation {
     // # of points without closing endpoint
     int nPts = ring.length - 1;
     // sanity check
-    if (nPts < 3) throw new ArgumentError("Ring has fewer than 4 points, so orientation cannot be determined");
+    if (nPts < 3)
+      throw new ArgumentError(
+          "Ring has fewer than 4 points, so orientation cannot be determined");
 
     // find highest point
     Coordinate hiPt = ring[0];
@@ -293,7 +304,8 @@ class Orientation {
      * (including the case where the input array has fewer than 4 elements), or
      * it contains coincident line segments.
      */
-    if (prev.equals2D(hiPt) || next.equals2D(hiPt) || prev.equals2D(next)) return false;
+    if (prev.equals2D(hiPt) || next.equals2D(hiPt) || prev.equals2D(next))
+      return false;
 
     int disc = Orientation.index(prev, hiPt, next);
 
@@ -338,7 +350,9 @@ class Orientation {
     // # of points without closing endpoint
     int nPts = ring.size() - 1;
     // sanity check
-    if (nPts < 3) throw new ArgumentError("Ring has fewer than 4 points, so orientation cannot be determined");
+    if (nPts < 3)
+      throw new ArgumentError(
+          "Ring has fewer than 4 points, so orientation cannot be determined");
 
     // find highest point
     Coordinate hiPt = ring.getCoordinate(0);
@@ -374,7 +388,8 @@ class Orientation {
      * (including the case where the input array has fewer than 4 elements), or
      * it contains coincident line segments.
      */
-    if (prev.equals2D(hiPt) || next.equals2D(hiPt) || prev.equals2D(next)) return false;
+    if (prev.equals2D(hiPt) || next.equals2D(hiPt) || prev.equals2D(next))
+      return false;
 
     int disc = Orientation.index(prev, hiPt, next);
 
@@ -423,7 +438,8 @@ class Intersection {
   /// or null if the lines are parallel or collinear
   ///
   /// @see CGAlgorithmsDD#intersection(Coordinate, Coordinate, Coordinate, Coordinate)
-  static Coordinate intersection(Coordinate p1, Coordinate p2, Coordinate q1, Coordinate q2) {
+  static Coordinate? intersection(
+      Coordinate p1, Coordinate p2, Coordinate q1, Coordinate q2) {
     // compute midpoint of "kernel envelope"
     double minX0 = p1.x < p2.x ? p1.x : p2.x;
     double minY0 = p1.y < p2.y ? p1.y : p2.y;
@@ -534,7 +550,8 @@ abstract class LineIntersector {
   /// My hypothesis is that the function is safe to use for points which are the
   /// result of <b>rounding</b> points which lie on the line,
   /// but not safe to use for <b>truncated</b> points.
-  static double computeEdgeDistance(Coordinate p, Coordinate p0, Coordinate p1) {
+  static double computeEdgeDistance(
+      Coordinate p, Coordinate p0, Coordinate p1) {
     double dx = (p1.x - p0.x).abs();
     double dy = (p1.y - p0.y).abs();
 
@@ -567,7 +584,8 @@ abstract class LineIntersector {
    * This function is non-robust, since it may compute the square of large numbers.
    * Currently not sure how to improve this.
    */
-  static double nonRobustComputeEdgeDistance(Coordinate p, Coordinate p1, Coordinate p2) {
+  static double nonRobustComputeEdgeDistance(
+      Coordinate p, Coordinate p1, Coordinate p2) {
     double dx = p.x - p1.x;
     double dy = p.y - p1.y;
     double dist = math.sqrt(dx * dx + dy * dy); // dummy value
@@ -575,20 +593,21 @@ abstract class LineIntersector {
     return dist;
   }
 
-  int result;
-  List<List<Coordinate>> inputLines = MatrixUtils.createMatrix(2, 2, null as Coordinate);
-  List<Coordinate> intPt = List(2);
+  int result = 0;
+  List<List<Coordinate>> inputLines =
+      MatrixUtils.createMatrix(2, 2, null as Coordinate);
+  List<Coordinate> intPt = []..length = 2;
 
   /// The indexes of the endpoints of the intersection lines, in order along
   /// the corresponding line
-  List<List<int>> intLineIndex;
-  bool _isProper;
-  Coordinate pa;
-  Coordinate pb;
+  List<List<int>>? intLineIndex;
+  bool _isProper = false;
+  late Coordinate pa;
+  late Coordinate pb;
 
   /// If makePrecise is true, computed intersection coordinates will be made precise
   /// using Coordinate#makePrecise
-  PrecisionModel precisionModel = null;
+  PrecisionModel? precisionModel = null;
 
 // int numIntersects = 0;
 
@@ -637,7 +656,8 @@ abstract class LineIntersector {
   /// Computes the intersection of the lines p1-p2 and p3-p4.
   /// This function computes both the bool value of the hasIntersection test
   /// and the (approximate) value of the intersection point itself (if there is one).
-  void computeIntersection(Coordinate p1, Coordinate p2, Coordinate p3, Coordinate p4) {
+  void computeIntersection(
+      Coordinate p1, Coordinate p2, Coordinate p3, Coordinate p4) {
     inputLines[0][0] = p1;
     inputLines[0][1] = p2;
     inputLines[1][0] = p3;
@@ -646,7 +666,8 @@ abstract class LineIntersector {
 //numIntersects++;
   }
 
-  int computeIntersect(Coordinate p1, Coordinate p2, Coordinate q1, Coordinate q2);
+  int computeIntersect(
+      Coordinate p1, Coordinate p2, Coordinate q1, Coordinate q2);
 
 /*
    String toString() {
@@ -660,7 +681,8 @@ abstract class LineIntersector {
 */
 
   String toString() {
-    return WKTWriter.toLineStringFromCoords(inputLines[0][0], inputLines[0][1]) +
+    return WKTWriter.toLineStringFromCoords(
+            inputLines[0][0], inputLines[0][1]) +
         " - " +
         WKTWriter.toLineStringFromCoords(inputLines[1][0], inputLines[1][1]) +
         getTopologySummary();
@@ -703,7 +725,7 @@ abstract class LineIntersector {
 
   void computeIntLineIndex() {
     if (intLineIndex == null) {
-      intLineIndex = MatrixUtils.createMatrix(2, 2, 0 as int);
+      intLineIndex = MatrixUtils.createMatrix(2, 2, 0);
       computeIntLineIndexWithIndex(0);
       computeIntLineIndexWithIndex(1);
     }
@@ -713,11 +735,11 @@ abstract class LineIntersector {
     double dist0 = getEdgeDistance(segmentIndex, 0);
     double dist1 = getEdgeDistance(segmentIndex, 1);
     if (dist0 > dist1) {
-      intLineIndex[segmentIndex][0] = 0;
-      intLineIndex[segmentIndex][1] = 1;
+      intLineIndex![segmentIndex][0] = 0;
+      intLineIndex![segmentIndex][1] = 1;
     } else {
-      intLineIndex[segmentIndex][0] = 1;
-      intLineIndex[segmentIndex][1] = 0;
+      intLineIndex![segmentIndex][0] = 1;
+      intLineIndex![segmentIndex][1] = 0;
     }
   }
 
@@ -751,7 +773,8 @@ abstract class LineIntersector {
   /// @return <code>true</code> if either intersection point is in the interior of the input segment
   bool isInteriorIntersectionWithIndex(int inputLineIndex) {
     for (int i = 0; i < result; i++) {
-      if (!(intPt[i].equals2D(inputLines[inputLineIndex][0]) || intPt[i].equals2D(inputLines[inputLineIndex][1]))) {
+      if (!(intPt[i].equals2D(inputLines[inputLineIndex][0]) ||
+          intPt[i].equals2D(inputLines[inputLineIndex][1]))) {
         return true;
       }
     }
@@ -784,7 +807,7 @@ abstract class LineIntersector {
   Coordinate getIntersectionAlongSegment(int segmentIndex, int intIndex) {
     // lazily compute int line array
     computeIntLineIndex();
-    return intPt[intLineIndex[segmentIndex][intIndex]];
+    return intPt[intLineIndex![segmentIndex][intIndex]];
   }
 
   /// Computes the index (order) of the intIndex'th intersection point in the direction of
@@ -796,7 +819,7 @@ abstract class LineIntersector {
   /// @return the index of the intersection point along the input segment (0 or 1)
   int getIndexAlongSegment(int segmentIndex, int intIndex) {
     computeIntLineIndex();
-    return intLineIndex[segmentIndex][intIndex];
+    return intLineIndex![segmentIndex][intIndex];
   }
 
   /// Computes the "edge distance" of an intersection point along the specified input line segment.
@@ -806,7 +829,8 @@ abstract class LineIntersector {
   ///
   /// @return the edge distance of the intersection point
   double getEdgeDistance(int segmentIndex, int intIndex) {
-    double dist = computeEdgeDistance(intPt[intIndex], inputLines[segmentIndex][0], inputLines[segmentIndex][1]);
+    double dist = computeEdgeDistance(intPt[intIndex],
+        inputLines[segmentIndex][0], inputLines[segmentIndex][1]);
     return dist;
   }
 }
@@ -819,11 +843,13 @@ abstract class LineIntersector {
 class RobustLineIntersector extends LineIntersector {
   RobustLineIntersector() {}
 
-  void computeIntersectionPointLine(Coordinate p, Coordinate p1, Coordinate p2) {
+  void computeIntersectionPointLine(
+      Coordinate p, Coordinate p1, Coordinate p2) {
     _isProper = false;
     // do between check first, since it is faster than the orientation test
     if (Envelope.intersectsPoint(p1, p2, p)) {
-      if ((Orientation.index(p1, p2, p) == 0) && (Orientation.index(p2, p1, p) == 0)) {
+      if ((Orientation.index(p1, p2, p) == 0) &&
+          (Orientation.index(p2, p1, p) == 0)) {
         _isProper = true;
         if (p.equals(p1) || p.equals(p2)) {
           _isProper = false;
@@ -835,11 +861,13 @@ class RobustLineIntersector extends LineIntersector {
     result = LineIntersector.NO_INTERSECTION;
   }
 
-  int computeIntersect(Coordinate p1, Coordinate p2, Coordinate q1, Coordinate q2) {
+  int computeIntersect(
+      Coordinate p1, Coordinate p2, Coordinate q1, Coordinate q2) {
     _isProper = false;
 
     // first try a fast test to see if the envelopes of the lines intersect
-    if (!Envelope.intersectsEnvelopeCoords(p1, p2, q1, q2)) return LineIntersector.NO_INTERSECTION;
+    if (!Envelope.intersectsEnvelopeCoords(p1, p2, q1, q2))
+      return LineIntersector.NO_INTERSECTION;
 
     // for each endpoint, compute which side of the other segment it lies
     // if both endpoints lie on the same side of the other segment,
@@ -920,7 +948,8 @@ class RobustLineIntersector extends LineIntersector {
     return LineIntersector.POINT_INTERSECTION;
   }
 
-  int computeCollinearIntersection(Coordinate p1, Coordinate p2, Coordinate q1, Coordinate q2) {
+  int computeCollinearIntersection(
+      Coordinate p1, Coordinate p2, Coordinate q1, Coordinate q2) {
     bool p1q1p2 = Envelope.intersectsPoint(p1, p2, q1);
     bool p1q2p2 = Envelope.intersectsPoint(p1, p2, q2);
     bool q1p1q2 = Envelope.intersectsPoint(q1, q2, p1);
@@ -939,22 +968,30 @@ class RobustLineIntersector extends LineIntersector {
     if (p1q1p2 && q1p1q2) {
       intPt[0] = q1;
       intPt[1] = p1;
-      return q1.equals(p1) && !p1q2p2 && !q1p2q2 ? LineIntersector.POINT_INTERSECTION : LineIntersector.COLLINEAR_INTERSECTION;
+      return q1.equals(p1) && !p1q2p2 && !q1p2q2
+          ? LineIntersector.POINT_INTERSECTION
+          : LineIntersector.COLLINEAR_INTERSECTION;
     }
     if (p1q1p2 && q1p2q2) {
       intPt[0] = q1;
       intPt[1] = p2;
-      return q1.equals(p2) && !p1q2p2 && !q1p1q2 ? LineIntersector.POINT_INTERSECTION : LineIntersector.COLLINEAR_INTERSECTION;
+      return q1.equals(p2) && !p1q2p2 && !q1p1q2
+          ? LineIntersector.POINT_INTERSECTION
+          : LineIntersector.COLLINEAR_INTERSECTION;
     }
     if (p1q2p2 && q1p1q2) {
       intPt[0] = q2;
       intPt[1] = p1;
-      return q2.equals(p1) && !p1q1p2 && !q1p2q2 ? LineIntersector.POINT_INTERSECTION : LineIntersector.COLLINEAR_INTERSECTION;
+      return q2.equals(p1) && !p1q1p2 && !q1p2q2
+          ? LineIntersector.POINT_INTERSECTION
+          : LineIntersector.COLLINEAR_INTERSECTION;
     }
     if (p1q2p2 && q1p2q2) {
       intPt[0] = q2;
       intPt[1] = p2;
-      return q2.equals(p2) && !p1q1p2 && !q1p1q2 ? LineIntersector.POINT_INTERSECTION : LineIntersector.COLLINEAR_INTERSECTION;
+      return q2.equals(p2) && !p1q1p2 && !q1p1q2
+          ? LineIntersector.POINT_INTERSECTION
+          : LineIntersector.COLLINEAR_INTERSECTION;
     }
     return LineIntersector.NO_INTERSECTION;
   }
@@ -967,7 +1004,8 @@ class RobustLineIntersector extends LineIntersector {
    * removing common significant digits from the calculation to
    * maintain more bits of precision.
    */
-  Coordinate intersection(Coordinate p1, Coordinate p2, Coordinate q1, Coordinate q2) {
+  Coordinate intersection(
+      Coordinate p1, Coordinate p2, Coordinate q1, Coordinate q2) {
     Coordinate intPt = intersectionSafe(p1, p2, q1, q2);
 
     /*
@@ -1005,14 +1043,15 @@ class RobustLineIntersector extends LineIntersector {
 //      checkDD(p1, p2, q1, q2, intPt);
     }
     if (precisionModel != null) {
-      precisionModel.makeCoordinatePrecise(intPt);
+      precisionModel!.makeCoordinatePrecise(intPt);
     }
     return intPt;
   }
 
-  void checkDD(Coordinate p1, Coordinate p2, Coordinate q1, Coordinate q2, Coordinate intPt) {
-    Coordinate intPtDD = CGAlgorithmsDD.intersection(p1, p2, q1, q2);
-    bool isIn = isInSegmentEnvelopes(intPtDD);
+  void checkDD(Coordinate p1, Coordinate p2, Coordinate q1, Coordinate q2,
+      Coordinate intPt) {
+    Coordinate? intPtDD = CGAlgorithmsDD.intersection(p1, p2, q1, q2);
+    bool isIn = isInSegmentEnvelopes(intPtDD!);
     print("DD in env = $isIn --------------------- $intPtDD");
     if (intPt.distance(intPtDD) > 0.0001) {
       print("Distance = ${intPt.distance(intPtDD)}");
@@ -1031,8 +1070,9 @@ class RobustLineIntersector extends LineIntersector {
    * @param q2 a segment endpoint
    * @return the computed intersection point
    */
-  Coordinate intersectionSafe(Coordinate p1, Coordinate p2, Coordinate q1, Coordinate q2) {
-    Coordinate intPt = Intersection.intersection(p1, p2, q1, q2);
+  Coordinate intersectionSafe(
+      Coordinate p1, Coordinate p2, Coordinate q1, Coordinate q2) {
+    Coordinate? intPt = Intersection.intersection(p1, p2, q1, q2);
     if (intPt == null) intPt = nearestEndpoint(p1, p2, q1, q2);
     //     System.out.println("Snapped to " + intPt);
     return intPt;
@@ -1048,8 +1088,10 @@ class RobustLineIntersector extends LineIntersector {
    * @return <code>true</code> if the input point lies within both input segment envelopes
    */
   bool isInSegmentEnvelopes(Coordinate intPt) {
-    Envelope env0 = new Envelope.fromCoordinates(inputLines[0][0], inputLines[0][1]);
-    Envelope env1 = new Envelope.fromCoordinates(inputLines[1][0], inputLines[1][1]);
+    Envelope env0 =
+        new Envelope.fromCoordinates(inputLines[0][0], inputLines[0][1]);
+    Envelope env1 =
+        new Envelope.fromCoordinates(inputLines[1][0], inputLines[1][1]);
     return env0.containsCoordinate(intPt) && env1.containsCoordinate(intPt);
   }
 
@@ -1072,7 +1114,8 @@ class RobustLineIntersector extends LineIntersector {
    * @param q2 an endpoint of segment Q
    * @return the nearest endpoint to the other segment
    */
-  static Coordinate nearestEndpoint(Coordinate p1, Coordinate p2, Coordinate q1, Coordinate q2) {
+  static Coordinate nearestEndpoint(
+      Coordinate p1, Coordinate p2, Coordinate q1, Coordinate q2) {
     Coordinate nearestPt = p1;
     double minDist = Distance.pointToSegment(p1, q1, q2);
 
@@ -1171,9 +1214,7 @@ class RayCrossingCounter {
   // true if the test point lies on an input segment
   bool isPointOnSegment = false;
 
-  RayCrossingCounter(Coordinate p) {
-    this.p = p;
-  }
+  RayCrossingCounter(this.p);
 
   /**
    * Counts a segment
@@ -1392,12 +1433,13 @@ class PointLocator {
       //BoundaryNodeRule.ENDPOINT_BOUNDARY_RULE;
       BoundaryNodeRule.OGC_SFS_BOUNDARY_RULE;
 
-  bool isIn; // true if the point lies in or on any Geometry element
-  int numBoundaries; // the number of sub-elements whose boundaries the point lies in
+  bool isIn = false; // true if the point lies in or on any Geometry element
+  int numBoundaries =
+      0; // the number of sub-elements whose boundaries the point lies in
 
   PointLocator() {}
 
-  PointLocator.fromRule(BoundaryNodeRule boundaryRule) {
+  PointLocator.fromRule(BoundaryNodeRule? boundaryRule) {
     if (boundaryRule == null) throw new ArgumentError("Rule must be non-null");
     this.boundaryRule = boundaryRule;
   }
@@ -1450,19 +1492,19 @@ class PointLocator {
     } else if (geom is MultiLineString) {
       MultiLineString ml = geom;
       for (int i = 0; i < ml.getNumGeometries(); i++) {
-        LineString l = ml.getGeometryN(i);
+        LineString l = ml.getGeometryN(i) as LineString;
         updateLocationInfo(locateOnLineString(p, l));
       }
     } else if (geom is MultiPolygon) {
       MultiPolygon mpoly = geom;
       for (int i = 0; i < mpoly.getNumGeometries(); i++) {
-        Polygon poly = mpoly.getGeometryN(i);
+        Polygon poly = mpoly.getGeometryN(i) as Polygon;
         updateLocationInfo(locateInPolygon(p, poly));
       }
     } else if (geom is GeometryCollection) {
       GeometryCollectionIterator geomi = new GeometryCollectionIterator(geom);
       while (geomi.hasNext()) {
-        Geometry g2 = geomi.next();
+        Geometry g2 = geomi.next() as Geometry;
         if (g2 != geom) computeLocation(p, g2);
       }
     }
@@ -1476,18 +1518,20 @@ class PointLocator {
   int locateOnPoint(Coordinate p, Point pt) {
     // no point in doing envelope test, since equality test is just as fast
 
-    Coordinate ptCoord = pt.getCoordinate();
-    if (ptCoord.equals2D(p)) return Location.INTERIOR;
+    Coordinate? ptCoord = pt.getCoordinate();
+    if (ptCoord!.equals2D(p)) return Location.INTERIOR;
     return Location.EXTERIOR;
   }
 
   int locateOnLineString(Coordinate p, LineString l) {
     // bounding-box check
-    if (!l.getEnvelopeInternal().intersectsCoordinate(p)) return Location.EXTERIOR;
+    if (!l.getEnvelopeInternal().intersectsCoordinate(p))
+      return Location.EXTERIOR;
 
     CoordinateSequence seq = l.getCoordinateSequence();
     if (!l.isClosed()) {
-      if (p.equals(seq.getCoordinate(0)) || p.equals(seq.getCoordinate(seq.size() - 1))) {
+      if (p.equals(seq.getCoordinate(0)) ||
+          p.equals(seq.getCoordinate(seq.size() - 1))) {
         return Location.BOUNDARY;
       }
     }
@@ -1499,7 +1543,8 @@ class PointLocator {
 
   int locateInPolygonRing(Coordinate p, LinearRing ring) {
     // bounding-box check
-    if (!ring.getEnvelopeInternal().intersectsCoordinate(p)) return Location.EXTERIOR;
+    if (!ring.getEnvelopeInternal().intersectsCoordinate(p))
+      return Location.EXTERIOR;
 
     return PointLocation.locateInRing(p, ring.getCoordinates());
   }
@@ -1544,10 +1589,10 @@ class RectangleLineIntersector {
 
   Envelope rectEnv;
 
-  Coordinate diagUp0;
-  Coordinate diagUp1;
-  Coordinate diagDown0;
-  Coordinate diagDown1;
+  late Coordinate diagUp0;
+  late Coordinate diagUp1;
+  late Coordinate diagDown0;
+  late Coordinate diagDown1;
 
   /**
    * Creates a new intersector for the given query rectangle,
@@ -1556,9 +1601,7 @@ class RectangleLineIntersector {
    *
    * @param rectEnv the query rectangle, specified as an Envelope
    */
-  RectangleLineIntersector(Envelope rectEnv) {
-    this.rectEnv = rectEnv;
-
+  RectangleLineIntersector(this.rectEnv) {
     /**
      * Up and Down are the diagonal orientations
      * relative to the Left side of the rectangle.
@@ -1813,13 +1856,14 @@ class Centroid {
    * @param geom the geometry to use
    * @return the centroid point, or null if the geometry is empty
    */
-  static Coordinate getCentroidStatic(Geometry geom) {
+  static Coordinate? getCentroidStatic(Geometry geom) {
     Centroid cent = new Centroid(geom);
     return cent.getCentroid();
   }
 
-  Coordinate areaBasePt = null; // the point all triangles are based at
-  Coordinate triangleCent3 = new Coordinate.empty2D(); // temporary variable to hold centroid of triangle
+  Coordinate? areaBasePt = null; // the point all triangles are based at
+  Coordinate triangleCent3 = new Coordinate
+      .empty2D(); // temporary variable to hold centroid of triangle
   double areasum2 = 0;
 
   /* Partial area sum */
@@ -1848,7 +1892,7 @@ class Centroid {
   void add(Geometry geom) {
     if (geom.isEmpty()) return;
     if (geom is Point) {
-      addPoint(geom.getCoordinate());
+      addPoint(geom.getCoordinate()!);
     } else if (geom is LineString) {
       addLineSegments(geom.getCoordinates());
     } else if (geom is Polygon) {
@@ -1867,7 +1911,7 @@ class Centroid {
    *
    * @return the computed centroid, or null if the input is empty
    */
-  Coordinate getCentroid() {
+  Coordinate? getCentroid() {
     /**
      * The centroid is computed from the highest dimension components present in the input.
      * I.e. areas dominate lineal geometry, which dominates points.
@@ -1914,7 +1958,7 @@ class Centroid {
     if (pts.length > 0) setAreaBasePoint(pts[0]);
     bool isPositiveArea = !Orientation.isCCW(pts);
     for (int i = 0; i < pts.length - 1; i++) {
-      addTriangle(areaBasePt, pts[i], pts[i + 1], isPositiveArea);
+      addTriangle(areaBasePt!, pts[i], pts[i + 1], isPositiveArea);
     }
     addLineSegments(pts);
   }
@@ -1922,12 +1966,13 @@ class Centroid {
   void addHole(List<Coordinate> pts) {
     bool isPositiveArea = Orientation.isCCW(pts);
     for (int i = 0; i < pts.length - 1; i++) {
-      addTriangle(areaBasePt, pts[i], pts[i + 1], isPositiveArea);
+      addTriangle(areaBasePt!, pts[i], pts[i + 1], isPositiveArea);
     }
     addLineSegments(pts);
   }
 
-  void addTriangle(Coordinate p0, Coordinate p1, Coordinate p2, bool isPositiveArea) {
+  void addTriangle(
+      Coordinate p0, Coordinate p1, Coordinate p2, bool isPositiveArea) {
     double sign = (isPositiveArea) ? 1.0 : -1.0;
     centroid3(p0, p1, p2, triangleCent3);
     double area = area2(p0, p1, p2);
@@ -1941,7 +1986,8 @@ class Centroid {
    * The factor of 3 is
    * left in to permit division to be avoided until later.
    */
-  static void centroid3(Coordinate p1, Coordinate p2, Coordinate p3, Coordinate c) {
+  static void centroid3(
+      Coordinate p1, Coordinate p2, Coordinate p3, Coordinate c) {
     c.x = p1.x + p2.x + p3.x;
     c.y = p1.y + p2.y + p3.y;
     return;
@@ -2050,15 +2096,18 @@ abstract class BoundaryNodeRule {
 
   /// The Endpoint Boundary Node Rule.
   /// @see EndPointBoundaryNodeRule
-  static final BoundaryNodeRule ENDPOINT_BOUNDARY_RULE = new EndPointBoundaryNodeRule();
+  static final BoundaryNodeRule ENDPOINT_BOUNDARY_RULE =
+      new EndPointBoundaryNodeRule();
 
   /// The MultiValent Endpoint Boundary Node Rule.
   /// @see MultiValentEndPointBoundaryNodeRule
-  static final BoundaryNodeRule MULTIVALENT_ENDPOINT_BOUNDARY_RULE = new MultiValentEndPointBoundaryNodeRule();
+  static final BoundaryNodeRule MULTIVALENT_ENDPOINT_BOUNDARY_RULE =
+      new MultiValentEndPointBoundaryNodeRule();
 
   /// The Monovalent Endpoint Boundary Node Rule.
   /// @see MonoValentEndPointBoundaryNodeRule
-  static final BoundaryNodeRule MONOVALENT_ENDPOINT_BOUNDARY_RULE = new MonoValentEndPointBoundaryNodeRule();
+  static final BoundaryNodeRule MONOVALENT_ENDPOINT_BOUNDARY_RULE =
+      new MonoValentEndPointBoundaryNodeRule();
 
   /// The Boundary Node Rule specified by the OGC Simple Features Specification,
   /// which is the same as the Mod-2 rule.
@@ -2266,7 +2315,8 @@ class Angle {
    * @param tip2 the tip of the other vector
    * @return the angle between tail-tip1 and tail-tip2
    */
-  static double angleBetween(Coordinate tip1, Coordinate tail, Coordinate tip2) {
+  static double angleBetween(
+      Coordinate tip1, Coordinate tail, Coordinate tip2) {
     double a1 = angle2C(tail, tip1);
     double a2 = angle2C(tail, tip2);
 
@@ -2287,7 +2337,8 @@ class Angle {
    * @param tip2 the tip of v2
    * @return the angle between v1 and v2, relative to v1
    */
-  static double angleBetweenOriented(Coordinate tip1, Coordinate tail, Coordinate tip2) {
+  static double angleBetweenOriented(
+      Coordinate tip1, Coordinate tail, Coordinate tip2) {
     double a1 = angle2C(tail, tip1);
     double a2 = angle2C(tail, tip2);
     double angDel = a2 - a1;
@@ -2430,7 +2481,8 @@ class HCoordinate {
    *
    * @deprecated use {@link Intersection#intersection(Coordinate, Coordinate, Coordinate, Coordinate)}
    */
-  static Coordinate intersection(Coordinate p1, Coordinate p2, Coordinate q1, Coordinate q2) {
+  static Coordinate intersection(
+      Coordinate p1, Coordinate p2, Coordinate q1, Coordinate q2) {
     // unrolled computation
     double px = p1.y - p2.y;
     double py = p2.x - p1.x;
@@ -2468,7 +2520,7 @@ class HCoordinate {
   }
   */
 
-  double x, y, w;
+  late double x, y, w;
 
   HCoordinate() {
     x = 0.0;
@@ -2515,7 +2567,8 @@ class HCoordinate {
     w = p1.x * p2.y - p2.x * p1.y;
   }
 
-  HCoordinate.from4c(Coordinate p1, Coordinate p2, Coordinate q1, Coordinate q2) {
+  HCoordinate.from4c(
+      Coordinate p1, Coordinate p2, Coordinate q1, Coordinate q2) {
     // unrolled computation
     double px = p1.y - p2.y;
     double py = p2.x - p1.x;
