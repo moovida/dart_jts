@@ -4,9 +4,7 @@ class IntervalRTreeBranchNode extends IntervalRTreeNode {
   IntervalRTreeNode node1;
   IntervalRTreeNode node2;
 
-  IntervalRTreeBranchNode(IntervalRTreeNode n1, IntervalRTreeNode n2) {
-    node1 = n1;
-    node2 = n2;
+  IntervalRTreeBranchNode(this.node1, this.node2) {
     buildExtent(node1, node2);
   }
 
@@ -29,10 +27,9 @@ class IntervalRTreeBranchNode extends IntervalRTreeNode {
 class IntervalRTreeLeafNode extends IntervalRTreeNode {
   Object item;
 
-  IntervalRTreeLeafNode(double min, double max, Object item) {
+  IntervalRTreeLeafNode(double min, double max, this.item) {
     this.min = min;
     this.max = max;
-    this.item = item;
   }
 
   void query(double queryMin, double queryMax, ItemVisitor visitor) {
@@ -66,7 +63,7 @@ class SortedPackedIntervalRTree {
    * OR nothing has been added to the tree.
    * In both cases, the tree is still open for insertions.
    */
-  IntervalRTreeNode root = null;
+  IntervalRTreeNode? root = null;
 
   SortedPackedIntervalRTree() {}
 
@@ -80,7 +77,8 @@ class SortedPackedIntervalRTree {
    * @throws IllegalStateException if the index has already been queried
    */
   void insert(double min, double max, Object item) {
-    if (root != null) throw new StateError("Index cannot be added to once it has been queried");
+    if (root != null)
+      throw new StateError("Index cannot be added to once it has been queried");
     leaves.add(new IntervalRTreeLeafNode(min, max, item));
   }
 
@@ -109,7 +107,7 @@ class SortedPackedIntervalRTree {
 
     // now group nodes into blocks of two and build tree up recursively
     List src = leaves;
-    List temp = null;
+    List? temp = null;
     List dest = [];
 
     while (true) {
@@ -129,11 +127,13 @@ class SortedPackedIntervalRTree {
     dest.clear();
     for (int i = 0; i < src.length; i += 2) {
       IntervalRTreeNode n1 = src[i] as IntervalRTreeNode;
-      IntervalRTreeNode n2 = (i + 1 < src.length) ? src[i] as IntervalRTreeNode : null;
+      IntervalRTreeNode? n2 =
+          (i + 1 < src.length) ? src[i] as IntervalRTreeNode : null;
       if (n2 == null) {
         dest.add(n1);
       } else {
-        IntervalRTreeNode node = new IntervalRTreeBranchNode(src[i], src[i + 1]);
+        IntervalRTreeNode node =
+            new IntervalRTreeBranchNode(src[i], src[i + 1]);
 //        printNode(node);
 //				System.out.println(node);
         dest.add(node);
@@ -142,7 +142,9 @@ class SortedPackedIntervalRTree {
   }
 
   void printNode(IntervalRTreeNode node) {
-    print(WKTWriter.toLineStringFromCoords(new Coordinate(node.min, level.toDouble()), new Coordinate(node.max, level.toDouble())));
+    print(WKTWriter.toLineStringFromCoords(
+        new Coordinate(node.min, level.toDouble()),
+        new Coordinate(node.max, level.toDouble())));
   }
 
   /**
@@ -159,7 +161,7 @@ class SortedPackedIntervalRTree {
     // if root is null tree must be empty
     if (root == null) return;
 
-    root.query(min, max, visitor);
+    root!.query(min, max, visitor);
   }
 }
 
@@ -183,7 +185,8 @@ abstract class IntervalRTreeNode {
   }
 
   String toString() {
-    return WKTWriter.toLineStringFromCoords(new Coordinate(min, 0), new Coordinate(max, 0));
+    return WKTWriter.toLineStringFromCoords(
+        new Coordinate(min, 0), new Coordinate(max, 0));
   }
 }
 
@@ -251,12 +254,12 @@ class SweepLineEvent implements Comparable {
   static final int INSERT = 1;
   static final int DELETE = 2;
 
-  Object label; // used for red-blue intersection detection
+  Object? label; // used for red-blue intersection detection
   double xValue;
-  int eventType;
-  SweepLineEvent insertEvent = null; // null if this is an INSERT event
-  int deleteEventIndex;
-  Object obj;
+  int eventType = 0;
+  SweepLineEvent? insertEvent = null; // null if this is an INSERT event
+  int deleteEventIndex = 0;
+  Object? obj;
 
   /**
    * Creates an INSERT event.
@@ -265,11 +268,8 @@ class SweepLineEvent implements Comparable {
    * @param x the event location
    * @param obj the object being inserted
    */
-  SweepLineEvent(Object label, double x, Object obj) {
+  SweepLineEvent(this.label, this.xValue, this.obj) {
     this.eventType = INSERT;
-    this.label = label;
-    xValue = x;
-    this.obj = obj;
   }
 
   /**
@@ -278,10 +278,8 @@ class SweepLineEvent implements Comparable {
    * @param x the event location
    * @param insertEvent the corresponding INSERT event
    */
-  SweepLineEvent.withEvent(double x, SweepLineEvent insertEvent) {
+  SweepLineEvent.withEvent(this.xValue, this.insertEvent) {
     eventType = DELETE;
-    xValue = x;
-    this.insertEvent = insertEvent;
   }
 
   bool isInsert() {
@@ -292,7 +290,7 @@ class SweepLineEvent implements Comparable {
     return eventType == DELETE;
   }
 
-  SweepLineEvent getInsertEvent() {
+  SweepLineEvent? getInsertEvent() {
     return insertEvent;
   }
 
@@ -304,7 +302,7 @@ class SweepLineEvent implements Comparable {
     this.deleteEventIndex = deleteEventIndex;
   }
 
-  Object getObject() {
+  Object? getObject() {
     return obj;
   }
 
@@ -320,7 +318,7 @@ class SweepLineEvent implements Comparable {
    * items whose Insert and Delete events occur at the same x-value will be
    * correctly handled.
    */
-  int compareTo(Object o) {
+  int compareTo(dynamic o) {
     SweepLineEvent pe = o;
     if (xValue < pe.xValue) return -1;
     if (xValue > pe.xValue) return 1;
@@ -354,7 +352,8 @@ abstract class EdgeSetIntersector {
    * @param si the SegmentIntersector to use
    * @param testAllSegments true if self-intersections are to be tested as well
    */
-  void computeIntersections(List edges, SegmentIntersector si, bool testAllSegments);
+  void computeIntersections(
+      List edges, SegmentIntersector si, bool testAllSegments);
 
   /**
    * Computes all mutual intersections between two sets of edges.
@@ -376,7 +375,7 @@ class SimpleMCSweepLineIntersector extends EdgeSetIntersector {
   List events = [];
 
   // statistics information
-  int nOverlaps;
+  int nOverlaps = 0;
 
   /**
    * A SimpleMCSweepLineIntersector creates monotone chains from the edges
@@ -384,7 +383,8 @@ class SimpleMCSweepLineIntersector extends EdgeSetIntersector {
    */
   SimpleMCSweepLineIntersector() {}
 
-  void computeIntersections(List edges, SegmentIntersector si, bool testAllSegments) {
+  void computeIntersections(
+      List edges, SegmentIntersector si, bool testAllSegments) {
     if (testAllSegments)
       addEdgesWithSet(edges, null);
     else
@@ -406,19 +406,20 @@ class SimpleMCSweepLineIntersector extends EdgeSetIntersector {
     }
   }
 
-  void addEdgesWithSet(List edges, Object edgeSet) {
+  void addEdgesWithSet(List edges, Object? edgeSet) {
     for (Iterator i = edges.iterator; i.moveNext();) {
       Edge edge = i.current;
       addEdge(edge, edgeSet);
     }
   }
 
-  void addEdge(Edge edge, Object edgeSet) {
+  void addEdge(Edge edge, Object? edgeSet) {
     MonotoneChainEdge mce = edge.getMonotoneChainEdge();
     List<int> startIndex = mce.getStartIndexes();
     for (int i = 0; i < startIndex.length - 1; i++) {
       MonotoneChain mc = new MonotoneChain(mce, i);
-      SweepLineEvent insertEvent = new SweepLineEvent(edgeSet, mce.getMinX(i), mc);
+      SweepLineEvent insertEvent =
+          new SweepLineEvent(edgeSet, mce.getMinX(i), mc);
       events.add(insertEvent);
       events.add(new SweepLineEvent.withEvent(mce.getMaxX(i), insertEvent));
     }
@@ -435,7 +436,7 @@ class SimpleMCSweepLineIntersector extends EdgeSetIntersector {
     for (int i = 0; i < events.length; i++) {
       SweepLineEvent ev = events[i];
       if (ev.isDelete()) {
-        ev.getInsertEvent().setDeleteEventIndex(i);
+        ev.getInsertEvent()!.setDeleteEventIndex(i);
       }
     }
   }
@@ -455,8 +456,9 @@ class SimpleMCSweepLineIntersector extends EdgeSetIntersector {
     }
   }
 
-  void processOverlaps(int start, int end, SweepLineEvent ev0, SegmentIntersector si) {
-    MonotoneChain mc0 = ev0.getObject();
+  void processOverlaps(
+      int start, int end, SweepLineEvent ev0, SegmentIntersector si) {
+    MonotoneChain mc0 = ev0.getObject() as MonotoneChain;
     /**
      * Since we might need to test for self-intersections,
      * include current INSERT event object in list of event objects to test.
@@ -465,7 +467,7 @@ class SimpleMCSweepLineIntersector extends EdgeSetIntersector {
     for (int i = start; i < end; i++) {
       SweepLineEvent ev1 = events[i];
       if (ev1.isInsert()) {
-        MonotoneChain mc1 = ev1.getObject();
+        MonotoneChain mc1 = ev1.getObject() as MonotoneChain;
         // don't compare edges in same group, if labels are present
         if (!ev0.isSameLabel(ev1)) {
           mc0.computeIntersections(mc1, si);
@@ -496,12 +498,12 @@ class SegmentIntersector {
   bool _hasProperInterior = false;
 
   // the proper intersection point found
-  Coordinate _properIntersectionPoint = null;
+  Coordinate? _properIntersectionPoint = null;
 
-  LineIntersector _li;
-  bool _includeProper;
-  bool _recordIsolated;
-  bool _isSelfIntersection;
+  late LineIntersector _li;
+  bool _includeProper = false;
+  bool _recordIsolated = false;
+  bool _isSelfIntersection = false;
 
   // bool intersectionFound;
   int _numIntersections = 0;
@@ -509,20 +511,21 @@ class SegmentIntersector {
   // testing only
   int _numTests = 0;
 
-  List<List> bdyNodes;
+  List<List>? bdyNodes;
   bool _isDone = false;
   bool _isDoneWhenProperInt = false;
 
-  SegmentIntersector(LineIntersector li, bool includeProper, bool recordIsolated) {
+  SegmentIntersector(
+      LineIntersector li, bool includeProper, bool recordIsolated) {
     this._li = li;
     this._includeProper = includeProper;
     this._recordIsolated = recordIsolated;
   }
 
   void setBoundaryNodes(List bdyNodes0, List bdyNodes1) {
-    bdyNodes = List(2);
-    bdyNodes[0] = bdyNodes0;
-    bdyNodes[1] = bdyNodes1;
+    bdyNodes = []..length = (2);
+    bdyNodes![0] = bdyNodes0;
+    bdyNodes![1] = bdyNodes1;
   }
 
   void setIsDoneIfProperInt(bool isDoneWhenProperInt) {
@@ -536,7 +539,7 @@ class SegmentIntersector {
   /**
    * @return the proper intersection point, or <code>null</code> if none was found
    */
-  Coordinate getProperIntersectionPoint() {
+  Coordinate? getProperIntersectionPoint() {
     return _properIntersectionPoint;
   }
 
@@ -575,7 +578,8 @@ class SegmentIntersector {
         if (isAdjacentSegments(segIndex0, segIndex1)) return true;
         if (e0.isClosed()) {
           int maxSegIndex = e0.getNumPoints() - 1;
-          if ((segIndex0 == 0 && segIndex1 == maxSegIndex) || (segIndex1 == 0 && segIndex0 == maxSegIndex)) {
+          if ((segIndex0 == 0 && segIndex1 == maxSegIndex) ||
+              (segIndex1 == 0 && segIndex0 == maxSegIndex)) {
             return true;
           }
         }
@@ -635,7 +639,7 @@ class SegmentIntersector {
     }
   }
 
-  bool isBoundaryPoint(LineIntersector li, List<List> bdyNodes) {
+  bool isBoundaryPoint(LineIntersector li, List<List>? bdyNodes) {
     if (bdyNodes == null) return false;
     if (isBoundaryPointInternal(li, bdyNodes[0].cast<Node>())) return true;
     if (isBoundaryPointInternal(li, bdyNodes[1].cast<Node>())) return true;
@@ -659,10 +663,7 @@ class MonotoneChain {
   MonotoneChainEdge mce;
   int chainIndex;
 
-  MonotoneChain(MonotoneChainEdge mce, int chainIndex) {
-    this.mce = mce;
-    this.chainIndex = chainIndex;
-  }
+  MonotoneChain(this.mce, this.chainIndex);
 
   void computeIntersections(MonotoneChain mc, SegmentIntersector si) {
     this.mce.computeIntersectsForChain(chainIndex, mc.mce, mc.chainIndex, si);
@@ -688,13 +689,13 @@ class MonotoneChain {
  */
 class MonotoneChainEdge {
   Edge e;
-  List<Coordinate> pts; // cache a reference to the coord array, for efficiency
+  late List<Coordinate>
+      pts; // cache a reference to the coord array, for efficiency
   // the lists of start/end indexes of the monotone chains.
   // Includes the end point of the edge as a sentinel
-  List<int> startIndex;
+  late List<int> startIndex;
 
-  MonotoneChainEdge(Edge e) {
-    this.e = e;
+  MonotoneChainEdge(this.e) {
     pts = e.getCoordinates();
     MonotoneChainIndexer mcb = new MonotoneChainIndexer();
     startIndex = mcb.getChainStartIndices(pts);
@@ -728,11 +729,19 @@ class MonotoneChainEdge {
     }
   }
 
-  void computeIntersectsForChain(int chainIndex0, MonotoneChainEdge mce, int chainIndex1, SegmentIntersector si) {
-    computeIntersectsForChain6(startIndex[chainIndex0], startIndex[chainIndex0 + 1], mce, mce.startIndex[chainIndex1], mce.startIndex[chainIndex1 + 1], si);
+  void computeIntersectsForChain(int chainIndex0, MonotoneChainEdge mce,
+      int chainIndex1, SegmentIntersector si) {
+    computeIntersectsForChain6(
+        startIndex[chainIndex0],
+        startIndex[chainIndex0 + 1],
+        mce,
+        mce.startIndex[chainIndex1],
+        mce.startIndex[chainIndex1 + 1],
+        si);
   }
 
-  void computeIntersectsForChain6(int start0, int end0, MonotoneChainEdge mce, int start1, int end1, SegmentIntersector ei) {
+  void computeIntersectsForChain6(int start0, int end0, MonotoneChainEdge mce,
+      int start1, int end1, SegmentIntersector ei) {
 //Debug.println("computeIntersectsForChain:" + p00 + p01 + p10 + p11);
 
     // terminating condition for the recursion
@@ -750,12 +759,16 @@ class MonotoneChainEdge {
     // Assert: mid != start or end (since we checked above for end - start <= 1)
     // check terminating conditions before recursing
     if (start0 < mid0) {
-      if (start1 < mid1) computeIntersectsForChain6(start0, mid0, mce, start1, mid1, ei);
-      if (mid1 < end1) computeIntersectsForChain6(start0, mid0, mce, mid1, end1, ei);
+      if (start1 < mid1)
+        computeIntersectsForChain6(start0, mid0, mce, start1, mid1, ei);
+      if (mid1 < end1)
+        computeIntersectsForChain6(start0, mid0, mce, mid1, end1, ei);
     }
     if (mid0 < end0) {
-      if (start1 < mid1) computeIntersectsForChain6(mid0, end0, mce, start1, mid1, ei);
-      if (mid1 < end1) computeIntersectsForChain6(mid0, end0, mce, mid1, end1, ei);
+      if (start1 < mid1)
+        computeIntersectsForChain6(mid0, end0, mce, start1, mid1, ei);
+      if (mid1 < end1)
+        computeIntersectsForChain6(mid0, end0, mce, mid1, end1, ei);
     }
   }
 
@@ -769,8 +782,10 @@ class MonotoneChainEdge {
    * @param end1
    * @return true if the section envelopes overlap
    */
-  bool overlaps(int start0, int end0, MonotoneChainEdge mce, int start1, int end1) {
-    return Envelope.intersectsEnvelopeCoords(pts[start0], pts[end0], mce.pts[start1], mce.pts[end1]);
+  bool overlaps(
+      int start0, int end0, MonotoneChainEdge mce, int start1, int end1) {
+    return Envelope.intersectsEnvelopeCoords(
+        pts[start0], pts[end0], mce.pts[start1], mce.pts[end1]);
   }
 }
 
@@ -801,7 +816,7 @@ class MonotoneChainEdge {
  */
 class MonotoneChainIndexer {
   static List<int> toIntArray(List list) {
-    List<int> array = List(list.length);
+    List<int> array = []..length = (list.length);
     for (int i = 0; i < array.length; i++) {
       array.add(list[i] as int);
     }
