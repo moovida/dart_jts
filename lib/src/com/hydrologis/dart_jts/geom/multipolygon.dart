@@ -29,7 +29,8 @@ class MultiPolygon extends GeometryCollection implements Polygonal {
    * @deprecated Use GeometryFactory instead
    */
   MultiPolygon(List<Polygon> polygons, PrecisionModel precisionModel, int SRID)
-      : this.withFactory(polygons, new GeometryFactory.withPrecisionModelSrid(precisionModel, SRID));
+      : this.withFactory(polygons,
+            new GeometryFactory.withPrecisionModelSrid(precisionModel, SRID));
 
   /**
    * @param polygons
@@ -41,7 +42,8 @@ class MultiPolygon extends GeometryCollection implements Polygonal {
    *            HREF="http://www.opengis.org/techno/specs.htm">OpenGIS Simple
    *            Features Specification for SQL</A>.
    */
-  MultiPolygon.withFactory(List<Polygon> polygons, GeometryFactory factory) : super.withFactory(polygons, factory);
+  MultiPolygon.withFactory(List<Polygon>? polygons, GeometryFactory factory)
+      : super.withFactory(polygons, factory);
 
   int getDimension() {
     return 2;
@@ -79,7 +81,7 @@ class MultiPolygon extends GeometryCollection implements Polygonal {
         allRings.add(rings.getGeometryN(j));
       }
     }
-    return getFactory().createMultiLineString(allRings);
+    return getFactory().createMultiLineString(allRings as List<LineString>);
   }
 
   bool equalsExactWithTol(Geometry other, double tolerance) {
@@ -98,7 +100,7 @@ class MultiPolygon extends GeometryCollection implements Polygonal {
    */
   Geometry reverse() {
     int n = geometries.length;
-    List<Polygon> revGeoms = List(n);
+    List<Polygon> revGeoms = []..length = n;
     for (int i = 0; i < geometries.length; i++) {
       revGeoms[i] = geometries[i].reverse() as Polygon;
     }
@@ -106,7 +108,7 @@ class MultiPolygon extends GeometryCollection implements Polygonal {
   }
 
   MultiPolygon copyInternal() {
-    List<Polygon> polygons = List(this.geometries.length);
+    List<Polygon> polygons = []..length = this.geometries.length;
     for (int i = 0; i < polygons.length; i++) {
       polygons[i] = this.geometries[i].copy() as Polygon;
     }

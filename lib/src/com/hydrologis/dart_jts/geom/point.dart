@@ -15,7 +15,7 @@ class Point extends Geometry implements Puntal {
   /**
    *  The <code>Coordinate</code> wrapped by this <code>Point</code>.
    */
-  CoordinateSequence coordinates;
+  CoordinateSequence? coordinates;
 
   /**
    *  Constructs a <code>Point</code> with the given coordinate.
@@ -28,19 +28,24 @@ class Point extends Geometry implements Puntal {
    *      <code>Point</code>
    * @deprecated Use GeometryFactory instead
    */
-  Point(Coordinate coordinate, PrecisionModel precisionModel, int SRID) : super(new GeometryFactory.withPrecisionModelSrid(precisionModel, SRID)) {
-    init(getFactory().getCoordinateSequenceFactory().create(coordinate != null ? [coordinate] : []));
+  Point(Coordinate? coordinate, PrecisionModel precisionModel, int SRID)
+      : super(
+            new GeometryFactory.withPrecisionModelSrid(precisionModel, SRID)) {
+    init(getFactory()
+        .getCoordinateSequenceFactory()
+        .create(coordinate != null ? [coordinate] : []));
   }
 
   /**
    *@param  coordinates      contains the single coordinate on which to base this <code>Point</code>
    *      , or <code>null</code> to create the empty geometry.
    */
-  Point.fromSequence(CoordinateSequence coordinates, GeometryFactory factory) : super(factory) {
+  Point.fromSequence(CoordinateSequence? coordinates, GeometryFactory factory)
+      : super(factory) {
     init(coordinates);
   }
 
-  void init(CoordinateSequence coordinates) {
+  void init(CoordinateSequence? coordinates) {
     if (coordinates == null) {
       coordinates = getFactory().getCoordinateSequenceFactory().create([]);
     }
@@ -49,7 +54,7 @@ class Point extends Geometry implements Puntal {
   }
 
   List<Coordinate> getCoordinates() {
-    return isEmpty() ? [] : [getCoordinate()];
+    return isEmpty() ? [] : [getCoordinate()!];
   }
 
   int getNumPoints() {
@@ -57,7 +62,7 @@ class Point extends Geometry implements Puntal {
   }
 
   bool isEmpty() {
-    return coordinates.size() == 0;
+    return coordinates!.size() == 0;
   }
 
   bool isSimple() {
@@ -76,18 +81,18 @@ class Point extends Geometry implements Puntal {
     if (getCoordinate() == null) {
       throw new StateError("getX called on empty Point");
     }
-    return getCoordinate().x;
+    return getCoordinate()!.x;
   }
 
   double getY() {
     if (getCoordinate() == null) {
       throw new StateError("getY called on empty Point");
     }
-    return getCoordinate().y;
+    return getCoordinate()!.y;
   }
 
-  Coordinate getCoordinate() {
-    return coordinates.size() != 0 ? coordinates.getCoordinate(0) : null;
+  Coordinate? getCoordinate() {
+    return coordinates!.size() != 0 ? coordinates!.getCoordinate(0) : null;
   }
 
   String getGeometryType() {
@@ -111,7 +116,7 @@ class Point extends Geometry implements Puntal {
       return new Envelope.empty();
     }
     Envelope env = new Envelope.empty();
-    env.expandToInclude(coordinates.getX(0), coordinates.getY(0));
+    env.expandToInclude(coordinates!.getX(0), coordinates!.getY(0));
     return env;
   }
 
@@ -125,7 +130,8 @@ class Point extends Geometry implements Puntal {
     if (isEmpty() != other.isEmpty()) {
       return false;
     }
-    return equal((other as Point).getCoordinate(), this.getCoordinate(), tolerance);
+    return equal(
+        (other as Point).getCoordinate()!, this.getCoordinate()!, tolerance);
   }
 
   void applyCF(CoordinateFilter cf) {
@@ -137,7 +143,7 @@ class Point extends Geometry implements Puntal {
 
   void applyCSF(CoordinateSequenceFilter filter) {
     if (isEmpty()) return;
-    filter.filter(coordinates, 0);
+    filter.filter(coordinates!, 0);
     if (filter.isGeometryChanged()) geometryChanged();
   }
 
@@ -161,7 +167,7 @@ class Point extends Geometry implements Puntal {
   }
 
   Point copyInternal() {
-    return new Point.fromSequence(coordinates.copy(), geomFactory);
+    return new Point.fromSequence(coordinates!.copy(), geomFactory);
   }
 
   Geometry reverse() {
@@ -174,12 +180,13 @@ class Point extends Geometry implements Puntal {
 
   int compareToSameClass(Object other) {
     Point point = other as Point;
-    return getCoordinate().compareTo(point.getCoordinate());
+    return getCoordinate()!.compareTo(point.getCoordinate()!);
   }
 
-  int compareToSameClassWithComparator(Object other, Comparator<CoordinateSequence> comp) {
+  int compareToSameClassWithComparator(
+      Object other, Comparator<CoordinateSequence> comp) {
     Point point = other as Point;
-    return comp(this.coordinates, point.coordinates);
+    return comp(this.coordinates!, point.coordinates!);
   }
 
   int getSortIndex() {
@@ -187,6 +194,6 @@ class Point extends Geometry implements Puntal {
   }
 
   CoordinateSequence getCoordinateSequence() {
-    return coordinates;
+    return coordinates!;
   }
 }

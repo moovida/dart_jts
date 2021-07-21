@@ -1378,7 +1378,7 @@ class Matrix {
    * 
    * @throws IllegalArgumentException if the matrix is the wrong size 
    */
-  static List<double> solve(List<List<double>> a, List<double> b) {
+  static List<double>? solve(List<List<double>> a, List<double> b) {
     int n = b.length;
     if (a.length != n || a[0].length != n)
       throw ArgumentError("Matrix A is incorrectly sized");

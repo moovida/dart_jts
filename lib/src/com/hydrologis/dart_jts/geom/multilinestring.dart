@@ -21,8 +21,10 @@ class MultiLineString extends GeometryCollection implements Lineal {
    *      <code>MultiLineString</code>
    * @deprecated Use GeometryFactory instead
    */
-  MultiLineString(List<LineString> lineStrings, PrecisionModel precisionModel, int SRID)
-      : super.withFactory(lineStrings, new GeometryFactory.withPrecisionModelSrid(precisionModel, SRID));
+  MultiLineString(
+      List<LineString> lineStrings, PrecisionModel precisionModel, int SRID)
+      : super.withFactory(lineStrings,
+            new GeometryFactory.withPrecisionModelSrid(precisionModel, SRID));
 
   /**
    * @param lineStrings
@@ -31,7 +33,9 @@ class MultiLineString extends GeometryCollection implements Lineal {
    *            geometry. Elements may be empty <code>LineString</code>s,
    *            but not <code>null</code>s.
    */
-  MultiLineString.withFactory(List<LineString> lineStrings, GeometryFactory factory) : super.withFactory(lineStrings, factory);
+  MultiLineString.withFactory(
+      List<LineString>? lineStrings, GeometryFactory factory)
+      : super.withFactory(lineStrings, factory);
 
   int getDimension() {
     return 1;
@@ -82,7 +86,7 @@ class MultiLineString extends GeometryCollection implements Lineal {
    */
   Geometry reverse() {
     int nLines = geometries.length;
-    List<LineString> revLines = List(nLines);
+    List<LineString> revLines = []..length = nLines;
     for (int i = 0; i < geometries.length; i++) {
       revLines[nLines - 1 - i] = geometries[i].reverse() as LineString;
     }
@@ -90,7 +94,7 @@ class MultiLineString extends GeometryCollection implements Lineal {
   }
 
   MultiLineString copyInternal() {
-    List<LineString> lineStrings = List(this.geometries.length);
+    List<LineString> lineStrings = []..length = this.geometries.length;
     for (int i = 0; i < lineStrings.length; i++) {
       lineStrings[i] = this.geometries[i].copy() as LineString;
     }

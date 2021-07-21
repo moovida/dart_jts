@@ -4,16 +4,16 @@ part of dart_jts;
 ///
 /// @version 1.7
 class TopologyException implements Exception {
-  static String msgWithCoord(String msg, Coordinate pt) {
+  static String msgWithCoord(String msg, Coordinate? pt) {
     if (pt != null) {
       return msg + " [ $pt ]";
     }
     return msg;
   }
 
-  Coordinate pt;
+  Coordinate? pt;
 
-  String msg;
+  String? msg;
 
   TopologyException(this.msg);
 
@@ -22,7 +22,7 @@ class TopologyException implements Exception {
     this.pt = Coordinate.fromCoordinate(pt);
   }
 
-  Coordinate getCoordinate() {
+  Coordinate? getCoordinate() {
     return pt;
   }
 }
@@ -118,7 +118,8 @@ class CoordinateSequenceComparatorBuilder {
   /// @param i the index of the coordinate to test
   /// @param dimension the number of dimensions to test
   /// @return -1, 0, or 1 depending on whether s1[i] is less than, equal to, or greater than s2[i]
-  static int compareCoordinate(CoordinateSequence s1, CoordinateSequence s2, int i, int dimension) {
+  static int compareCoordinate(
+      CoordinateSequence s1, CoordinateSequence s2, int i, int dimension) {
     for (int d = 0; d < dimension; d++) {
       double ord1 = s1.getOrdinate(i, d);
       double ord2 = s2.getOrdinate(i, d);
@@ -212,7 +213,7 @@ abstract class CoordinateSequenceFilter {
 
 //typedef CoordinateFilter<Coordinate> = void Function(Coordinate coordinate);
 abstract class CoordinateFilter {
-  void filter(Coordinate coordinate);
+  void filter(Coordinate? coordinate);
 }
 
 ///  <code>GeometryCollection</code> classes support the concept of
@@ -265,23 +266,23 @@ abstract class Polygonal {}
 ///@version 1.7
 class GeometryCollectionIterator implements Iterator {
   ///  The <code>Geometry</code> being iterated over.
-  Geometry parent;
+  late Geometry parent;
 
   ///  Indicates whether or not the first element
   ///  (the root <code>GeometryCollection</code>) has been returned.
-  bool atStart;
+  late bool atStart;
 
   ///  The number of <code>Geometry</code>s in the the <code>GeometryCollection</code>.
-  int max;
+  late int max;
 
   ///  The index of the <code>Geometry</code> that will be returned when <code>next</code>
   ///  is called.
-  int index;
+  late int index;
 
   ///  The iterator over a nested <code>Geometry</code>, or <code>null</code>
   ///  if this <code>GeometryCollectionIterator</code> is not currently iterating
   ///  over a nested <code>GeometryCollection</code>.
-  GeometryCollectionIterator subcollectionIterator;
+  GeometryCollectionIterator? subcollectionIterator;
 
   ///  Constructs an iterator over the given <code>Geometry</code>.
   ///
@@ -310,7 +311,7 @@ class GeometryCollectionIterator implements Iterator {
       return true;
     }
     if (subcollectionIterator != null) {
-      if (subcollectionIterator.hasNext()) {
+      if (subcollectionIterator!.hasNext()) {
         return true;
       }
       subcollectionIterator = null;
@@ -332,8 +333,8 @@ class GeometryCollectionIterator implements Iterator {
       return parent;
     }
     if (subcollectionIterator != null) {
-      if (subcollectionIterator.hasNext()) {
-        return subcollectionIterator.next();
+      if (subcollectionIterator!.hasNext()) {
+        return subcollectionIterator!.next();
       } else {
         subcollectionIterator = null;
       }
@@ -345,7 +346,7 @@ class GeometryCollectionIterator implements Iterator {
     if (obj is GeometryCollection) {
       subcollectionIterator = GeometryCollectionIterator(obj);
       // there will always be at least one element in the sub-collection
-      return subcollectionIterator.next();
+      return subcollectionIterator!.next();
     }
     return obj;
   }
@@ -393,7 +394,8 @@ class CoordinateXY extends Coordinate {
    * @param x the X ordinate
    * @param y the Y ordinate
    */
-  CoordinateXY.fromXY(double x, double y) : super.fromXYZ(x, y, Coordinate.NULL_ORDINATE);
+  CoordinateXY.fromXY(double x, double y)
+      : super.fromXYZ(x, y, Coordinate.NULL_ORDINATE);
 
   /**
    * Constructs a CoordinateXY instance with the x and y ordinates of the given Coordinate.
@@ -425,7 +427,8 @@ class CoordinateXY extends Coordinate {
 
   /** The z-ordinate is not supported */
   void setZ(double z) {
-    throw new ArgumentError("CoordinateXY dimension 2 does not support z-ordinate");
+    throw new ArgumentError(
+        "CoordinateXY dimension 2 does not support z-ordinate");
   }
 
   void setCoordinate(Coordinate other) {
@@ -501,7 +504,8 @@ class CoordinateXYM extends Coordinate {
    * @param y the Y ordinate
    * @param m the M measure value
    */
-  CoordinateXYM(double x, double y, double m) : super.fromXYZ(x, y, Coordinate.NULL_ORDINATE) {
+  CoordinateXYM(double x, double y, double m)
+      : super.fromXYZ(x, y, Coordinate.NULL_ORDINATE) {
     this.m = m;
   }
 
@@ -519,7 +523,8 @@ class CoordinateXYM extends Coordinate {
    *
    * @param coord the coordinate providing the ordinates
    */
-  CoordinateXYM.fromCoordinateXYM(CoordinateXYM coord) : super(coord.x, coord.y) {
+  CoordinateXYM.fromCoordinateXYM(CoordinateXYM coord)
+      : super(coord.x, coord.y) {
     m = coord.m;
   }
 
@@ -533,7 +538,7 @@ class CoordinateXYM extends Coordinate {
   }
 
   /** The m-measure. */
-  double m;
+  double m = 0;
 
   /** The m-measure, if available. */
   double getM() {
@@ -551,7 +556,8 @@ class CoordinateXYM extends Coordinate {
 
   /** The z-ordinate is not supported */
   void setZ(double z) {
-    throw new ArgumentError("CoordinateXY dimension 2 does not support z-ordinate");
+    throw new ArgumentError(
+        "CoordinateXY dimension 2 does not support z-ordinate");
   }
 
   void setCoordinate(Coordinate other) {
@@ -590,7 +596,13 @@ class CoordinateXYM extends Coordinate {
   }
 
   String toString() {
-    return "(" + x.toString() + ", " + y.toString() + " m=" + getM().toString() + ")";
+    return "(" +
+        x.toString() +
+        ", " +
+        y.toString() +
+        " m=" +
+        getM().toString() +
+        ")";
   }
 }
 
@@ -615,7 +627,8 @@ class CoordinateXYZM extends Coordinate {
    * @param z the Z ordinate
    * @param m the M measure value
    */
-  CoordinateXYZM(double x, double y, double z, double m) : super.fromXYZ(x, y, z) {
+  CoordinateXYZM(double x, double y, double z, double m)
+      : super.fromXYZ(x, y, z) {
     this.m = m;
   }
 
@@ -624,7 +637,8 @@ class CoordinateXYZM extends Coordinate {
    *
    * @param coord the coordinate providing the ordinates
    */
-  CoordinateXYZM.fromCoordinate(Coordinate coord) : super.fromCoordinate(coord) {
+  CoordinateXYZM.fromCoordinate(Coordinate coord)
+      : super.fromCoordinate(coord) {
     m = getM();
   }
 
@@ -633,7 +647,8 @@ class CoordinateXYZM extends Coordinate {
    *
    * @param coord the coordinate providing the ordinates
    */
-  CoordinateXYZM.fromCoordinateXYZM(CoordinateXYZM coord) : super.fromCoordinate(coord) {
+  CoordinateXYZM.fromCoordinateXYZM(CoordinateXYZM coord)
+      : super.fromCoordinate(coord) {
     m = coord.m;
   }
 
@@ -647,7 +662,7 @@ class CoordinateXYZM extends Coordinate {
   }
 
   /** The m-measure. */
-  double m;
+  double m = 0;
 
   /** The m-measure, if available. */
   double getM() {
@@ -699,7 +714,15 @@ class CoordinateXYZM extends Coordinate {
   }
 
   String toString() {
-    return "(" + x.toString() + ", " + y.toString() + ", " + getZ().toString() + " m=" + getM().toString() + ")";
+    return "(" +
+        x.toString() +
+        ", " +
+        y.toString() +
+        ", " +
+        getZ().toString() +
+        " m=" +
+        getM().toString() +
+        ")";
   }
 }
 
@@ -711,7 +734,7 @@ class CoordinateXYZM extends Coordinate {
  * @version 1.7
  */
 class CoordinateList {
-  List<Coordinate> _backingList;
+  late List<Coordinate> _backingList;
 
   /**
    * Constructs a new list without any coordinates
@@ -728,7 +751,7 @@ class CoordinateList {
    * @param coord the initial coordinates
    */
   CoordinateList.fromList(List<Coordinate> coord) {
-    _backingList = List(coord.length);
+    _backingList = List.from(coord);
     addList(coord, true);
   }
 
@@ -739,8 +762,9 @@ class CoordinateList {
    * @param coord the array of coordinates to load into the list
    * @param allowRepeated if <code>false</code>, repeated points are removed
    */
-  CoordinateList.fromListAllowRepeat(List<Coordinate> coord, bool allowRepeated) {
-    _backingList = List(coord.length);
+  CoordinateList.fromListAllowRepeat(
+      List<Coordinate> coord, bool allowRepeated) {
+    _backingList = List.from(coord);
     addList(coord, allowRepeated);
   }
 
@@ -901,11 +925,10 @@ class CoordinateList {
       return _backingList;
     }
     // construct reversed array
-    int size = _backingList.length;
-    List<Coordinate> pts = List(size);
-    for (int i = 0; i < size; i++) {
-      pts[i] = _backingList[size - i - 1];
-    }
+    List<Coordinate> pts = [];
+    _backingList.reversed.forEach((element) {
+      pts.add(element);
+    });
     return pts;
   }
 
@@ -968,7 +991,8 @@ class Triangle {
     double dx = b.x - a.x;
     double dy = b.y - a.y;
     HCoordinate l1 = new HCoordinate.xyw(a.x + dx / 2.0, a.y + dy / 2.0, 1.0);
-    HCoordinate l2 = new HCoordinate.xyw(a.x - dy + dx / 2.0, a.y + dx + dy / 2.0, 1.0);
+    HCoordinate l2 =
+        new HCoordinate.xyw(a.x - dy + dx / 2.0, a.y + dx + dy / 2.0, 1.0);
     return new HCoordinate.from2Hc(l1, l2);
   }
 
@@ -1028,7 +1052,8 @@ class Triangle {
    *          a vertex of the triangle
    * @return the circumcentre of the triangle
    */
-  static Coordinate circumcentreStatic(Coordinate a, Coordinate b, Coordinate c) {
+  static Coordinate circumcentreStatic(
+      Coordinate a, Coordinate b, Coordinate c) {
     double cx = c.x;
     double cy = c.y;
     double ax = a.x - cx;
@@ -1067,7 +1092,8 @@ class Triangle {
    *          a vertex of the triangle
    * @return the circumcentre of the triangle
    */
-  static Coordinate circumcentreStaticDD(Coordinate a, Coordinate b, Coordinate c) {
+  static Coordinate circumcentreStaticDD(
+      Coordinate a, Coordinate b, Coordinate c) {
     DD ax = DD.valueOf(a.x).subtract(c.x);
     DD ay = DD.valueOf(a.y).subtract(c.y);
     DD bx = DD.valueOf(b.x).subtract(c.x);
@@ -1166,7 +1192,8 @@ class Triangle {
    *          a vertex of the triangle
    * @return the length of the longest side of the triangle
    */
-  static double longestSideLengthStatic(Coordinate a, Coordinate b, Coordinate c) {
+  static double longestSideLengthStatic(
+      Coordinate a, Coordinate b, Coordinate c) {
     double lenAB = a.distance(b);
     double lenBC = b.distance(c);
     double lenCA = c.distance(a);
@@ -1305,7 +1332,8 @@ class Triangle {
    *          a vertex of a triangle, with a Z ordinate
    * @return the computed Z-value (elevation) of the point
    */
-  static double interpolateZStatic(Coordinate p, Coordinate v0, Coordinate v1, Coordinate v2) {
+  static double interpolateZStatic(
+      Coordinate p, Coordinate v0, Coordinate v1, Coordinate v2) {
     double x0 = v0.x;
     double y0 = v0.y;
     double a = v1.x - x0;
@@ -1317,14 +1345,15 @@ class Triangle {
     double dy = p.y - y0;
     double t = (d * dx - b * dy) / det;
     double u = (-c * dx + a * dy) / det;
-    double z = v0.getZ() + t * (v1.getZ() - v0.getZ()) + u * (v2.getZ() - v0.getZ());
+    double z =
+        v0.getZ() + t * (v1.getZ() - v0.getZ()) + u * (v2.getZ() - v0.getZ());
     return z;
   }
 
   /**
    * The coordinates of the vertices of the triangle
    */
-  Coordinate p0, p1, p2;
+  late Coordinate p0, p1, p2;
 
   /**
    * Creates a new triangle with the given vertices.

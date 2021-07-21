@@ -47,15 +47,15 @@ class Coordinate implements Comparable<Coordinate> {
   static const int M = 3;
 
   /// The x-ordinate.
-  double x;
+  late double x;
 
   /// The y-ordinate.
-  double y;
+  late double y;
 
   /// The z-ordinate.
   /// <p>
   /// Direct access to this field is discouraged; use {@link #getZ()}.
-  double z;
+  late double z;
 
   ///  Constructs a <code>Coordinate</code> at (x,y,z).
   ///
@@ -188,7 +188,8 @@ class Coordinate implements Comparable<Coordinate> {
         y = value;
         break;
       case Z:
-        setZ(value); // delegate to subclass rather than offer direct field access
+        setZ(
+            value); // delegate to subclass rather than offer direct field access
         break;
       default:
         throw new ArgumentError("Invalid ordinate index: $ordinateIndex");
@@ -235,7 +236,9 @@ class Coordinate implements Comparable<Coordinate> {
   ///@return true if <code>other</code> is a <code>Coordinate</code>
   ///      with the same values for X, Y and Z.
   bool equals3D(Coordinate other) {
-    return (x == other.x) && (y == other.y) && ((getZ() == other.getZ()) || (getZ().isNaN && other.getZ().isNaN));
+    return (x == other.x) &&
+        (y == other.y) &&
+        ((getZ() == other.getZ()) || (getZ().isNaN && other.getZ().isNaN));
   }
 
   /// Tests if another coordinate has the same value for Z, within a tolerance.

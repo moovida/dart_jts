@@ -7,8 +7,8 @@ part of dart_jts;
  *
  */
 class PriorityQueue {
-  int _size; // Number of elements in queue
-  List _items; // The queue binary heap array
+  late int _size; // Number of elements in queue
+  late List _items; // The queue binary heap array
 
   /**
    * Creates a new empty priority queue
@@ -81,7 +81,7 @@ class PriorityQueue {
    * Remove the smallest item from the priority queue.
    * @return the smallest item, or null if empty
    */
-  Object poll() {
+  Object? poll() {
     if (isEmpty()) return null;
     Object minItem = _items[1];
     _items.insert(1, _items[_size]);
@@ -91,7 +91,7 @@ class PriorityQueue {
     return minItem;
   }
 
-  Object peek() {
+  Object? peek() {
     if (isEmpty()) return null;
     Object minItem = _items[1];
     return minItem;
@@ -108,7 +108,8 @@ class PriorityQueue {
 
     for (; hole * 2 <= _size; hole = child) {
       child = hole * 2;
-      if (child != _size && (_items[child + 1] as Comparable).compareTo(_items[child]) < 0) {
+      if (child != _size &&
+          (_items[child + 1] as Comparable).compareTo(_items[child]) < 0) {
         child++;
       }
       if ((_items[child] as Comparable).compareTo(tmp) < 0)
@@ -134,7 +135,7 @@ class Assert {
    *@param  message                    a description of the assertion
    *@throws  AssertionFailedException  if the condition is false
    */
-  static void isTrue(bool assertion, [String message]) {
+  static void isTrue(bool assertion, [String? message]) {
     if (!assertion) {
       if (message == null) {
         assert(true);
@@ -154,9 +155,11 @@ class Assert {
    *@param  message                    a description of the assertion
    *@throws  AssertionFailedException  if the two objects are not equal
    */
-  static void equals(Object expectedValue, Object actualValue, [String message]) {
+  static void equals(Object expectedValue, Object actualValue,
+      [String? message]) {
     if (actualValue != expectedValue) {
-      assert(true, "Expected $expectedValue but encountered $actualValue ${message != null ? ": " + message : ""}");
+      assert(true,
+          "Expected $expectedValue but encountered $actualValue ${message != null ? ": " + message : ""}");
     }
   }
 
@@ -167,7 +170,8 @@ class Assert {
    *@param  message                    a description of the assertion
    *@throws  AssertionFailedException  thrown always
    */
-  static void shouldNeverReachHere([String message]) {
-    assert(true, "Should never reach here" + (message != null ? ": " + message : ""));
+  static void shouldNeverReachHere([String? message]) {
+    assert(true,
+        "Should never reach here" + (message != null ? ": " + message : ""));
   }
 }
