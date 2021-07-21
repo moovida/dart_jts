@@ -1,9 +1,9 @@
 part of dart_jts;
 
 class _AvlTreeNode<T> {
-  _AvlTreeNode<T> parent;
-  _AvlTreeNode<T> left;
-  _AvlTreeNode<T> right;
+  _AvlTreeNode<T>? parent;
+  _AvlTreeNode<T>? left;
+  _AvlTreeNode<T>? right;
   int height = 0;
 
   // value is either a single value of type T or a list of value List<T>
@@ -20,14 +20,14 @@ class _AvlTreeNode<T> {
    * is heigher than the left subtree.
    */
   int get _balanceFactor {
-    var lh = left == null ? 0 : left.height;
-    var rh = right == null ? 0 : right.height;
+    var lh = left == null ? 0 : left!.height;
+    var rh = right == null ? 0 : right!.height;
     return rh - lh;
   }
 
   _updateHeight() {
-    var lh = left == null ? 0 : left.height;
-    var rh = right == null ? 0 : right.height;
+    var lh = left == null ? 0 : left!.height;
+    var rh = right == null ? 0 : right!.height;
     height = lh > rh ? lh + 1 : rh + 1;
   }
 
@@ -41,9 +41,9 @@ class _AvlTreeNode<T> {
 
   T get compareValue => _values.first;
 
-  bool containsIdentical(T value) => _values.any((v) => identical(v, value));
+  bool containsIdentical(T? value) => _values.any((v) => identical(v, value));
 
-  addEquivalent(T value) {
+  addEquivalent(T? value) {
     var l = new List.generate(
         _values.length + 1, (i) => i < _values.length ? values[i] : value,
         growable: false);
@@ -57,6 +57,7 @@ class _AvlTreeNode<T> {
     _values = new List.generate(
         _values.length - 1, (i) => (i < j) ? _values[i] : _values[i + 1],
         growable: false);
+    return true;
   }
 
   get values => _values;
@@ -136,7 +137,7 @@ class AvlTree<T> {
   static const _LEFT = 1;
   static const _RIGHT = 2;
 
-  _AvlTreeNode<T> _root;
+  _AvlTreeNode<T>? _root;
   int _size = 0;
 
   var _compare = null;
@@ -155,7 +156,7 @@ class AvlTree<T> {
    * respect to Darts `identical()`-function. In this case a tree node
    * become multi-valued.
    */
-  AvlTree({int compare(T v1, T v2), withEquivalenceClasses = false}) {
+  AvlTree({int compare(T v1, T v2)?, withEquivalenceClasses = false}) {
     if (compare != null) {
       _compare = compare;
     } else {
@@ -179,7 +180,7 @@ class AvlTree<T> {
    * present in this tree, but it may supply a more efficient implementation
    * of the comparison operation for this very invocation of [addAll].
    */
-  void addAll(Iterable<T> values, {int compare(T v1, T v2): null}) {
+  void addAll(Iterable<T>? values, {int compare(T v1, T v2)?: null}) {
     if (values == null) return;
     values.forEach((s) => add(s, compare: compare));
   }
@@ -194,7 +195,7 @@ class AvlTree<T> {
    * of the comparison operation for this very invocation of [add].
    *
    */
-  void add(T value, {int compare(T v1, T v2): null}) {
+  void add(T? value, {int compare(T v1, T v2)?: null}) {
     var localCompare;
     if (compare == null) {
       localCompare = this._compare;
@@ -202,7 +203,7 @@ class AvlTree<T> {
       localCompare = compare;
     }
 
-    var newNode = new _AvlTreeNode(value, null);
+    var newNode = new _AvlTreeNode(value, null) as _AvlTreeNode<T>?;
 
     // If root is null, assign
     if (_root == null) {
@@ -221,7 +222,7 @@ class AvlTree<T> {
             }
             // New left node
             node.left = newNode;
-            newNode.parent = node;
+            newNode!.parent = node;
             _size++;
             break loop;
 
@@ -232,7 +233,7 @@ class AvlTree<T> {
             }
             // New right node
             node.right = newNode;
-            newNode.parent = node;
+            newNode!.parent = node;
             _size++;
             break loop;
 
@@ -330,7 +331,7 @@ class AvlTree<T> {
 
     var right = node.right;
     node.right = null;
-    var left = right.left;
+    var left = right!.left;
 
     right.left = node;
     node.parent = right;
@@ -340,9 +341,9 @@ class AvlTree<T> {
 
     if (parentPosition != _NONE) {
       if (parentPosition == _LEFT) {
-        parent.left = right;
+        parent!.left = right;
       } else {
-        parent.right = right;
+        parent!.right = right;
       }
       right.parent = parent;
     } else {
@@ -363,7 +364,7 @@ class AvlTree<T> {
 
     var left = node.left;
     node.left = null;
-    var right = left.right;
+    var right = left!.right;
 
     left.right = node;
     node.parent = left;
@@ -373,9 +374,9 @@ class AvlTree<T> {
 
     if (parentPosition != _NONE) {
       if (parentPosition == _LEFT) {
-        parent.left = left;
+        parent!.left = left;
       } else {
-        parent.right = left;
+        parent!.right = left;
       }
       left.parent = parent;
     } else {
@@ -395,7 +396,7 @@ class AvlTree<T> {
    * present in this tree, but it may supply a more efficient implementation
    * of the comparison operation for this very invocation of [remove].
    */
-  bool remove(T value, {int compare(T v1, T v2): null}) {
+  bool remove(T value, {int compare(T v1, T v2)?: null}) {
     if (compare == null) {
       compare = this._compare;
     }
@@ -439,7 +440,7 @@ class AvlTree<T> {
   /**
    * Replace [node] with [replacement] in the tree.
    */
-  _replaceNodeWithNode(_AvlTreeNode<T> node, _AvlTreeNode<T> replacement) {
+  _replaceNodeWithNode(_AvlTreeNode<T> node, _AvlTreeNode<T>? replacement) {
     if (replacement != null) {
       // Save for later
       var replacementLeft = replacement.left;
@@ -481,11 +482,11 @@ class AvlTree<T> {
     if (node.parent == null) {
       // Replacing the root node
       _root = replacement;
-      if (_root != null) _root.parent = null;
+      if (_root != null) _root!.parent = null;
     } else {
       if (replacement != null) replacement.parent = node.parent;
       var parent = node.parent;
-      if (parent.left == node) {
+      if (parent!.left == node) {
         parent.left = replacement;
       } else if (parent.right == node) {
         parent.right = replacement;
@@ -503,7 +504,7 @@ class AvlTree<T> {
    * present in this tree, but it may supply a more efficient implementation
    * of the comparison operation for this very invocation of [contains].
    */
-  bool contains(T value, {int compare(T v1, T v2): null}) {
+  bool contains(T value, {int compare(T v1, T v2)?: null}) {
     if (compare == null) {
       compare = this._compare;
     }
@@ -526,7 +527,7 @@ class AvlTree<T> {
   dynamic get smallest {
     var n = _root;
     if (n == null) return null;
-    while (n.left != null) n = n.left;
+    while (n!.left != null) n = n.left;
 
     if (this._withEquivalenceClasses) {
       return n.values;
@@ -549,7 +550,7 @@ class AvlTree<T> {
   dynamic get largest {
     var n = _root;
     if (n == null) return null;
-    while (n.right != null) n = n.right;
+    while (n!.right != null) n = n.right;
     if (this._withEquivalenceClasses) {
       return n.values;
     } else {
@@ -637,39 +638,39 @@ class AvlTree<T> {
   _balanceAfterDelete(_AvlTreeNode<T> node) {
     int balanceFactor = node._balanceFactor;
     if (balanceFactor == -2) {
-      var ll = node.left.left;
+      var ll = node.left!.left;
       int lesser = (ll != null) ? ll.height : 0;
-      var lr = node.left.right;
+      var lr = node.left!.right;
       int greater = (lr != null) ? lr.height : 0;
       if (lesser >= greater) {
         _rotateRight(node);
         node._updateHeight();
-        if (node.parent != null) node.parent._updateHeight();
+        if (node.parent != null) node.parent!._updateHeight();
       } else {
-        _rotateLeft(node.left);
+        _rotateLeft(node.left!);
         _rotateRight(node);
 
-        var p = node.parent;
-        if (p.left != null) p.left._updateHeight();
-        if (p.right != null) p.right._updateHeight();
+        var p = node.parent!;
+        if (p.left != null) p.left!._updateHeight();
+        if (p.right != null) p.right!._updateHeight();
         p._updateHeight();
       }
     } else if (balanceFactor == 2) {
-      var rr = node.right.right;
+      var rr = node.right!.right;
       int greater = (rr != null) ? rr.height : 0;
-      var rl = node.right.left;
+      var rl = node.right!.left;
       int lesser = (rl != null) ? rl.height : 0;
       if (greater >= lesser) {
         _rotateLeft(node);
         node._updateHeight();
-        if (node.parent != null) node.parent._updateHeight();
+        if (node.parent != null) node.parent!._updateHeight();
       } else {
-        _rotateRight(node.right);
+        _rotateRight(node.right!);
         _rotateLeft(node);
 
-        var p = node.parent;
-        if (p.left != null) p.left._updateHeight();
-        if (p.right != null) p.right._updateHeight();
+        var p = node.parent!;
+        if (p.left != null) p.left!._updateHeight();
+        if (p.right != null) p.right!._updateHeight();
         p._updateHeight();
       }
     }
@@ -686,7 +687,7 @@ class AvlTree<T> {
    *
    * Returns an empty [Iterable] if the tree is empty.
    */
-  Iterable<dynamic> get inorder => new _InorderIterable.fromRoot(this._root,
+  Iterable<dynamic> get inorder => new _InorderIterable.fromRoot(this._root!,
       withEquivalenceClasses: _withEquivalenceClasses);
 
   /**
@@ -694,7 +695,7 @@ class AvlTree<T> {
    * in reverse order. See [inorder] for details.
    */
   Iterable<dynamic> get inReverseOrder =>
-      new _InorderIterable.fromRoot(this._root,
+      new _InorderIterable.fromRoot(this._root!,
           withEquivalenceClasses: _withEquivalenceClasses, reverse: true);
 
   /**
@@ -777,7 +778,7 @@ class AvlTree<T> {
     }
   }
 
-  _AvlTreeNode<T> _rightNeighbourNode(reference) {
+  _AvlTreeNode<T>? _rightNeighbourNode(reference) {
     var localCompare;
     if (reference is T) {
       localCompare = (T other) => this._compare(reference, other);
@@ -787,15 +788,15 @@ class AvlTree<T> {
       _require(false, "expected value or function, got $reference");
     }
 
-    firstGreaterParent(_AvlTreeNode<T> subtree) {
-      while (subtree.parent != null) {
+    firstGreaterParent(_AvlTreeNode<T>? subtree) {
+      while (subtree!.parent != null) {
         subtree = subtree.parent;
-        if (localCompare(subtree.compareValue) == -1) return subtree;
+        if (localCompare(subtree!.compareValue) == -1) return subtree;
       }
       return null;
     }
 
-    rightNeighbourInSubtree(_AvlTreeNode<T> subtree) {
+    rightNeighbourInSubtree(_AvlTreeNode<T>? subtree) {
       if (subtree == null) return null;
       if (localCompare(subtree.compareValue) >= 0) {
         // value >= subtree.value
@@ -849,7 +850,7 @@ class AvlTree<T> {
     }
   }
 
-  _AvlTreeNode<T> _leftNeighbourNode(reference) {
+  _AvlTreeNode<T>? _leftNeighbourNode(reference) {
     var localCompare = null;
     if (reference is T) {
       localCompare = (T other) => this._compare(reference, other);
@@ -859,15 +860,15 @@ class AvlTree<T> {
       throw new ArgumentError("expected value or function, got $reference");
     }
 
-    firstSmallerParent(_AvlTreeNode<T> subtree) {
-      while (subtree.parent != null) {
+    firstSmallerParent(_AvlTreeNode<T>? subtree) {
+      while (subtree!.parent != null) {
         subtree = subtree.parent;
-        if (localCompare(subtree.compareValue) == 1) return subtree;
+        if (localCompare(subtree!.compareValue) == 1) return subtree;
       }
       return null;
     }
 
-    leftNeighbourInSubtree(_AvlTreeNode<T> subtree) {
+    leftNeighbourInSubtree(_AvlTreeNode<T>? subtree) {
       if (subtree == null) return null;
       if (localCompare(subtree.compareValue) <= 0) {
         // value <= subtree.value
