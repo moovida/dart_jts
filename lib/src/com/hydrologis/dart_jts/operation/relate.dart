@@ -368,7 +368,7 @@ class EdgeEndBundleStar extends EdgeEndStar {
    * <br>
    */
   void insert(EdgeEnd e) {
-    EdgeEndBundle eb = edgeMap[e] as EdgeEndBundle;
+    EdgeEndBundle? eb = edgeMap[e];
     if (eb == null) {
       eb = new EdgeEndBundle.withEdgeEnd(e);
       insertEdgeEnd(e, eb);

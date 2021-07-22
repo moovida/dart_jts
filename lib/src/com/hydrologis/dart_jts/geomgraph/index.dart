@@ -817,7 +817,7 @@ class MonotoneChainEdge {
 class MonotoneChainIndexer {
   static List<int> toIntArray(List list) {
     List<int> array = []; //..length = (list.length);
-    for (int i = 0; i < array.length; i++) {
+    for (int i = 0; i < list.length; i++) {
       array.add(list[i] as int);
     }
     return array;

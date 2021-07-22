@@ -98,7 +98,7 @@ class MultiLineString extends GeometryCollection implements Lineal {
 
   MultiLineString copyInternal() {
     List<LineString> lineStrings = []; //..length = this.geometries.length;
-    for (int i = 0; i < lineStrings.length; i++) {
+    for (int i = 0; i < this.geometries.length; i++) {
       // lineStrings[i] = this.geometries[i].copy() as LineString;
       lineStrings.add(this.geometries[i].copy() as LineString);
     }

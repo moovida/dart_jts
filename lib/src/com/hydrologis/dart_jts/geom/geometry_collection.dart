@@ -56,7 +56,7 @@ class GeometryCollection extends Geometry {
   List<Coordinate> getCoordinates() {
     List<Coordinate> coordinates = []; //..length = getNumPoints();
     // int k = -1;
-    for (int i = 0; i < geometries.length; i++) {
+    for (int i = 0; i < getNumPoints(); i++) {
       List<Coordinate> childCoordinates = geometries[i].getCoordinates();
       for (int j = 0; j < childCoordinates.length; j++) {
         // k++;
@@ -201,7 +201,7 @@ class GeometryCollection extends Geometry {
 
   GeometryCollection copyInternal() {
     List<Geometry> geometries = []; //..length = (this.geometries.length);
-    for (int i = 0; i < geometries.length; i++) {
+    for (int i = 0; i < this.geometries.length; i++) {
       // geometries[i] = this.geometries[i].copy();
       geometries.add(this.geometries[i].copy());
     }
@@ -262,7 +262,7 @@ class GeometryCollection extends Geometry {
   Geometry reverse() {
     int n = geometries.length;
     List<Geometry> revGeoms = []; //..length = n;
-    for (int i = 0; i < geometries.length; i++) {
+    for (int i = 0; i < n; i++) {
       revGeoms.add(geometries[i].reverse());
       // revGeoms[i] = geometries[i].reverse();
     }

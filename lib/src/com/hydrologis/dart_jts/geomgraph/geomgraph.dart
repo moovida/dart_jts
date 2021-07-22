@@ -2164,7 +2164,7 @@ class EdgeIntersectionList {
    */
   EdgeIntersection add(Coordinate intPt, int segmentIndex, double dist) {
     EdgeIntersection eiNew = new EdgeIntersection(intPt, segmentIndex, dist);
-    EdgeIntersection ei = nodeMap[eiNew];
+    EdgeIntersection? ei = nodeMap[eiNew];
     if (ei != null) {
       return ei;
     }
@@ -2249,7 +2249,7 @@ class EdgeIntersectionList {
     }
 
     List<Coordinate> pts = []; //..length = (npts);
-    int ipt = 0;
+    // int ipt = 0;
     pts.add(Coordinate.fromCoordinate(ei0.coord));
     // pts[ipt++] = new Coordinate.fromCoordinate(ei0.coord);
     for (int i = ei0.segmentIndex + 1; i <= ei1.segmentIndex; i++) {
@@ -3287,11 +3287,11 @@ class EdgeList {
    * @return  equal edge, if there is one already in the list
    *          null otherwise
    */
-  Edge findEqualEdge(Edge e) {
+  Edge? findEqualEdge(Edge e) {
     OrientedCoordinateArray oca =
         new OrientedCoordinateArray(e.getCoordinates());
     // will return null if no edge matches
-    Edge matchEdge = ocaMap[oca];
+    Edge? matchEdge = ocaMap[oca];
     return matchEdge;
   }
 

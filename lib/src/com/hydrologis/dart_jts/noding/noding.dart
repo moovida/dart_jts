@@ -1146,7 +1146,7 @@ class SegmentNodeList {
   SegmentNode add(Coordinate intPt, int segmentIndex) {
     SegmentNode eiNew = new SegmentNode(
         edge, intPt, segmentIndex, edge.getSegmentOctant(segmentIndex));
-    SegmentNode ei = nodeMap[eiNew];
+    SegmentNode? ei = nodeMap[eiNew];
     if (ei != null) {
       // debugging sanity check
       Assert.isTrue(ei.coord.equals2D(intPt),

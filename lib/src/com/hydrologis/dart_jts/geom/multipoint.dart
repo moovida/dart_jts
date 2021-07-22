@@ -80,7 +80,7 @@ class MultiPoint extends GeometryCollection implements Puntal {
 
   MultiPoint copyInternal() {
     List<Point> points = []; //..length = this.geometries.length;
-    for (int i = 0; i < points.length; i++) {
+    for (int i = 0; i < this.geometries.length; i++) {
       points.add(this.geometries[i].copy() as Point);
     }
     return new MultiPoint.withFactory(points, geomFactory);

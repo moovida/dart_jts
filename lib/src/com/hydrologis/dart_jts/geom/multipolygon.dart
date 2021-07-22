@@ -101,7 +101,7 @@ class MultiPolygon extends GeometryCollection implements Polygonal {
   Geometry reverse() {
     int n = geometries.length;
     List<Polygon> revGeoms = []; //..length = n;
-    for (int i = 0; i < geometries.length; i++) {
+    for (int i = 0; i < n; i++) {
       revGeoms.add(geometries[i].reverse() as Polygon);
     }
     return getFactory().createMultiPolygon(revGeoms);
@@ -109,7 +109,7 @@ class MultiPolygon extends GeometryCollection implements Polygonal {
 
   MultiPolygon copyInternal() {
     List<Polygon> polygons = []; //..length = this.geometries.length;
-    for (int i = 0; i < polygons.length; i++) {
+    for (int i = 0; i < this.geometries.length; i++) {
       polygons.add(this.geometries[i].copy() as Polygon);
     }
     return new MultiPolygon.withFactory(polygons, geomFactory);

@@ -611,7 +611,7 @@ class BufferOp {
       // don't propagate the exception - it will be detected by fact that resultGeometry is null
 
       // testing ONLY - propagate exception
-      //throw ex;
+      // throw ex;
     }
   }
 
@@ -798,7 +798,7 @@ class BufferBuilder {
   void insertUniqueEdge(Edge e) {
 //<FIX> MD 8 Oct 03  speed up identical edge lookup
     // fast lookup
-    Edge existingEdge = edgeList.findEqualEdge(e);
+    Edge? existingEdge = edgeList.findEqualEdge(e);
 
     // If an identical edge already exists, simply update its label
     if (existingEdge != null) {
@@ -1046,7 +1046,9 @@ class BufferSubgraph implements Comparable {
     nodesVisited.add(startNode);
     startEdge.setVisited(true);
 
+    var tmp = 0;
     while (!nodeQueue.isEmpty) {
+      // print("count =  ${tmp++}");
 //System.out.println(nodes.size() + " queue: " + nodeQueue.size());
       Node n = nodeQueue.removeFirst();
       nodesVisited.add(n);
@@ -1622,7 +1624,7 @@ class OffsetCurveBuilder {
 
   static List<Coordinate> copyCoordinates(List<Coordinate> pts) {
     List<Coordinate> copy = []; //..length = (pts.length);
-    for (int i = 0; i < copy.length; i++) {
+    for (int i = 0; i < pts.length; i++) {
       copy.add(Coordinate.fromCoordinate(pts[i]));
       // copy[i] = Coordinate.fromCoordinate(pts[i]);
     }
@@ -2811,8 +2813,22 @@ class OffsetCurveSetBuilder {
       return;
     List<Coordinate> coord =
         CoordinateArrays.removeRepeatedPoints(line.getCoordinates());
-    List<Coordinate>? curve = curveBuilder.getLineCurve(coord, distance);
-    addCurve(curve, Location.EXTERIOR, Location.INTERIOR);
+
+    /**
+     * Rings (closed lines) are generated with a continuous curve, 
+     * with no end arcs. This produces better quality linework, 
+     * and avoids noding issues with arcs around almost-parallel end segments.
+     * See JTS #523 and #518.
+     * 
+     * Singled-sided buffers currently treat rings as if they are lines.
+     */
+    if (CoordinateArrays.isRing(coord) &&
+        !curveBuilder.getBufferParameters().isSingleSided) {
+      addRingBothSides(coord, distance);
+    } else {
+      List<Coordinate>? curve = curveBuilder.getLineCurve(coord, distance);
+      addCurve(curve, Location.EXTERIOR, Location.INTERIOR);
+    }
 
     // TESTING
     //List<Coordinate> curveTrim = BufferCurveLoopPruner.prune(curve);
@@ -2833,10 +2849,10 @@ class OffsetCurveSetBuilder {
     // optimization - don't bother computing buffer
     // if the polygon would be completely eroded
     if (distance < 0.0 && isErodedCompletely(shell, distance)) return;
-    // don't attemtp to buffer a polygon with too few distinct vertices
+    // don't attempt to buffer a polygon with too few distinct vertices
     if (distance <= 0.0 && shellCoord.length < 3) return;
 
-    addPolygonRing(shellCoord, offsetDistance, offsetSide, Location.EXTERIOR,
+    addRingSide(shellCoord, offsetDistance, offsetSide, Location.EXTERIOR,
         Location.INTERIOR);
 
     for (int i = 0; i < p.getNumInteriorRing(); i++) {
@@ -2851,9 +2867,51 @@ class OffsetCurveSetBuilder {
       // Holes are topologically labelled opposite to the shell, since
       // the interior of the polygon lies on their opposite side
       // (on the left, if the hole is oriented CCW)
-      addPolygonRing(holeCoord, offsetDistance, Position.opposite(offsetSide),
+      addRingSide(holeCoord, offsetDistance, Position.opposite(offsetSide),
           Location.INTERIOR, Location.EXTERIOR);
     }
+  }
+
+  void addRingBothSides(List<Coordinate> coord, double distance) {
+    addRingSide(
+        coord, distance, Position.LEFT, Location.EXTERIOR, Location.INTERIOR);
+    /* Add the opposite side of the ring
+    */
+    addRingSide(
+        coord, distance, Position.RIGHT, Location.INTERIOR, Location.EXTERIOR);
+  }
+
+  /**
+   * Adds an offset curve for one side of a ring.
+   * The side and left and right topological location arguments
+   * are provided as if the ring is oriented CW.
+   * (If the ring is in the opposite orientation,
+   * this is detected and 
+   * the left and right locations are interchanged and the side is flipped.)
+   *
+   * @param coord the coordinates of the ring (must not contain repeated points)
+   * @param offsetDistance the positive distance at which to create the buffer
+   * @param side the side {@link Position} of the ring on which to construct the buffer line
+   * @param cwLeftLoc the location on the L side of the ring (if it is CW)
+   * @param cwRightLoc the location on the R side of the ring (if it is CW)
+   */
+  void addRingSide(List<Coordinate> coord, double offsetDistance, int side,
+      int cwLeftLoc, int cwRightLoc) {
+    // don't bother adding ring if it is "flat" and will disappear in the output
+    if (offsetDistance == 0.0 && coord.length < LinearRing.MINIMUM_VALID_SIZE)
+      return;
+
+    int leftLoc = cwLeftLoc;
+    int rightLoc = cwRightLoc;
+    if (coord.length >= LinearRing.MINIMUM_VALID_SIZE &&
+        Orientation.isCCW(coord)) {
+      leftLoc = cwRightLoc;
+      rightLoc = cwLeftLoc;
+      side = Position.opposite(side);
+    }
+    List<Coordinate>? curve =
+        curveBuilder.getRingCurve(coord, side, offsetDistance);
+    addCurve(curve, leftLoc, rightLoc);
   }
 
   /**

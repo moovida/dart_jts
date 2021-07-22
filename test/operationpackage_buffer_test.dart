@@ -303,9 +303,8 @@ void main() {
               .createGeometryCollection(polygons);
       Geometry union = polygonCollection.buffer(0);
       //System.out.println(union);
-      assertEquals(
-          "POLYGON ((0 0, 0 100, 50 100, 50 150, 150 150, 150 50, 100 50, 100 0, 0 0))",
-          union.toString());
+      assertEquals(union.toString(),
+          "POLYGON ((0 0, 0 100, 50 100, 50 150, 150 150, 150 50, 100 50, 100 0, 0 0))");
     });
     test("testFloatingPrecision1", () {
       BufferValidator(100,

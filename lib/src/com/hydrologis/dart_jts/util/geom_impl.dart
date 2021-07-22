@@ -514,7 +514,7 @@ class CoordinateArrays {
     // empty case
     if (nonNull == 0) return newCoord;
 
-    int j = 0;
+    // int j = 0;
     for (int i = 0; i < coord.length; i++) {
       if (coord[i] != null) newCoord.add(coord[i]!);
       // if (coord[i] != null) newCoord[j++] = coord[i]!;
@@ -918,7 +918,7 @@ class CoordinateArraySequence extends CoordinateSequence {
     measures = coordSeq.getMeasures();
     coordinates = []; //..length = (coordSeq.size());
 
-    for (int i = 0; i < coordinates!.length; i++) {
+    for (int i = 0; i < coordSeq.size(); i++) {
       coordinates!.add(coordSeq.getCoordinateCopy(i));
       // coordinates![i] = coordSeq.getCoordinateCopy(i);
     }
@@ -1036,7 +1036,7 @@ class CoordinateArraySequence extends CoordinateSequence {
   /// @return The deep copy
   CoordinateArraySequence copy() {
     List<Coordinate> cloneCoordinates = []; //..length = (size());
-    for (int i = 0; i < coordinates!.length; i++) {
+    for (int i = 0; i < size(); i++) {
       Coordinate duplicate = createCoordinate();
       duplicate.setCoordinate(coordinates![i]);
       cloneCoordinates.add(duplicate);
@@ -1175,7 +1175,7 @@ abstract class PackedCoordinateSequence extends CoordinateSequence {
     if (coords != null) return coords;
 
     coords = []; //..length = (size());
-    for (int i = 0; i < coords.length; i++) {
+    for (int i = 0; i < size(); i++) {
       coords.add(getCoordinateInternal(i));
       // coords[i] = getCoordinateInternal(i);
     }
