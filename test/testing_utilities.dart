@@ -21,6 +21,9 @@ const String WKT_GC =
     "GEOMETRYCOLLECTION (POLYGON ((100 200, 200 200, 200 100, 100 100, 100 200)), LINESTRING (150 250, 250 250))";
 
 assertEquals(actual, matcher) {
+  if (actual == null && matcher == null) {
+    return true;
+  }
   if (actual is double && matcher is double) {
     if (actual.isNaN && matcher.isNaN) return;
   }

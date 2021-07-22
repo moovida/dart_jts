@@ -939,7 +939,7 @@ abstract class Geometry implements Comparable {
    *
    *@see #equalsTopo(Geometry)
    */
-  bool equals(Geometry g) {
+  bool equals(Geometry? g) {
     if (g == null) return false;
     return equalsTopo(g);
   }
@@ -1982,7 +1982,7 @@ class GeometryFactory {
    * @param geometries an array of Geometries, each of which may be empty but not null, or null
    * @return the created GeometryCollection
    */
-  GeometryCollection createGeometryCollection(List<Geometry> geometries) {
+  GeometryCollection createGeometryCollection(List<Geometry>? geometries) {
     return new GeometryCollection.withFactory(geometries, this);
   }
 

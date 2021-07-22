@@ -255,7 +255,7 @@ void checkTransformation(
 WKTReader rdr = new WKTReader();
 
 void checkTransformationGeomStr(String geomStr) {
-  Geometry geom = rdr.read(geomStr);
+  Geometry geom = rdr.read(geomStr)!;
   AffineTransformation trans =
       AffineTransformation.rotationInstance(math.pi / 2);
   AffineTransformation inv = trans.getInverse();
@@ -300,7 +300,7 @@ void run3(
 
   AffineTransformationBuilder atb =
       new AffineTransformationBuilder(p0, p1, p2, pp0, pp1, pp2);
-  AffineTransformation trans = atb.getTransformation();
+  AffineTransformation trans = atb.getTransformation()!;
 
   Coordinate dest = new Coordinate.empty2D();
   assertEqualPoint(pp0, trans.transform(p0, dest));
@@ -317,7 +317,7 @@ void run2(double p0x, double p0y, double p1x, double p1y, double pp0x,
   Coordinate pp1 = new Coordinate(pp1x, pp1y);
 
   AffineTransformation trans =
-      AffineTransformationFactory.createFromControlVectors2(p0, p1, pp0, pp1);
+      AffineTransformationFactory.createFromControlVectors2(p0, p1, pp0, pp1)!;
 
   Coordinate dest = new Coordinate.empty2D();
   assertEqualPoint(pp0, trans.transform(p0, dest));
@@ -359,7 +359,7 @@ void runSingular(
 
   AffineTransformationBuilder atb =
       new AffineTransformationBuilder(p0, p1, p2, pp0, pp1, pp2);
-  AffineTransformation trans = atb.getTransformation();
+  AffineTransformation? trans = atb.getTransformation();
   assertEquals(trans, null);
 }
 
@@ -393,7 +393,7 @@ void runTransform(
 
   AffineTransformationBuilder atb =
       new AffineTransformationBuilder(p0, p1, p2, pp0, pp1, pp2);
-  AffineTransformation atbTrans = atb.getTransformation();
+  AffineTransformation atbTrans = atb.getTransformation()!;
 
   Coordinate dest = new Coordinate.empty2D();
   assertEqualPoint(pp0, atbTrans.transform(p0, dest));
