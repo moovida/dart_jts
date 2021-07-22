@@ -1390,8 +1390,8 @@ class DirectedEdge extends EdgeEnd {
       next; // the next edge in the edge ring for the polygon containing this edge
   late DirectedEdge
       nextMin; // the next edge in the MinimalEdgeRing that contains this edge
-  late EdgeRing edgeRing; // the EdgeRing that this edge is part of
-  late EdgeRing minEdgeRing; // the MinimalEdgeRing that this edge is part of
+  EdgeRing? edgeRing; // the EdgeRing that this edge is part of
+  EdgeRing? minEdgeRing; // the MinimalEdgeRing that this edge is part of
   /**
    * The depth of each side (position) of this edge.
    * The 0 element of the array is never used.
@@ -1433,7 +1433,7 @@ class DirectedEdge extends EdgeEnd {
     this.edgeRing = edgeRing;
   }
 
-  EdgeRing getEdgeRing() {
+  EdgeRing? getEdgeRing() {
     return edgeRing;
   }
 
@@ -1441,7 +1441,7 @@ class DirectedEdge extends EdgeEnd {
     this.minEdgeRing = minEdgeRing;
   }
 
-  EdgeRing getMinEdgeRing() {
+  EdgeRing? getMinEdgeRing() {
     return minEdgeRing;
   }
 

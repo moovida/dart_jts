@@ -150,7 +150,7 @@ class LineString extends Geometry implements Lineal {
    * @return the boundary geometry
    * @see Geometry#getBoundary
    */
-  Geometry getBoundary() {
+  Geometry? getBoundary() {
     return (new BoundaryOp(this)).getBoundary();
   }
 

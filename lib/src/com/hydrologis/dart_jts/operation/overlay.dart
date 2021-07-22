@@ -19,7 +19,8 @@ part of dart_jts;
  * @see org.locationtech.jts.operation.overlay.MinimalEdgeRing
  */
 class MaximalEdgeRing extends EdgeRing {
-  MaximalEdgeRing(DirectedEdge start, GeometryFactory geometryFactory) : super(start, geometryFactory);
+  MaximalEdgeRing(DirectedEdge start, GeometryFactory geometryFactory)
+      : super(start, geometryFactory);
 
   DirectedEdge getNext(DirectedEdge de) {
     return de.getNext();
@@ -34,9 +35,9 @@ class MaximalEdgeRing extends EdgeRing {
    * link the DirectedEdges at the node to form minimalEdgeRings
    */
   void linkDirectedEdgesForMinimalEdgeRings() {
-    DirectedEdge de = startDe;
+    DirectedEdge de = startDe!;
     do {
-      Node node = de.getNode();
+      Node node = de.getNode()!;
       (node.getEdges() as DirectedEdgeStar).linkMinimalDirectedEdges(this);
       de = de.getNext();
     } while (de != startDe);
@@ -44,7 +45,7 @@ class MaximalEdgeRing extends EdgeRing {
 
   List buildMinimalRings() {
     List minEdgeRings = [];
-    DirectedEdge de = startDe;
+    DirectedEdge de = startDe!;
     do {
       if (de.getMinEdgeRing() == null) {
         EdgeRing minEr = new MinimalEdgeRing(de, geometryFactory);
@@ -65,7 +66,8 @@ class MaximalEdgeRing extends EdgeRing {
  * @see org.locationtech.jts.operation.overlay.MaximalEdgeRing
  */
 class MinimalEdgeRing extends EdgeRing {
-  MinimalEdgeRing(DirectedEdge start, GeometryFactory geometryFactory) : super(start, geometryFactory);
+  MinimalEdgeRing(DirectedEdge start, GeometryFactory geometryFactory)
+      : super(start, geometryFactory);
 
   DirectedEdge getNext(DirectedEdge de) {
     return de.getNextMin();
@@ -87,9 +89,7 @@ class PolygonBuilder {
   GeometryFactory geometryFactory;
   List shellList = [];
 
-  PolygonBuilder(GeometryFactory geometryFactory) {
-    this.geometryFactory = geometryFactory;
-  }
+  PolygonBuilder(this.geometryFactory);
 
   /**
    * Add a complete graph.
@@ -109,7 +109,8 @@ class PolygonBuilder {
     PlanarGraph.linkResultDirectedEdgesStatic(nodes);
     List maxEdgeRings = buildMaximalEdgeRings(dirEdges);
     List freeHoleList = [];
-    List edgeRings = buildMinimalEdgeRings(maxEdgeRings, shellList, freeHoleList);
+    List edgeRings =
+        buildMinimalEdgeRings(maxEdgeRings, shellList, freeHoleList);
     sortShellsAndHoles(edgeRings, shellList, freeHoleList);
     placeFreeHoles(shellList, freeHoleList);
     //Assert: every hole on freeHoleList has a shell assigned to it
@@ -126,7 +127,7 @@ class PolygonBuilder {
   List buildMaximalEdgeRings(List dirEdges) {
     List maxEdgeRings = [];
     for (DirectedEdge de in dirEdges) {
-      if (de.isInResult() && de.getLabel().isArea()) {
+      if (de.isInResult() && de.getLabel()!.isArea()) {
         // if this edge has not yet been processed
         if (de.getEdgeRing() == null) {
           MaximalEdgeRing er = new MaximalEdgeRing(de, geometryFactory);
@@ -139,14 +140,15 @@ class PolygonBuilder {
     return maxEdgeRings;
   }
 
-  List buildMinimalEdgeRings(List maxEdgeRings, List shellList, List freeHoleList) {
+  List buildMinimalEdgeRings(
+      List maxEdgeRings, List shellList, List freeHoleList) {
     List edgeRings = [];
     for (MaximalEdgeRing er in maxEdgeRings) {
       if (er.getMaxNodeDegree() > 2) {
         er.linkDirectedEdgesForMinimalEdgeRings();
         List minEdgeRings = er.buildMinimalRings();
         // at this point we can go ahead and attempt to place holes, if this EdgeRing is a polygon
-        EdgeRing shell = findShell(minEdgeRings);
+        EdgeRing? shell = findShell(minEdgeRings);
         if (shell != null) {
           placePolygonHoles(shell, minEdgeRings);
           shellList.add(shell);
@@ -170,9 +172,9 @@ class PolygonBuilder {
    * @return the shell EdgeRing, if there is one
    * or null, if all the rings are holes
    */
-  EdgeRing findShell(List minEdgeRings) {
+  EdgeRing? findShell(List minEdgeRings) {
     int shellCount = 0;
-    EdgeRing shell;
+    EdgeRing? shell;
     for (EdgeRing er in minEdgeRings) {
       if (!er.isHole()) {
         shell = er;
@@ -238,7 +240,9 @@ class PolygonBuilder {
       // only place this hole if it doesn't yet have a shell
       if (hole.getShell() == null) {
         EdgeRing shell = findEdgeRingContaining(hole, shellList);
-        if (shell == null) throw new TopologyException.withCoord("unable to assign hole to a shell", hole.getCoordinate(0));
+        if (shell == null)
+          throw new TopologyException.withCoord(
+              "unable to assign hole to a shell", hole.getCoordinate(0));
 //        Assert.isTrue(shell != null, "unable to assign hole to a shell");
         hole.setShell(shell);
       }
@@ -260,14 +264,14 @@ class PolygonBuilder {
    * or null if no containing EdgeRing is found
    */
   static EdgeRing findEdgeRingContaining(EdgeRing testEr, List shellList) {
-    LinearRing testRing = testEr.getLinearRing();
+    LinearRing testRing = testEr.getLinearRing()!;
     Envelope testEnv = testRing.getEnvelopeInternal();
-    Coordinate testPt = testRing.getCoordinateN(0);
+    Coordinate? testPt = testRing.getCoordinateN(0);
 
-    EdgeRing minShell = null;
-    Envelope minShellEnv = null;
+    EdgeRing? minShell = null;
+    Envelope? minShellEnv = null;
     for (EdgeRing tryShell in shellList) {
-      LinearRing tryShellRing = tryShell.getLinearRing();
+      LinearRing tryShellRing = tryShell.getLinearRing()!;
       Envelope tryShellEnv = tryShellRing.getEnvelopeInternal();
       // the hole envelope cannot equal the shell envelope
       // (also guards against testing rings against themselves)
@@ -275,19 +279,21 @@ class PolygonBuilder {
       // hole must be contained in shell
       if (!tryShellEnv.containsEnvelope(testEnv)) continue;
 
-      testPt = CoordinateArrays.ptNotInList(testRing.getCoordinates(), tryShellRing.getCoordinates());
+      testPt = CoordinateArrays.ptNotInList(
+          testRing.getCoordinates(), tryShellRing.getCoordinates());
       bool isContained = false;
-      if (PointLocation.isInRing(testPt, tryShellRing.getCoordinates())) isContained = true;
+      if (PointLocation.isInRing(testPt!, tryShellRing.getCoordinates()))
+        isContained = true;
 
       // check if this new containing ring is smaller than the current minimum ring
       if (isContained) {
-        if (minShell == null || minShellEnv.containsEnvelope(tryShellEnv)) {
+        if (minShell == null || minShellEnv!.containsEnvelope(tryShellEnv)) {
           minShell = tryShell;
-          minShellEnv = minShell.getLinearRing().getEnvelopeInternal();
+          minShellEnv = minShell.getLinearRing()!.getEnvelopeInternal();
         }
       }
     }
-    return minShell;
+    return minShell!;
   }
 
   List<Polygon> computePolygons(List shellList) {
