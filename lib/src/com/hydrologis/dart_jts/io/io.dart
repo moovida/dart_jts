@@ -2082,7 +2082,7 @@ class WKTReader {
       holes.add(hole);
       nextToken = getNextCloserOrComma(tokenizer);
     }
-    List<LinearRing> array = []..length = (holes.length);
+    // List<LinearRing> array = [];//..length = (holes.length);
     return geometryFactory.createPolygon(shell, holes);
   }
 

@@ -568,7 +568,7 @@ class HotPixel {
    *  10
    *  23
    */
-  List<Coordinate> corner = []..length = (4);
+  List<Coordinate> corner = []; //..length = (4);
 
   Envelope? safeEnv = null;
 
@@ -632,10 +632,14 @@ class HotPixel {
     miny = pt.y - tolerance;
     maxy = pt.y + tolerance;
 
-    corner[0] = new Coordinate(maxx, maxy);
-    corner[1] = new Coordinate(minx, maxy);
-    corner[2] = new Coordinate(minx, miny);
-    corner[3] = new Coordinate(maxx, miny);
+    corner.add(new Coordinate(maxx, maxy));
+    corner.add(new Coordinate(minx, maxy));
+    corner.add(new Coordinate(minx, miny));
+    corner.add(new Coordinate(maxx, miny));
+    // corner[0] = new Coordinate(maxx, maxy);
+    // corner[1] = new Coordinate(minx, maxy);
+    // corner[2] = new Coordinate(minx, miny);
+    // corner[3] = new Coordinate(maxx, miny);
   }
 
   double scale(double val) {
@@ -1217,7 +1221,7 @@ class SegmentNodeList {
    * the vertex must be added as a node as well.
    */
   void findCollapsesFromInsertedNodes(List<int> collapsedVertexIndexes) {
-    List<int> collapsedVertexIndex = []..length = (1);
+    List<int> collapsedVertexIndex = List.filled(1, 0);
     Iterator it = iterator();
     // there should always be at least two entries in the list, since the endpoints are nodes
     it.moveNext();
@@ -1347,13 +1351,16 @@ class SegmentNodeList {
       npts--;
     }
 
-    List<Coordinate> pts = []..length = (npts);
-    int ipt = 0;
-    pts[ipt++] = new Coordinate.fromCoordinate(ei0.coord);
+    List<Coordinate> pts = []; //..length = (npts);
+    // int ipt = 0;
+    pts.add(new Coordinate.fromCoordinate(ei0.coord));
+    // pts[ipt++] = new Coordinate.fromCoordinate(ei0.coord);
     for (int i = ei0.segmentIndex + 1; i <= ei1.segmentIndex; i++) {
-      pts[ipt++] = edge.getCoordinate(i);
+      pts.add(edge.getCoordinate(i));
+      // pts[ipt++] = edge.getCoordinate(i);
     }
-    if (useIntPt1) pts[ipt] = new Coordinate.fromCoordinate(ei1.coord);
+    if (useIntPt1) pts.add(new Coordinate.fromCoordinate(ei1.coord));
+    // if (useIntPt1) pts[ipt] = new Coordinate.fromCoordinate(ei1.coord);
     return pts;
   }
 
@@ -1783,13 +1790,14 @@ class ScaledNoder implements Noder {
   }
 
   List<Coordinate> scaleCoords(List<Coordinate> pts) {
-    List<Coordinate> roundPts = []..length = (pts.length);
+    List<Coordinate> roundPts = []; //..length = (pts.length);
     for (int i = 0; i < pts.length; i++) {
-      roundPts[i] = Coordinate.fromXYZ(
+      // roundPts[i] = Coordinate.fromXYZ(
+      roundPts.add(Coordinate.fromXYZ(
         ((pts[i].x - offsetX) * scaleFactor).roundToDouble(),
         ((pts[i].y - offsetY) * scaleFactor).roundToDouble(),
         pts[i].getZ(),
-      );
+      ));
     }
     List<Coordinate> roundPtsNoDup =
         CoordinateArrays.removeRepeatedPoints(roundPts);

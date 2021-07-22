@@ -1125,18 +1125,18 @@ class AffineTransformationBuilder {
    */
   bool compute() {
     List<double> bx = [dest0.x, dest1.x, dest2.x];
-    List<double>? row0 = solve(bx);
+    List<double?>? row0 = solve(bx);
     if (row0 == null) return false;
-    m00 = row0[0];
-    m01 = row0[1];
-    m02 = row0[2];
+    m00 = row0[0]!;
+    m01 = row0[1]!;
+    m02 = row0[2]!;
 
     List<double> by = [dest0.y, dest1.y, dest2.y];
-    List<double>? row1 = solve(by);
+    List<double?>? row1 = solve(by);
     if (row1 == null) return false;
-    m10 = row1[0];
-    m11 = row1[1];
-    m12 = row1[2];
+    m10 = row1[0]!;
+    m11 = row1[1]!;
+    m12 = row1[2]!;
     return true;
   }
 
@@ -1147,7 +1147,7 @@ class AffineTransformationBuilder {
    * @param b the vector for the right-hand side of the system
    * @return the solution vector, or <code>null</code> if no solution could be determined
    */
-  List<double>? solve(List<double> b) {
+  List<double?>? solve(List<double> b) {
     List<List<double>> a = [
       [src0.x, src0.y, 1],
       [src1.x, src1.y, 1],
@@ -1239,8 +1239,8 @@ class AffineTransformationFactory {
 	 * @return the computed transformation
 	 */
   static AffineTransformation createFromControlVectors(
-      Coordinate src0, Coordinate dest0) {
-    double dx = dest0.x - src0.x;
+      Coordinate? src0, Coordinate? dest0) {
+    double dx = dest0!.x - src0!.x;
     double dy = dest0.y - src0.y;
     return AffineTransformation.translationInstance(dx, dy);
   }
@@ -1259,7 +1259,7 @@ class AffineTransformationFactory {
 	 *           lengths
 	 */
   static AffineTransformation? createFromControlVectorsCL(
-      List<Coordinate> src, List<Coordinate> dest) {
+      List<Coordinate?> src, List<Coordinate?> dest) {
     if (src.length != dest.length)
       throw ArgumentError("Src and Dest arrays are not the same length");
     if (src.length <= 0) throw ArgumentError("Too few control points");
@@ -1267,10 +1267,10 @@ class AffineTransformationFactory {
 
     if (src.length == 1) return createFromControlVectors(src[0], dest[0]);
     if (src.length == 2)
-      return createFromControlVectors2(src[0], src[1], dest[0], dest[1]);
+      return createFromControlVectors2(src[0]!, src[1]!, dest[0]!, dest[1]!);
 
     return createFromControlVectors3(
-        src[0], src[1], src[2], dest[0], dest[1], dest[2]);
+        src[0]!, src[1]!, src[2]!, dest[0]!, dest[1]!, dest[2]!);
   }
 
   /**
@@ -1318,8 +1318,8 @@ class AffineTransformationFunctions {
   ///Transforms a geometry using one to three control vectors
   static Geometry transformByVectors(Geometry g, Geometry control) {
     int nControl = control.getNumGeometries();
-    List<Coordinate> src = []..length = nControl;
-    List<Coordinate> dest = []..length = nControl;
+    List<Coordinate?> src = []..length = nControl;
+    List<Coordinate?> dest = []..length = nControl;
     for (int i = 0; i < nControl; i++) {
       Geometry contComp = control.getGeometryN(i);
       List<Coordinate> pts = contComp.getCoordinates();

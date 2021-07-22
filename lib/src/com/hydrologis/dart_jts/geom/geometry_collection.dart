@@ -54,13 +54,14 @@ class GeometryCollection extends Geometry {
    * @return the collected coordinates
    *    */
   List<Coordinate> getCoordinates() {
-    List<Coordinate> coordinates = []..length = getNumPoints();
-    int k = -1;
+    List<Coordinate> coordinates = []; //..length = getNumPoints();
+    // int k = -1;
     for (int i = 0; i < geometries.length; i++) {
       List<Coordinate> childCoordinates = geometries[i].getCoordinates();
       for (int j = 0; j < childCoordinates.length; j++) {
-        k++;
-        coordinates[k] = childCoordinates[j];
+        // k++;
+        // coordinates[k] = childCoordinates[j];
+        coordinates.add(childCoordinates[j]);
       }
     }
     return coordinates;
@@ -199,9 +200,10 @@ class GeometryCollection extends Geometry {
   }
 
   GeometryCollection copyInternal() {
-    List<Geometry> geometries = []..length = (this.geometries.length);
+    List<Geometry> geometries = []; //..length = (this.geometries.length);
     for (int i = 0; i < geometries.length; i++) {
-      geometries[i] = this.geometries[i].copy();
+      // geometries[i] = this.geometries[i].copy();
+      geometries.add(this.geometries[i].copy());
     }
     return new GeometryCollection.withFactory(geometries, geomFactory);
   }
@@ -259,9 +261,10 @@ class GeometryCollection extends Geometry {
    */
   Geometry reverse() {
     int n = geometries.length;
-    List<Geometry> revGeoms = []..length = n;
+    List<Geometry> revGeoms = []; //..length = n;
     for (int i = 0; i < geometries.length; i++) {
-      revGeoms[i] = geometries[i].reverse();
+      revGeoms.add(geometries[i].reverse());
+      // revGeoms[i] = geometries[i].reverse();
     }
     return getFactory().createGeometryCollection(revGeoms);
   }

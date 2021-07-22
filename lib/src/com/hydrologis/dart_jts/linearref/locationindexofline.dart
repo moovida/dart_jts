@@ -35,9 +35,7 @@ class LocationIndexOfLine {
 
   Geometry linearGeom;
 
-  LocationIndexOfLine(Geometry linearGeom) {
-    this.linearGeom = linearGeom;
-  }
+  LocationIndexOfLine(this.linearGeom);
 
   List<LinearLocation> indicesOf(Geometry subLine) {
     Coordinate startPt =

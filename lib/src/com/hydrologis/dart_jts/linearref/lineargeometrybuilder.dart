@@ -20,16 +20,14 @@ part of dart_jts;
 class LinearGeometryBuilder {
   GeometryFactory geomFact;
   List<LineString> lines = [];
-  CoordinateList coordList = null;
+  CoordinateList? coordList = null;
 
   bool ignoreInvalidLines = false;
   bool fixInvalidLines = false;
 
-  Coordinate lastPt = null;
+  Coordinate? lastPt = null;
 
-  LinearGeometryBuilder(GeometryFactory geomFact) {
-    this.geomFact = geomFact;
-  }
+  LinearGeometryBuilder(this.geomFact);
 
   /**
    * Allows invalid lines to be ignored rather than causing Exceptions.
@@ -67,11 +65,11 @@ class LinearGeometryBuilder {
    */
   void addWithRepeated(Coordinate pt, bool allowRepeatedPoints) {
     if (coordList == null) coordList = new CoordinateList();
-    coordList.addCoord(pt, allowRepeatedPoints);
+    coordList!.addCoord(pt, allowRepeatedPoints);
     lastPt = pt;
   }
 
-  Coordinate getLastCoordinate() {
+  Coordinate? getLastCoordinate() {
     return lastPt;
   }
 
@@ -82,16 +80,16 @@ class LinearGeometryBuilder {
     if (coordList == null) {
       return;
     }
-    if (ignoreInvalidLines && coordList._backingList.length < 2) {
+    if (ignoreInvalidLines && coordList!._backingList.length < 2) {
       coordList = null;
       return;
     }
-    List<Coordinate> rawPts = coordList.toCoordinateArray();
+    List<Coordinate> rawPts = coordList!.toCoordinateArray();
     List<Coordinate> pts = rawPts;
     if (fixInvalidLines) pts = validCoordinateSequence(rawPts);
 
     coordList = null;
-    LineString line = null;
+    LineString? line = null;
     try {
       line = geomFact.createLineString(pts);
     } catch (ex) {

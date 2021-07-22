@@ -523,9 +523,9 @@ class SegmentIntersector {
   }
 
   void setBoundaryNodes(List bdyNodes0, List bdyNodes1) {
-    bdyNodes = []..length = (2);
-    bdyNodes![0] = bdyNodes0;
-    bdyNodes![1] = bdyNodes1;
+    bdyNodes = []; //..length = (2);
+    bdyNodes!.add(bdyNodes0);
+    bdyNodes!.add(bdyNodes1);
   }
 
   void setIsDoneIfProperInt(bool isDoneWhenProperInt) {
@@ -816,7 +816,7 @@ class MonotoneChainEdge {
  */
 class MonotoneChainIndexer {
   static List<int> toIntArray(List list) {
-    List<int> array = []..length = (list.length);
+    List<int> array = []; //..length = (list.length);
     for (int i = 0; i < array.length; i++) {
       array.add(list[i] as int);
     }

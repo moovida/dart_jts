@@ -150,7 +150,7 @@ class LineString extends Geometry implements Lineal {
    * @return the boundary geometry
    * @see Geometry#getBoundary
    */
-  Geometry? getBoundary() {
+  Geometry getBoundary() {
     return (new BoundaryOp(this)).getBoundary();
   }
 
@@ -859,14 +859,16 @@ class LineSegment implements Comparable {
      *  if no intersection closest pair contains at least one endpoint.
      * Test each endpoint in turn.
      */
-    List<Coordinate> closestPt = []..length = 2;
+    List<Coordinate> closestPt = []; //..length = 2;
     double minDistance = double.maxFinite;
     double dist;
 
     Coordinate close00 = closestPoint(line.p0);
     minDistance = close00.distance(line.p0);
-    closestPt[0] = close00;
-    closestPt[1] = line.p0;
+    closestPt.add(close00);
+    closestPt.add(line.p0);
+    // closestPt[0] = close00;
+    // closestPt[1] = line.p0;
 
     Coordinate close01 = closestPoint(line.p1);
     dist = close01.distance(line.p1);

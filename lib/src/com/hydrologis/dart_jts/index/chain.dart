@@ -213,10 +213,11 @@ class MonotoneChainI {
    * Allocates a new array to hold the Coordinates
    */
   List<Coordinate> getCoordinates() {
-    List<Coordinate> coord = []..length = end - start + 1;
-    int index = 0;
+    List<Coordinate> coord = []; //..length = end - start + 1;
+    // int index = 0;
     for (int i = start; i <= end; i++) {
-      coord[index++] = pts[i];
+      coord.add(pts[i]);
+      // coord[index++] = pts[i];
     }
     return coord;
   }

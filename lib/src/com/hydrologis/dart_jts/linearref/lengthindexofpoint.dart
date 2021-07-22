@@ -33,9 +33,7 @@ class LengthIndexOfPoint {
 
   Geometry linearGeom;
 
-  LengthIndexOfPoint(Geometry linearGeom) {
-    this.linearGeom = linearGeom;
-  }
+  LengthIndexOfPoint(this.linearGeom);
 
   /**
    * Find the nearest location along a linear {@link Geometry} to a given point.
@@ -88,7 +86,7 @@ class LengthIndexOfPoint {
     while (it.hasNext()) {
       if (!it.isEndOfLine()) {
         seg.p0 = it.getSegmentStart();
-        seg.p1 = it.getSegmentEnd();
+        seg.p1 = it.getSegmentEnd()!;
         double segDistance = seg.distanceCoord(inputPt);
         double segMeasureToPt =
             segmentNearestMeasure(seg, inputPt, segmentStartMeasure);

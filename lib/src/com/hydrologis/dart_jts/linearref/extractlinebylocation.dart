@@ -36,9 +36,7 @@ class ExtractLineByLocation {
 
   Geometry line;
 
-  ExtractLineByLocation(Geometry line) {
-    this.line = line;
-  }
+  ExtractLineByLocation(this.line);
 
   /**
    * Extracts a subline of the input.
@@ -59,7 +57,7 @@ class ExtractLineByLocation {
     if (linear is Lineal) return linear.reverse();
 
     Assert.shouldNeverReachHere("non-linear geometry encountered");
-    return null;
+    throw ArgumentError("non-linear geometry encountered");
   }
 
   /**

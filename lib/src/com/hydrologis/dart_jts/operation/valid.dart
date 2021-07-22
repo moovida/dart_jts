@@ -261,7 +261,7 @@ class ConnectedInteriorTester {
     do {
       Assert.isTrue(de != null, "found null Directed Edge");
       de!.setVisited(true);
-      de = de!.getNext();
+      de = de.getNext();
     } while (de != startDe);
   }
 

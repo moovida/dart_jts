@@ -26,8 +26,7 @@ class LocationIndexedLine {
    *
    * @param linearGeom the linear geometry to reference along
    */
-  LocationIndexedLine(Geometry linearGeom) {
-    this.linearGeom = linearGeom;
+  LocationIndexedLine(this.linearGeom) {
     checkGeometryType();
   }
 

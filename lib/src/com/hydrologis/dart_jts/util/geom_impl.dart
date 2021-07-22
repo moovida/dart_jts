@@ -460,9 +460,10 @@ class CoordinateArrays {
   /// @param coordinates an array of Coordinates
   /// @return a deep copy of the input
   static List<Coordinate> copyDeep(List<Coordinate> coordinates) {
-    List<Coordinate> copy = []..length = (coordinates.length);
+    List<Coordinate> copy = []; //..length = (coordinates.length);
     for (int i = 0; i < coordinates.length; i++) {
-      copy[i] = coordinates[i].copy();
+      copy.add(coordinates[i].copy());
+      // copy[i] = coordinates[i].copy();
     }
     return copy;
   }
@@ -509,13 +510,14 @@ class CoordinateArrays {
     for (int i = 0; i < coord.length; i++) {
       if (coord[i] != null) nonNull++;
     }
-    List<Coordinate> newCoord = []..length = (nonNull);
+    List<Coordinate> newCoord = []; //..length = (nonNull);
     // empty case
     if (nonNull == 0) return newCoord;
 
     int j = 0;
     for (int i = 0; i < coord.length; i++) {
-      if (coord[i] != null) newCoord[j++] = coord[i]!;
+      if (coord[i] != null) newCoord.add(coord[i]!);
+      // if (coord[i] != null) newCoord[j++] = coord[i]!;
     }
     return newCoord;
   }
@@ -626,12 +628,13 @@ class CoordinateArrays {
     if (start >= pts.length) npts = 0;
     if (end < start) npts = 0;
 
-    List<Coordinate> extractPts = []..length = (npts);
+    List<Coordinate> extractPts = []; //..length = (npts);
     if (npts == 0) return extractPts;
 
-    int iPts = 0;
+    // int iPts = 0;
     for (int i = start; i <= end; i++) {
-      extractPts[iPts++] = pts[i];
+      extractPts.add(pts[i]);
+      // extractPts[iPts++] = pts[i];
     }
     return extractPts;
   }
@@ -864,9 +867,10 @@ class CoordinateArraySequence extends CoordinateSequence {
   ///
   /// @param size the size of the sequence to create
   CoordinateArraySequence.fromSize(int size) {
-    coordinates = []..length = (size);
+    coordinates = []; //..length = (size);
     for (int i = 0; i < size; i++) {
-      coordinates![i] = Coordinate.empty2D();
+      coordinates!.add(Coordinate.empty2D());
+      // coordinates![i] = Coordinate.empty2D();
     }
   }
 
@@ -876,10 +880,11 @@ class CoordinateArraySequence extends CoordinateSequence {
   /// @param size the size of the sequence to create
   /// @param dimension the dimension of the coordinates
   CoordinateArraySequence.fromSizeDimension(int size, int dimension) {
-    coordinates = []..length = (size);
+    coordinates = []; //..length = (size);
     this.dimension = dimension;
     for (int i = 0; i < size; i++) {
-      coordinates![i] = Coordinates.create(dimension);
+      coordinates!.add(Coordinates.create(dimension));
+      // coordinates![i] = Coordinates.create(dimension);
     }
   }
 
@@ -890,11 +895,12 @@ class CoordinateArraySequence extends CoordinateSequence {
   /// @param dimension the dimension of the coordinates
   CoordinateArraySequence.fromSizeDimensionMeasures(
       int size, int dimension, int measures) {
-    coordinates = []..length = (size);
+    coordinates = []; //..length = (size);
     this.dimension = dimension;
     this.measures = measures;
     for (int i = 0; i < size; i++) {
-      coordinates![i] = createCoordinate();
+      coordinates!.add(createCoordinate());
+      // coordinates![i] = createCoordinate();
     }
   }
 
@@ -910,10 +916,11 @@ class CoordinateArraySequence extends CoordinateSequence {
     }
     dimension = coordSeq.getDimension();
     measures = coordSeq.getMeasures();
-    coordinates = []..length = (coordSeq.size());
+    coordinates = []; //..length = (coordSeq.size());
 
     for (int i = 0; i < coordinates!.length; i++) {
-      coordinates![i] = coordSeq.getCoordinateCopy(i);
+      coordinates!.add(coordSeq.getCoordinateCopy(i));
+      // coordinates![i] = coordSeq.getCoordinateCopy(i);
     }
   }
 
@@ -1028,11 +1035,12 @@ class CoordinateArraySequence extends CoordinateSequence {
   ///
   /// @return The deep copy
   CoordinateArraySequence copy() {
-    List<Coordinate> cloneCoordinates = []..length = (size());
+    List<Coordinate> cloneCoordinates = []; //..length = (size());
     for (int i = 0; i < coordinates!.length; i++) {
       Coordinate duplicate = createCoordinate();
       duplicate.setCoordinate(coordinates![i]);
-      cloneCoordinates[i] = duplicate;
+      cloneCoordinates.add(duplicate);
+      // cloneCoordinates[i] = duplicate;
     }
     return CoordinateArraySequence.withDimensionMeasures(
         cloneCoordinates, dimension, measures);
@@ -1166,9 +1174,10 @@ abstract class PackedCoordinateSequence extends CoordinateSequence {
 // testing - never cache
     if (coords != null) return coords;
 
-    coords = []..length = (size());
+    coords = []; //..length = (size());
     for (int i = 0; i < coords.length; i++) {
-      coords[i] = getCoordinateInternal(i);
+      coords.add(getCoordinateInternal(i));
+      // coords[i] = getCoordinateInternal(i);
     }
     coordRef = coords;
 
@@ -1258,7 +1267,7 @@ abstract class PackedCoordinateSequence extends CoordinateSequence {
 /// Packed coordinate sequence implementation based on doubles
 class Double extends PackedCoordinateSequence {
   /// The packed coordinate array
-  late List<double> coords;
+  late List<double?> coords;
 
   /// Builds a new packed coordinate sequence
   ///
@@ -1287,7 +1296,7 @@ class Double extends PackedCoordinateSequence {
   /// @param dimension the total number of ordinates that make up a {@link Coordinate} in this sequence.
   /// @param measures the number of measure-ordinates each {@link Coordinate} in this sequence has.
   Double.fromCoordinatesDimMeas(
-      List<Coordinate> coordinates, int dimension, int measures)
+      List<Coordinate>? coordinates, int dimension, int measures)
       : super(dimension, measures) {
     if (coordinates == null) {
       coordinates = [];
@@ -1325,19 +1334,19 @@ class Double extends PackedCoordinateSequence {
 
   /// @see PackedCoordinateSequence#getCoordinate(int)
   Coordinate getCoordinateInternal(int i) {
-    double x = coords[i * dimension];
-    double y = coords[i * dimension + 1];
+    double x = coords[i * dimension]!;
+    double y = coords[i * dimension + 1]!;
     if (dimension == 2 && measures == 0) {
       return new CoordinateXY.fromXY(x, y);
     } else if (dimension == 3 && measures == 0) {
-      double z = coords[i * dimension + 2];
+      double z = coords[i * dimension + 2]!;
       return new Coordinate.fromXYZ(x, y, z);
     } else if (dimension == 3 && measures == 1) {
-      double m = coords[i * dimension + 2];
+      double m = coords[i * dimension + 2]!;
       return new CoordinateXYM(x, y, m);
     } else if (dimension == 4 && measures == 1) {
-      double z = coords[i * dimension + 2];
-      double m = coords[i * dimension + 3];
+      double z = coords[i * dimension + 2]!;
+      double m = coords[i * dimension + 3]!;
       return new CoordinateXYZM(x, y, z, m);
     }
     return new CoordinateXY.fromXY(x, y);
@@ -1346,7 +1355,7 @@ class Double extends PackedCoordinateSequence {
   /// Gets the underlying array containing the coordinate values.
   ///
   /// @return the array of coordinate values
-  List<double> getRawCoordinates() {
+  List<double?> getRawCoordinates() {
     return coords;
   }
 
@@ -1373,7 +1382,7 @@ class Double extends PackedCoordinateSequence {
   ///      it's over dimensions you may not get an exception but a meaningless
   ///      value.
   double getOrdinate(int index, int ordinate) {
-    return coords[index * dimension + ordinate];
+    return coords[index * dimension + ordinate]!;
   }
 
   /// @see PackedCoordinateSequence#setOrdinate(int, int, double)
@@ -1385,7 +1394,7 @@ class Double extends PackedCoordinateSequence {
   /// @see CoordinateSequence#expandEnvelope(Envelope)
   Envelope expandEnvelope(Envelope env) {
     for (int i = 0; i < coords.length; i += dimension) {
-      env.expandToInclude(coords[i], coords[i + 1]);
+      env.expandToInclude(coords[i]!, coords[i + 1]!);
     }
     return env;
   }

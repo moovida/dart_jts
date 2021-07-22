@@ -31,9 +31,7 @@ class LengthIndexedLine {
    *
    * @param linearGeom the linear geometry to reference along
    */
-  LengthIndexedLine(Geometry linearGeom) {
-    this.linearGeom = linearGeom;
-  }
+  LengthIndexedLine(this.linearGeom);
 
   /**
    * Computes the {@link Coordinate} for the point

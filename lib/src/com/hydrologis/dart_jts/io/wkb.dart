@@ -170,7 +170,7 @@ class WKBReader {
    * At some point this could be made client-controllable.
    */
   bool isStrict = false;
-  List<double>? ordValues;
+  List<double?>? ordValues;
 
   late ByteOrderDataInStream dis;
 
@@ -325,57 +325,62 @@ class WKBReader {
   Polygon readPolygon() {
     int numRings = dis.readInt();
     List<LinearRing>? holes;
-    if (numRings > 1) holes = []..length = (numRings - 1);
+    if (numRings > 1) holes = []; //..length = (numRings - 1);
 
     LinearRing shell = readLinearRing();
     for (int i = 0; i < numRings - 1; i++) {
-      holes![i] = readLinearRing();
+      holes!.add(readLinearRing());
+      // holes![i] = readLinearRing();
     }
     return factory.createPolygon(shell, holes);
   }
 
   MultiPoint readMultiPoint() {
     int numGeom = dis.readInt();
-    List<Point> geoms = []..length = (numGeom);
+    List<Point> geoms = []; //..length = (numGeom);
     for (int i = 0; i < numGeom; i++) {
       Geometry g = readGeometry();
       if (!(g is Point))
         throw new ParseException(INVALID_GEOM_TYPE_MSG + "MultiPoint");
-      geoms[i] = g;
+      geoms.add(g);
+      // geoms[i] = g;
     }
     return factory.createMultiPoint(geoms);
   }
 
   MultiLineString readMultiLineString() {
     int numGeom = dis.readInt();
-    List<LineString> geoms = []..length = (numGeom);
+    List<LineString> geoms = []; //..length = (numGeom);
     for (int i = 0; i < numGeom; i++) {
       Geometry g = readGeometry();
       if (!(g is LineString))
         throw new ParseException(INVALID_GEOM_TYPE_MSG + "MultiLineString");
-      geoms[i] = g;
+      geoms.add(g);
+      // geoms[i] = g;
     }
     return factory.createMultiLineString(geoms);
   }
 
   MultiPolygon readMultiPolygon() {
     int numGeom = dis.readInt();
-    List<Polygon> geoms = []..length = (numGeom);
+    List<Polygon> geoms = []; //..length = (numGeom);
 
     for (int i = 0; i < numGeom; i++) {
       Geometry g = readGeometry();
       if (!(g is Polygon))
         throw new ParseException(INVALID_GEOM_TYPE_MSG + "MultiPolygon");
-      geoms[i] = g;
+      geoms.add(g);
+      // geoms[i] = g;
     }
     return factory.createMultiPolygon(geoms);
   }
 
   GeometryCollection readGeometryCollection() {
     int numGeom = dis.readInt();
-    List<Geometry> geoms = []..length = (numGeom);
+    List<Geometry> geoms = []; //..length = (numGeom);
     for (int i = 0; i < numGeom; i++) {
-      geoms[i] = readGeometry();
+      geoms.add(readGeometry());
+      // geoms[i] = readGeometry();
     }
     return factory.createGeometryCollection(geoms);
   }
@@ -387,7 +392,7 @@ class WKBReader {
     for (int i = 0; i < size; i++) {
       readCoordinate();
       for (int j = 0; j < targetDim; j++) {
-        seq.setOrdinate(i, j, ordValues![j]);
+        seq.setOrdinate(i, j, ordValues![j]!);
       }
     }
     return seq;

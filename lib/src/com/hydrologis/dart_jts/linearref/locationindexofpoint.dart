@@ -33,9 +33,7 @@ class LocationIndexOfPoint {
 
   Geometry linearGeom;
 
-  LocationIndexOfPoint(Geometry linearGeom) {
-    this.linearGeom = linearGeom;
-  }
+  LocationIndexOfPoint(this.linearGeom);
 
   /**
    * Find the nearest location along a linear {@link Geometry} to a given point.
@@ -79,7 +77,8 @@ class LocationIndexOfPoint {
     return closestAfter;
   }
 
-  LinearLocation indexOfFromStart(Coordinate inputPt, LinearLocation minIndex) {
+  LinearLocation indexOfFromStart(
+      Coordinate inputPt, LinearLocation? minIndex) {
     double minDistance = double.maxFinite;
     int minComponentIndex = 0;
     int minSegmentIndex = 0;
@@ -91,7 +90,7 @@ class LocationIndexOfPoint {
         it.next()) {
       if (!it.isEndOfLine()) {
         seg.p0 = it.getSegmentStart();
-        seg.p1 = it.getSegmentEnd();
+        seg.p1 = it.getSegmentEnd()!;
         double segDistance = seg.distanceCoord(inputPt);
         double segFrac = seg.segmentFraction(inputPt);
 
@@ -114,7 +113,7 @@ class LocationIndexOfPoint {
     }
     if (minDistance == double.maxFinite) {
       // no minimum was found past minLocation, so return it
-      return new LinearLocation.fromLocation(minIndex);
+      return new LinearLocation.fromLocation(minIndex!);
     }
     // otherwise, return computed location
     LinearLocation loc = new LinearLocation.fromComponentSegmentIndexFraction(

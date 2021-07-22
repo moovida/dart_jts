@@ -35,12 +35,12 @@ class LinearIterator {
   }
 
   Geometry linearGeom;
-  int numLines;
+  int numLines = 0;
 
   /**
    * Invariant: currentLine <> null if the iterator is pointing at a valid coordinate
    */
-  LineString currentLine;
+  LineString? currentLine;
   int componentIndex = 0;
   int vertexIndex = 0;
 
@@ -74,10 +74,9 @@ class LinearIterator {
    * @throws IllegalArgumentException if linearGeom is not lineal
    */
   LinearIterator.withIndexes(
-      Geometry linearGeom, int componentIndex, int vertexIndex) {
+      this.linearGeom, int componentIndex, int vertexIndex) {
     if (!(linearGeom is Lineal))
       throw new ArgumentError("Lineal geometry is required");
-    this.linearGeom = linearGeom;
     numLines = linearGeom.getNumGeometries();
     this.componentIndex = componentIndex;
     this.vertexIndex = vertexIndex;
@@ -103,7 +102,7 @@ class LinearIterator {
   bool hasNext() {
     if (componentIndex >= numLines) return false;
     if (componentIndex == numLines - 1 &&
-        vertexIndex >= currentLine.getNumPoints()) return false;
+        vertexIndex >= currentLine!.getNumPoints()) return false;
     return true;
   }
 
@@ -114,7 +113,7 @@ class LinearIterator {
     if (!hasNext()) return;
 
     vertexIndex++;
-    if (vertexIndex >= currentLine.getNumPoints()) {
+    if (vertexIndex >= currentLine!.getNumPoints()) {
       componentIndex++;
       loadCurrentLine();
       vertexIndex = 0;
@@ -130,7 +129,7 @@ class LinearIterator {
   bool isEndOfLine() {
     if (componentIndex >= numLines) return false;
     //LineString currentLine = (LineString) linear.getGeometryN(componentIndex);
-    if (vertexIndex < currentLine.getNumPoints() - 1) return false;
+    if (vertexIndex < currentLine!.getNumPoints() - 1) return false;
     return true;
   }
 
@@ -155,7 +154,7 @@ class LinearIterator {
    * @return a linestring
    */
   LineString getLine() {
-    return currentLine;
+    return currentLine!;
   }
 
   /**
@@ -164,7 +163,7 @@ class LinearIterator {
    * @return a {@link Coordinate}
    */
   Coordinate getSegmentStart() {
-    return currentLine.getCoordinateN(vertexIndex);
+    return currentLine!.getCoordinateN(vertexIndex);
   }
 
   /**
@@ -174,9 +173,9 @@ class LinearIterator {
    *
    * @return a {@link Coordinate} or <code>null</code>
    */
-  Coordinate getSegmentEnd() {
+  Coordinate? getSegmentEnd() {
     if (vertexIndex < getLine().getNumPoints() - 1)
-      return currentLine.getCoordinateN(vertexIndex + 1);
+      return currentLine!.getCoordinateN(vertexIndex + 1);
     return null;
   }
 }

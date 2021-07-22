@@ -522,7 +522,7 @@ class BufferOp {
   BufferParameters bufParams = new BufferParameters();
 
   Geometry? resultGeometry = null;
-  Exception? saveException; // debugging only
+  // Exception? saveException; // debugging only
 
   /**
    * Initializes a buffer computation for the given geometry
@@ -590,14 +590,15 @@ class BufferOp {
         bufferReducedPrecisionWithDigits(precDigits);
       } catch (ex) {
         // update the saved exception to reflect the new input geometry
-        saveException = ex as Exception;
+        // saveException = ex as Exception;
+        print(ex);
         // don't propagate the exception - it will be detected by fact that resultGeometry is null
       }
       if (resultGeometry != null) return;
     }
 
     // tried everything - have to bail
-    throw saveException as Exception;
+    throw StateError("bufferReducedPrecision error");
   }
 
   void bufferOriginalPrecision() {
@@ -606,7 +607,7 @@ class BufferOp {
       BufferBuilder bufBuilder = new BufferBuilder(bufParams);
       resultGeometry = bufBuilder.buffer(argGeom, distance);
     } catch (ex) {
-      saveException = ex as Exception;
+      // saveException = ex as Exception;
       // don't propagate the exception - it will be detected by fact that resultGeometry is null
 
       // testing ONLY - propagate exception
@@ -1620,9 +1621,10 @@ class OffsetCurveBuilder {
   }
 
   static List<Coordinate> copyCoordinates(List<Coordinate> pts) {
-    List<Coordinate> copy = []..length = (pts.length);
+    List<Coordinate> copy = []; //..length = (pts.length);
     for (int i = 0; i < copy.length; i++) {
-      copy[i] = Coordinate.fromCoordinate(pts[i]);
+      copy.add(Coordinate.fromCoordinate(pts[i]));
+      // copy[i] = Coordinate.fromCoordinate(pts[i]);
     }
     return copy;
   }
@@ -2587,7 +2589,7 @@ class BufferInputLineSimplifier {
     if (distanceTol < 0) angleOrientation = Orientation.CLOCKWISE;
 
     // rely on fact that bool array is filled with false value
-    isDeleted = []..length = (inputLine.length);
+    isDeleted = List.filled(inputLine.length, 0);
 
     bool isChanged = false;
     do {

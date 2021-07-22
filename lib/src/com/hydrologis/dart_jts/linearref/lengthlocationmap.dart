@@ -56,9 +56,7 @@ class LengthLocationMap {
 
   Geometry linearGeom;
 
-  LengthLocationMap(Geometry linearGeom) {
-    this.linearGeom = linearGeom;
-  }
+  LengthLocationMap(this.linearGeom);
 
   /**
    * Compute the {@link LinearLocation} corresponding to a length.
@@ -122,7 +120,7 @@ class LengthLocationMap {
         }
       } else {
         Coordinate p0 = it.getSegmentStart();
-        Coordinate p1 = it.getSegmentEnd();
+        Coordinate p1 = it.getSegmentEnd()!;
         double segLen = p1.distance(p0);
         // length falls in this segment
         if (totalLength + segLen > length) {
@@ -163,7 +161,7 @@ class LengthLocationMap {
     while (it.hasNext()) {
       if (!it.isEndOfLine()) {
         Coordinate p0 = it.getSegmentStart();
-        Coordinate p1 = it.getSegmentEnd();
+        Coordinate p1 = it.getSegmentEnd()!;
         double segLen = p1.distance(p0);
         // length falls in this segment
         if (loc.getComponentIndex() == it.getComponentIndex() &&

@@ -82,7 +82,7 @@ class StringUtils {
   static bool isDigit(String s, int idx) => (s.codeUnitAt(idx) ^ 0x30) <= 9;
 
   static bool equalsIgnoreCase(String string1, String string2) {
-    return string1?.toLowerCase() == string2?.toLowerCase();
+    return string1.toLowerCase() == string2.toLowerCase();
   }
 
   static String replaceCharAt(String oldString, int index, String newChar) {
@@ -99,9 +99,16 @@ class MatrixUtils {
     return grid;
   }
 
-  static List<List<T>> createMatrix<T>(int rows, int cols, T defaultValue) {
-    final grid = List<List<T>>.generate(
-        rows, (i) => List<T>.generate(cols, (j) => defaultValue));
+  static List<List<int>> createIntMatrixWithDefault(
+      int rows, int cols, int defaultValue) {
+    final grid = List<List<int>>.generate(
+        rows, (i) => List<int>.generate(cols, (j) => defaultValue));
+    return grid;
+  }
+
+  static List<List<T?>> createMatrix<T>(int rows, int cols, T? defaultValue) {
+    final grid = List<List<T?>>.generate(
+        rows, (i) => List<T?>.generate(cols, (j) => defaultValue));
     return grid;
   }
 }

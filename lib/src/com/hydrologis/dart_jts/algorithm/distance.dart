@@ -452,7 +452,7 @@ class DistanceOp {
 
   // working
   PointLocator ptLocator = new PointLocator();
-  List<GeometryLocation>? minDistanceLocation;
+  List<GeometryLocation?>? minDistanceLocation;
   double minDistance = double.maxFinite;
 
   /**
@@ -504,8 +504,8 @@ class DistanceOp {
   List<Coordinate> nearestPoints() {
     computeMinDistance();
     List<Coordinate> nearestPts = [
-      minDistanceLocation![0].getCoordinate(),
-      minDistanceLocation![1].getCoordinate()
+      minDistanceLocation![0]!.getCoordinate(),
+      minDistanceLocation![1]!.getCoordinate()
     ];
     return nearestPts;
   }
@@ -525,7 +525,7 @@ class DistanceOp {
    *
    * @return a pair of {@link GeometryLocation}s for the nearest points
    */
-  List<GeometryLocation>? nearestLocations() {
+  List<GeometryLocation?>? nearestLocations() {
     computeMinDistance();
     return minDistanceLocation;
   }
@@ -535,7 +535,7 @@ class DistanceOp {
    * @return a pair of {@link GeometryLocation}s for the nearest points
    * @deprecated renamed to nearestLocations
    */
-  List<GeometryLocation>? closestLocations() {
+  List<GeometryLocation?>? closestLocations() {
     return nearestLocations();
   }
 
@@ -563,7 +563,7 @@ class DistanceOp {
   }
 
   void computeContainmentDistance() {
-    List<GeometryLocation> locPtPoly = []..length = 2;
+    List<GeometryLocation?> locPtPoly = []..length = 2;
     // test if either geometry has a vertex inside the other
     computeContainmentDistance1(0, locPtPoly);
     if (minDistance <= terminateDistance) return;
@@ -571,13 +571,13 @@ class DistanceOp {
   }
 
   void computeContainmentDistance1(
-      int polyGeomIndex, List<GeometryLocation> locPtPoly) {
+      int polyGeomIndex, List<GeometryLocation?> locPtPoly) {
     Geometry? polyGeom = geom[polyGeomIndex];
     // if no polygon then nothing to do
     if (polyGeom!.getDimension() < 2) return;
 
     int locationsIndex = 1 - polyGeomIndex;
-    List polys = PolygonExtracter.getPolygons(polyGeom!);
+    List polys = PolygonExtracter.getPolygons(polyGeom);
     if (polys.length > 0) {
       List insideLocs =
           ConnectedElementLocationFilter.getLocations(geom[locationsIndex]!);
@@ -592,7 +592,7 @@ class DistanceOp {
   }
 
   void computeContainmentDistance2(
-      List locs, List polys, List<GeometryLocation> locPtPoly) {
+      List locs, List polys, List<GeometryLocation?> locPtPoly) {
     for (int i = 0; i < locs.length; i++) {
       GeometryLocation loc = locs[i];
       for (int j = 0; j < polys.length; j++) {
@@ -603,7 +603,7 @@ class DistanceOp {
   }
 
   void computeContainmentDistance3(
-      GeometryLocation ptLoc, Polygon poly, List<GeometryLocation> locPtPoly) {
+      GeometryLocation ptLoc, Polygon poly, List<GeometryLocation?> locPtPoly) {
     Coordinate pt = ptLoc.getCoordinate();
     // if pt is not in exterior, distance to geom is 0
     if (Location.EXTERIOR != ptLocator.locate(pt, poly)) {

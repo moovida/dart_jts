@@ -116,18 +116,20 @@ class Polygon extends Geometry implements Polygonal {
     if (isEmpty()) {
       return <Coordinate>[];
     }
-    List<Coordinate> coordinates = []..length = getNumPoints();
-    int k = -1;
+    List<Coordinate> coordinates = []; //..length = getNumPoints();
+    // int k = -1;
     List<Coordinate> shellCoordinates = shell!.getCoordinates();
     for (int x = 0; x < shellCoordinates.length; x++) {
-      k++;
-      coordinates[k] = shellCoordinates[x];
+      // k++;
+      // coordinates[k] = shellCoordinates[x];
+      coordinates.add(shellCoordinates[x]);
     }
     for (int i = 0; i < holes!.length; i++) {
       List<Coordinate> childCoordinates = holes![i].getCoordinates();
       for (int j = 0; j < childCoordinates.length; j++) {
-        k++;
-        coordinates[k] = childCoordinates[j];
+        // k++;
+        // coordinates[k] = childCoordinates[j];
+        coordinates.add(childCoordinates[j]);
       }
     }
     return coordinates;
@@ -238,10 +240,12 @@ class Polygon extends Geometry implements Polygonal {
     if (isEmpty()) {
       return getFactory().createMultiLineStringEmpty();
     }
-    List<LinearRing> rings = []..length = holes!.length + 1;
-    rings[0] = shell!;
+    List<LinearRing> rings = []; //..length = holes!.length + 1;
+    rings.add(shell!);
+    // rings[0] = shell!;
     for (int i = 0; i < holes!.length; i++) {
-      rings[i + 1] = holes![i];
+      rings.add(holes![i]);
+      // rings[i + 1] = holes![i];
     }
     // create LineString or MultiLineString as appropriate
     if (rings.length <= 1)
@@ -317,9 +321,10 @@ class Polygon extends Geometry implements Polygonal {
 
   Polygon copyInternal() {
     LinearRing shellCopy = shell!.copy() as LinearRing;
-    List<LinearRing> holeCopies = []..length = this.holes!.length;
+    List<LinearRing> holeCopies = []; //..length = this.holes!.length;
     for (int i = 0; i < holes!.length; i++) {
-      holeCopies[i] = holes![i].copy() as LinearRing;
+      holeCopies.add(holes![i].copy() as LinearRing);
+      // holeCopies[i] = holes![i].copy() as LinearRing;
     }
     return new Polygon.withFactory(shellCopy, holeCopies, geomFactory);
   }
@@ -394,9 +399,10 @@ class Polygon extends Geometry implements Polygonal {
   Geometry reverse() {
     Polygon poly = copy() as Polygon;
     poly.shell = shell!.copy().reverse() as LinearRing;
-    poly.holes = []..length = holes!.length;
+    poly.holes = []; //..length = holes!.length;
     for (int i = 0; i < holes!.length; i++) {
-      poly.holes![i] = holes![i].copy().reverse() as LinearRing;
+      poly.holes!.add(holes![i].copy().reverse() as LinearRing);
+      // poly.holes![i] = holes![i].copy().reverse() as LinearRing;
     }
     return poly; // return the clone
   }

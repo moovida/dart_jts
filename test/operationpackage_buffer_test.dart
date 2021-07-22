@@ -7,7 +7,8 @@ double TOLERANCE = 1E-5;
 
 PrecisionModel precisionModel = PrecisionModel.fixedPrecision(1);
 
-GeometryFactory geometryFactory = GeometryFactory.withPrecisionModelSrid(precisionModel, 0);
+GeometryFactory geometryFactory =
+    GeometryFactory.withPrecisionModelSrid(precisionModel, 0);
 
 WKTReader reader = WKTReader.withFactory(geometryFactory);
 
@@ -17,37 +18,56 @@ void main() {
       BufferValidator(0, "POINT (100 100)").setEmptyBufferExpected(true).test();
     });
     test("test2", () {
-      BufferValidator(0, "LINESTRING (10 10, 100 100)").setEmptyBufferExpected(true).test();
+      BufferValidator(0, "LINESTRING (10 10, 100 100)")
+          .setEmptyBufferExpected(true)
+          .test();
     });
     test("test1a", () {
-      BufferValidator(-1, "POINT (100 100)").setEmptyBufferExpected(true).test();
+      BufferValidator(-1, "POINT (100 100)")
+          .setEmptyBufferExpected(true)
+          .test();
     });
     test("test2a", () {
-      BufferValidator(-1, "LINESTRING (10 10, 100 100)").setEmptyBufferExpected(true).test();
+      BufferValidator(-1, "LINESTRING (10 10, 100 100)")
+          .setEmptyBufferExpected(true)
+          .test();
     });
     test("test3", () {
-      BufferValidator(10, "LINESTRING (100 100, 200 100, 200 200, 100 200, 100 100)").test();
+      BufferValidator(
+              10, "LINESTRING (100 100, 200 100, 200 200, 100 200, 100 100)")
+          .test();
     });
     test("test4", () {
       BufferValidator(50, "LINESTRING (40 40, 160 40, 100 180, 40 80)").test();
     });
     test("test5", () {
-      BufferValidator(0, "POLYGON ((80 300, 280 300, 280 300, 280 300, 280 80, 80 80, 80 300))").test();
+      BufferValidator(0,
+              "POLYGON ((80 300, 280 300, 280 300, 280 300, 280 80, 80 80, 80 300))")
+          .test();
     });
     test("test6", () {
-      BufferValidator(10, "POLYGON ((60 300, 60 160, 240 160, 240 300, 60 300))").test();
+      BufferValidator(
+              10, "POLYGON ((60 300, 60 160, 240 160, 240 300, 60 300))")
+          .test();
     });
     test("test7", () {
-      BufferValidator(10, "POLYGON ((80 300, 280 300, 280 80, 80 80, 80 300), (260 280, 180 200, 100 280, 100 100, 260 100, 260 280))").test();
+      BufferValidator(10,
+              "POLYGON ((80 300, 280 300, 280 80, 80 80, 80 300), (260 280, 180 200, 100 280, 100 100, 260 100, 260 280))")
+          .test();
     });
     test("test8", () {
-      BufferValidator(200, "POLYGON ((80 300, 280 300, 280 80, 80 80, 80 300), (260 280, 180 200, 100 280, 100 100, 260 100, 260 280))").test();
+      BufferValidator(200,
+              "POLYGON ((80 300, 280 300, 280 80, 80 80, 80 300), (260 280, 180 200, 100 280, 100 100, 260 100, 260 280))")
+          .test();
     });
     test("test9", () {
-      BufferValidator(-10, "POLYGON ((80 300, 280 300, 280 80, 80 80, 80 300))").test();
+      BufferValidator(-10, "POLYGON ((80 300, 280 300, 280 80, 80 80, 80 300))")
+          .test();
     });
     test("test10", () {
-      BufferValidator(10, "POLYGON ((100 300, 300 300, 300 100, 100 100, 100 300), (220 220, 180 220, 180 180, 220 180, 220 220))").test();
+      BufferValidator(10,
+              "POLYGON ((100 300, 300 300, 300 100, 100 100, 100 300), (220 220, 180 220, 180 180, 220 180, 220 220))")
+          .test();
     });
     test("test11", () {
       BufferValidator(5,
@@ -55,16 +75,24 @@ void main() {
           .test();
     });
     test("test12", () {
-      BufferValidator(-17, "POLYGON ((260 320, 240 260, 220 220, 160 180, 220 160, 260 160, 260 200, 260 320))").test();
+      BufferValidator(-17,
+              "POLYGON ((260 320, 240 260, 220 220, 160 180, 220 160, 260 160, 260 200, 260 320))")
+          .test();
     });
     test("test13", () {
-      BufferValidator(-17, "POLYGON ((260 320, 240 260, 220 220, 260 160, 260 320))").test();
+      BufferValidator(
+              -17, "POLYGON ((260 320, 240 260, 220 220, 260 160, 260 320))")
+          .test();
     });
     test("test14", () {
-      BufferValidator(-14, "POLYGON ((260 320, 240 260, 220 220, 260 160, 260 320))").test();
+      BufferValidator(
+              -14, "POLYGON ((260 320, 240 260, 220 220, 260 160, 260 320))")
+          .test();
     });
     test("test15", () {
-      BufferValidator(26, "LINESTRING (260 160, 260 200, 260 320, 240 260, 220 220)").test();
+      BufferValidator(
+              26, "LINESTRING (260 160, 260 200, 260 320, 240 260, 220 220)")
+          .test();
     });
     test("test16", () {
       BufferValidator(-7,
@@ -77,19 +105,29 @@ void main() {
           .test();
     });
     test("test18", () {
-      BufferValidator(20, "POLYGON((-4 225, -17 221, -16 223, -15 224, -13 227, -4 225))").test();
+      BufferValidator(20,
+              "POLYGON((-4 225, -17 221, -16 223, -15 224, -13 227, -4 225))")
+          .test();
     });
     test("test19", () {
-      BufferValidator(21, "POLYGON ((184 369, 181 368, 180 368, 179 367, 176 366, 185 357, 184 369 ))").test();
+      BufferValidator(21,
+              "POLYGON ((184 369, 181 368, 180 368, 179 367, 176 366, 185 357, 184 369 ))")
+          .test();
     });
     test("test20", () {
-      BufferValidator(1000, "POLYGON ((13841 1031, 13851 903, 13853 885, 13853 875, 13856 862, 13859 831, 13670 900, 13841 1031))").test();
+      BufferValidator(1000,
+              "POLYGON ((13841 1031, 13851 903, 13853 885, 13853 875, 13856 862, 13859 831, 13670 900, 13841 1031))")
+          .test();
     });
     test("test21", () {
-      BufferValidator(18, "POLYGON ((164 84, 185 91, 190 75, 187 76, 182 77, 179 79, 178 79, 174 81, 173 81, 172 82, 169 83,  164 84 ))").test();
+      BufferValidator(18,
+              "POLYGON ((164 84, 185 91, 190 75, 187 76, 182 77, 179 79, 178 79, 174 81, 173 81, 172 82, 169 83,  164 84 ))")
+          .test();
     });
     test("test22", () {
-      BufferValidator(15, "POLYGON ((224 271, 225 261, 214 258, 210 266, 212 267, 214 267, 217 268, 218 268, 219 268, 221 269, 222 270,  224 271 ))").test();
+      BufferValidator(15,
+              "POLYGON ((224 271, 225 261, 214 258, 210 266, 212 267, 214 267, 217 268, 218 268, 219 268, 221 269, 222 270,  224 271 ))")
+          .test();
     });
     test("test23", () {
       BufferValidator(25,
@@ -97,7 +135,9 @@ void main() {
           .test();
     });
     test("test24", () {
-      BufferValidator(160, "POLYGON ((20 60, 20 20, 240 20, 40 21, 240 22, 40 22, 240 23, 240 60, 20 60))").test();
+      BufferValidator(160,
+              "POLYGON ((20 60, 20 20, 240 20, 40 21, 240 22, 40 22, 240 23, 240 60, 20 60))")
+          .test();
     });
     test("test25", () {
       BufferValidator(-3,
@@ -140,7 +180,9 @@ void main() {
           .test();
     });
     test("test34", () {
-      BufferValidator(1, "GEOMETRYCOLLECTION (POLYGON ((0 10, 10 0, 10 10, 0 10),  (4 8, 8 4, 8 8, 4 8)),   LINESTRING (6 6, 20 20))").test();
+      BufferValidator(1,
+              "GEOMETRYCOLLECTION (POLYGON ((0 10, 10 0, 10 10, 0 10),  (4 8, 8 4, 8 8, 4 8)),   LINESTRING (6 6, 20 20))")
+          .test();
     });
     test("test35", () {
       BufferValidator(20,
@@ -148,16 +190,23 @@ void main() {
           .test();
     });
     test("test36", () {
-      BufferValidator(20, "GEOMETRYCOLLECTION (POINT (100 100), POLYGON ((400 260, 120 300, 120 100, 400 260)), LINESTRING (20 280, 160 160, 60 40))").test();
+      BufferValidator(20,
+              "GEOMETRYCOLLECTION (POINT (100 100), POLYGON ((400 260, 120 300, 120 100, 400 260)), LINESTRING (20 280, 160 160, 60 40))")
+          .test();
     });
     test("test37", () {
-      BufferValidator(300, "POLYGON ((-140 700, 880 1120, 1280 -120, 300 -600, -480 -480, -140 700),   (0 360, 780 500, 240 -220, 0 360))").test();
+      BufferValidator(300,
+              "POLYGON ((-140 700, 880 1120, 1280 -120, 300 -600, -480 -480, -140 700),   (0 360, 780 500, 240 -220, 0 360))")
+          .test();
     });
     test("test38", () {
-      BufferValidator(300, "POLYGON ((-140 700, 880 1120, 1280 -120, 300 -600, -480 -480, -140 700),   (0 360, 240 -220, 780 500, 0 360))").test();
+      BufferValidator(300,
+              "POLYGON ((-140 700, 880 1120, 1280 -120, 300 -600, -480 -480, -140 700),   (0 360, 240 -220, 780 500, 0 360))")
+          .test();
     });
     test("test39", () {
-      BufferValidator(30, "MULTIPOLYGON (((0 400, 440 400, 440 0, 0 0, 0 400),(380 360, 160 120, 260 80, 380 360)), ((360 320, 200 120, 240 100, 360 320)))")
+      BufferValidator(30,
+              "MULTIPOLYGON (((0 400, 440 400, 440 0, 0 0, 0 400),(380 360, 160 120, 260 80, 380 360)), ((360 320, 200 120, 240 100, 360 320)))")
           .test();
     });
     test("testMultiLineString_depthFailure", () {
@@ -230,7 +279,8 @@ void main() {
               "MULTILINESTRING (( 635074.5418406526 6184832.4888257105, 635074.5681951842 6184832.571842485, 635074.6472587794 6184832.575795664 ), ( 635074.6657069515 6184832.53889932, 635074.6933792098 6184832.451929366, 635074.5642420045 6184832.474330718 ))")
           .setBufferHolesExpected(false)
           .setEmptyBufferExpected(false)
-          .setPrecisionModel(new PrecisionModel.fromType(PrecisionModel.FLOATING))
+          .setPrecisionModel(
+              new PrecisionModel.fromType(PrecisionModel.FLOATING))
           .test();
     });
     test("testPolygon_MultipleHoles", () {
@@ -238,19 +288,24 @@ void main() {
               "POLYGON (( 78 82, 78 282, 312 282, 312 82, 78 82 ), ( 117 242, 122 242, 122 248, 117 248, 117 242 ), ( 156 104, 288 104, 288 210, 156 210, 156 104 ))")
           .setBufferHolesExpected(true)
           .setEmptyBufferExpected(false)
-          .setPrecisionModel(new PrecisionModel.fromType(PrecisionModel.FLOATING))
+          .setPrecisionModel(
+              new PrecisionModel.fromType(PrecisionModel.FLOATING))
           .test();
     });
 
     /// precision tests
     test("testQuickPolygonUnion", () {
-      Geometry a = read("POLYGON((0 0, 100 0, 100 100, 0 100, 0 0))");
-      Geometry b = read("POLYGON((50 50, 150 50, 150 150, 50 150, 50 50))");
+      Geometry a = read("POLYGON((0 0, 100 0, 100 100, 0 100, 0 0))")!;
+      Geometry b = read("POLYGON((50 50, 150 50, 150 150, 50 150, 50 50))")!;
       List<Geometry> polygons = [a, b];
-      GeometryCollection polygonCollection = new GeometryFactory.defaultPrecision().createGeometryCollection(polygons);
+      GeometryCollection polygonCollection =
+          new GeometryFactory.defaultPrecision()
+              .createGeometryCollection(polygons);
       Geometry union = polygonCollection.buffer(0);
       //System.out.println(union);
-      assertEquals("POLYGON ((0 0, 0 100, 50 100, 50 150, 150 150, 150 50, 100 50, 100 0, 0 0))", union.toString());
+      assertEquals(
+          "POLYGON ((0 0, 0 100, 50 100, 50 150, 150 150, 150 50, 100 50, 100 0, 0 0))",
+          union.toString());
     });
     test("testFloatingPrecision1", () {
       BufferValidator(100,
@@ -326,14 +381,12 @@ void main() {
 }
 
 class Test implements Comparable {
-  int priority;
+  int priority = 0;
   String name;
   Function testFunction;
 
-  Test(String name, Function testFunction, {int priority}) {
-    this.name = name;
+  Test(this.name, this.testFunction, {int priority = 0}) {
     this.priority = priority;
-    this.testFunction = testFunction;
   }
 
   String getName() {
@@ -348,7 +401,7 @@ class Test implements Comparable {
     testFunction();
   }
 
-  int compareTo(Object o) {
+  int compareTo(dynamic o) {
     return priority - (o as Test).priority;
   }
 }
@@ -366,20 +419,22 @@ class BufferValidator {
 ////System.out.println("END");
 //}
 
-  Geometry original;
-  double bufferDistance;
+  Geometry? original;
+  double bufferDistance = 0.0;
   Map nameToTestMap = {};
-  Geometry buffer;
+  Geometry? buffer;
   static final int QUADRANT_SEGMENTS_1 = 100;
   static final int QUADRANT_SEGMENTS_2 = 50;
-  String wkt;
+  String? wkt;
   GeometryFactory geomFact = new GeometryFactory.defaultPrecision();
   WKTWriter wktWriter = new WKTWriter();
-  WKTReader wktReader;
+  WKTReader? wktReader;
 
-  BufferValidator(double bufferDistance, String wkt) : this.withBool(bufferDistance, wkt, true);
+  BufferValidator(double bufferDistance, String wkt)
+      : this.withBool(bufferDistance, wkt, true);
 
-  BufferValidator.withBool(double bufferDistance, String wkt, bool _addContainsTest) {
+  BufferValidator.withBool(
+      double bufferDistance, String wkt, bool _addContainsTest) {
 // SRID = 888 is to test that SRID is preserved in computed buffers
     setFactory(new PrecisionModel(), 888);
     this.bufferDistance = bufferDistance;
@@ -414,20 +469,33 @@ class BufferValidator {
   BufferValidator setExpectedArea(final double expectedArea) {
     var name = "Area Test";
     return addTest(new Test(name, () {
-      double tolerance = (getBuffer().getArea() - getOriginal().buffer2(bufferDistance, QUADRANT_SEGMENTS_1 - QUADRANT_SEGMENTS_2).getArea()).abs();
+      double tolerance = (getBuffer().getArea() -
+              getOriginal()
+                  .buffer2(
+                      bufferDistance, QUADRANT_SEGMENTS_1 - QUADRANT_SEGMENTS_2)
+                  .getArea())
+          .abs();
       assertEqualsD(expectedArea, getBuffer().getArea(), tolerance, name);
     }));
   }
 
   BufferValidator setEmptyBufferExpected(final bool emptyBufferExpected) {
     return addTest(new Test("Empty Buffer Test", () {
-      assertTrueMsg(supplement("Expected buffer " + (emptyBufferExpected ? "" : "not ") + "to be empty"), emptyBufferExpected == getBuffer().isEmpty());
+      assertTrueMsg(
+          supplement("Expected buffer " +
+              (emptyBufferExpected ? "" : "not ") +
+              "to be empty"),
+          emptyBufferExpected == getBuffer().isEmpty());
     }, priority: 1));
   }
 
   BufferValidator setBufferHolesExpected(final bool bufferHolesExpected) {
     return addTest(new Test("Buffer Holes Test", () {
-      assertTrueMsg(supplement("Expected buffer " + (bufferHolesExpected ? "" : "not ") + "to have holes"), hasHoles(getBuffer()) == bufferHolesExpected);
+      assertTrueMsg(
+          supplement("Expected buffer " +
+              (bufferHolesExpected ? "" : "not ") +
+              "to have holes"),
+          hasHoles(getBuffer()) == bufferHolesExpected);
     }));
   }
 
@@ -449,35 +517,38 @@ class BufferValidator {
 
   Geometry getOriginal() {
     if (original == null) {
-      original = wktReader.read(wkt);
+      original = wktReader!.read(wkt!);
     }
-    return original;
+    return original!;
   }
 
   BufferValidator setPrecisionModel(PrecisionModel precisionModel) {
-    wktReader = new WKTReader.withFactory(new GeometryFactory.withPrecisionModel(precisionModel));
+    wktReader = new WKTReader.withFactory(
+        new GeometryFactory.withPrecisionModel(precisionModel));
     return this;
   }
 
   BufferValidator setFactory(PrecisionModel precisionModel, int srid) {
-    wktReader = new WKTReader.withFactory(new GeometryFactory.withPrecisionModelSrid(precisionModel, srid));
+    wktReader = new WKTReader.withFactory(
+        new GeometryFactory.withPrecisionModelSrid(precisionModel, srid));
     return this;
   }
 
   Geometry getBuffer() {
     if (buffer == null) {
       buffer = getOriginal().buffer2(bufferDistance, QUADRANT_SEGMENTS_1);
-      if (getBuffer().runtimeType.toString() == "GeometryCollection" && getBuffer().isEmpty()) {
+      if (getBuffer().runtimeType.toString() == "GeometryCollection" &&
+          getBuffer().isEmpty()) {
         try {
           //#contains doesn't work with GeometryLists [Jon Aquino
           // 10/29/2003]
-          buffer = wktReader.read("POINT EMPTY");
+          buffer = wktReader!.read("POINT EMPTY");
         } catch (e) {
           Assert.shouldNeverReachHere();
         }
       }
     }
-    return buffer;
+    return buffer!;
   }
 
   void addContainsTest() {
@@ -487,9 +558,11 @@ class BufferValidator {
       }
       Assert.isTrue(getOriginal().isValid());
       if (bufferDistance > 0) {
-        assertTrueMsg(supplement("Expected buffer to contain original"), contains(getBuffer(), getOriginal()));
+        assertTrueMsg(supplement("Expected buffer to contain original"),
+            contains(getBuffer(), getOriginal()));
       } else {
-        assertTrueMsg(supplement("Expected original to contain buffer"), contains(getOriginal(), getBuffer()));
+        assertTrueMsg(supplement("Expected original to contain buffer"),
+            contains(getOriginal(), getBuffer()));
       }
     }));
   }
@@ -509,7 +582,10 @@ class BufferValidator {
       if (getOriginal().runtimeType.toString() == "GeometryCollection") {
         return;
       }
-      assertTrueMsg(supplement("BufferResultValidator failure"), BufferResultValidator.isValidGDG(getOriginal(), bufferDistance, getBuffer()));
+      assertTrueMsg(
+          supplement("BufferResultValidator failure"),
+          BufferResultValidator.isValidGDG(
+              getOriginal(), bufferDistance, getBuffer()));
     }));
   }
 }

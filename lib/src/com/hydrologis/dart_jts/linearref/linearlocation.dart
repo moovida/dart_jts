@@ -288,7 +288,7 @@ class LinearLocation implements Comparable {
    *@return    a negative integer, zero, or a positive integer as this <code>LineStringLocation</code>
    *      is less than, equal to, or greater than the specified <code>LineStringLocation</code>
    */
-  int compareTo(Object o) {
+  int compareTo(dynamic o) {
     LinearLocation other = o as LinearLocation;
     // compare component indices
     if (componentIndex < other.componentIndex) return -1;

@@ -1027,10 +1027,11 @@ class STRtree extends AbstractSTRtree implements SpatialIndex {
    */
   List<List> verticalSlices(List childBoundables, int sliceCount) {
     int sliceCapacity = (childBoundables.length / sliceCount.toDouble()).ceil();
-    List<List> slices = []..length = sliceCount;
+    List<List> slices = []; //..length = sliceCount;
     Iterator i = childBoundables.iterator;
     for (int j = 0; j < sliceCount; j++) {
-      slices[j] = [];
+      slices.add([]);
+      // slices[j] = [];
       int boundablesAddedToSlice = 0;
       while (boundablesAddedToSlice < sliceCapacity && i.moveNext()) {
         Boundable childBoundable = i.current as Boundable;
@@ -1440,12 +1441,13 @@ class STRtree extends AbstractSTRtree implements SpatialIndex {
      * Iterate the K Nearest Neighbour Queue and retrieve the item from each BoundablePair
      * in this queue
      */
-    List<Object> items = []..length = kNearestNeighbors.size();
-    int count = 0;
+    List<Object> items = []; //..length = kNearestNeighbors.size();
+    // int count = 0;
     while (!kNearestNeighbors.isEmpty()) {
       BoundablePair bp = kNearestNeighbors.poll() as BoundablePair;
-      items[count] = (bp.getBoundable(0) as ItemBoundable).getItem();
-      count++;
+      items.add((bp.getBoundable(0) as ItemBoundable).getItem());
+      // items[count] = (bp.getBoundable(0) as ItemBoundable).getItem();
+      // count++;
     }
     return items;
   }

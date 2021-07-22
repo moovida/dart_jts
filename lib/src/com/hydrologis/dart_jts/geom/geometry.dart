@@ -2092,13 +2092,14 @@ class GeometryFactory {
     if (coordinates == null) {
       return createMultiPoint(<Point>[]);
     }
-    List<Point> points = []..length = coordinates.size();
+    List<Point> points = []; //..length = coordinates.size();
     for (int i = 0; i < coordinates.size(); i++) {
       CoordinateSequence ptSeq = getCoordinateSequenceFactory()
           .createSizeDimMeas(
               1, coordinates.getDimension(), coordinates.getMeasures());
       CoordinateSequences.copy(coordinates, i, ptSeq, 0, 1);
-      points[i] = createPointSeq(ptSeq);
+      // points[i] = createPointSeq(ptSeq);
+      points.add(createPointSeq(ptSeq));
     }
     return createMultiPoint(points);
   }

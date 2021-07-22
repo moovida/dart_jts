@@ -594,9 +594,8 @@ abstract class LineIntersector {
   }
 
   int result = 0;
-  List<List<Coordinate>> inputLines =
-      MatrixUtils.createMatrix(2, 2, null as Coordinate);
-  List<Coordinate> intPt = []..length = 2;
+  List<List<Coordinate?>> inputLines = MatrixUtils.createMatrix(2, 2, null);
+  List<Coordinate> intPt = []; //..length = 2;
 
   /// The indexes of the endpoints of the intersection lines, in order along
   /// the corresponding line
@@ -612,8 +611,10 @@ abstract class LineIntersector {
 // int numIntersects = 0;
 
   LineIntersector() {
-    intPt[0] = Coordinate.empty2D();
-    intPt[1] = Coordinate.empty2D();
+    intPt.add(Coordinate.empty2D());
+    intPt.add(Coordinate.empty2D());
+    // intPt[0] = Coordinate.empty2D();
+    // intPt[1] = Coordinate.empty2D();
     // alias the intersection points for ease of reference
     pa = intPt[0];
     pb = intPt[1];
@@ -639,7 +640,7 @@ abstract class LineIntersector {
   /// @param segmentIndex the index of the input segment (0 or 1)
   /// @param ptIndex the index of the endpoint (0 or 1)
   /// @return the specified endpoint
-  Coordinate getEndpoint(int segmentIndex, int ptIndex) {
+  Coordinate? getEndpoint(int segmentIndex, int ptIndex) {
     return inputLines[segmentIndex][ptIndex];
   }
 
@@ -682,9 +683,9 @@ abstract class LineIntersector {
 
   String toString() {
     return WKTWriter.toLineStringFromCoords(
-            inputLines[0][0], inputLines[0][1]) +
+            inputLines[0][0]!, inputLines[0][1]!) +
         " - " +
-        WKTWriter.toLineStringFromCoords(inputLines[1][0], inputLines[1][1]) +
+        WKTWriter.toLineStringFromCoords(inputLines[1][0]!, inputLines[1][1]!) +
         getTopologySummary();
   }
 
@@ -725,7 +726,7 @@ abstract class LineIntersector {
 
   void computeIntLineIndex() {
     if (intLineIndex == null) {
-      intLineIndex = MatrixUtils.createMatrix(2, 2, 0);
+      intLineIndex = MatrixUtils.createIntMatrixWithDefault(2, 2, 0);
       computeIntLineIndexWithIndex(0);
       computeIntLineIndexWithIndex(1);
     }
@@ -773,8 +774,8 @@ abstract class LineIntersector {
   /// @return <code>true</code> if either intersection point is in the interior of the input segment
   bool isInteriorIntersectionWithIndex(int inputLineIndex) {
     for (int i = 0; i < result; i++) {
-      if (!(intPt[i].equals2D(inputLines[inputLineIndex][0]) ||
-          intPt[i].equals2D(inputLines[inputLineIndex][1]))) {
+      if (!(intPt[i].equals2D(inputLines[inputLineIndex][0]!) ||
+          intPt[i].equals2D(inputLines[inputLineIndex][1]!))) {
         return true;
       }
     }
@@ -830,7 +831,7 @@ abstract class LineIntersector {
   /// @return the edge distance of the intersection point
   double getEdgeDistance(int segmentIndex, int intIndex) {
     double dist = computeEdgeDistance(intPt[intIndex],
-        inputLines[segmentIndex][0], inputLines[segmentIndex][1]);
+        inputLines[segmentIndex][0]!, inputLines[segmentIndex][1]!);
     return dist;
   }
 }
@@ -1089,9 +1090,9 @@ class RobustLineIntersector extends LineIntersector {
    */
   bool isInSegmentEnvelopes(Coordinate intPt) {
     Envelope env0 =
-        new Envelope.fromCoordinates(inputLines[0][0], inputLines[0][1]);
+        new Envelope.fromCoordinates(inputLines[0][0]!, inputLines[0][1]!);
     Envelope env1 =
-        new Envelope.fromCoordinates(inputLines[1][0], inputLines[1][1]);
+        new Envelope.fromCoordinates(inputLines[1][0]!, inputLines[1][1]!);
     return env0.containsCoordinate(intPt) && env1.containsCoordinate(intPt);
   }
 

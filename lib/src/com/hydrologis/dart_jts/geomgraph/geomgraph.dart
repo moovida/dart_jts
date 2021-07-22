@@ -451,11 +451,12 @@ class GeometryGraph extends PlanarGraph {
 
   List<Coordinate> getBoundaryPoints() {
     List coll = getBoundaryNodes();
-    List<Coordinate> pts = []..length = (coll.length);
+    List<Coordinate> pts = []; //..length = (coll.length);
     int i = 0;
     for (Iterator it = coll.iterator; it.moveNext();) {
       Node node = it.current as Node;
-      pts[i++] = node.getCoordinate().copy();
+      pts.add(node.getCoordinate().copy());
+      // pts[i++] = node.getCoordinate().copy();
     }
     return pts;
   }
@@ -467,7 +468,7 @@ class GeometryGraph extends PlanarGraph {
   void computeSplitEdges(List edgelist) {
     for (Iterator i = edges.iterator; i.moveNext();) {
       Edge e = i.current as Edge;
-      e.eiList!.addSplitEdges(edgelist);
+      e.eiList.addSplitEdges(edgelist);
     }
   }
 
@@ -696,7 +697,7 @@ Debug.print(e.getEdgeIntersectionList());
     for (Iterator i = edges.iterator; i.moveNext();) {
       Edge e = i.current;
       int eLoc = e.getLabel()!.getLocation(argIndex);
-      for (Iterator eiIt = e.eiList!.iterator(); eiIt.moveNext();) {
+      for (Iterator eiIt = e.eiList.iterator(); eiIt.moveNext();) {
         EdgeIntersection ei = eiIt.current as EdgeIntersection;
         addSelfIntersectionNode(argIndex, ei.coord, eLoc);
       }
@@ -1217,9 +1218,10 @@ abstract class EdgeRing {
   }
 
   Polygon toPolygon(GeometryFactory geometryFactory) {
-    List<LinearRing> holeLR = []..length = (holes.length);
+    List<LinearRing> holeLR = []; //..length = (holes.length);
     for (int i = 0; i < holes.length; i++) {
-      holeLR[i] = (holes[i] as EdgeRing).getLinearRing()!;
+      holeLR.add((holes[i] as EdgeRing).getLinearRing()!);
+      // holeLR[i] = (holes[i] as EdgeRing).getLinearRing()!;
     }
     Polygon poly = geometryFactory.createPolygon(getLinearRing(), holeLR);
     return poly;
@@ -1232,9 +1234,10 @@ abstract class EdgeRing {
    */
   void computeRing() {
     if (ring != null) return; // don't compute more than once
-    List<Coordinate> coord = []..length = (pts.length);
+    List<Coordinate> coord = []; //..length = (pts.length);
     for (int i = 0; i < pts.length; i++) {
-      coord[i] = pts[i];
+      coord.add(pts[i]);
+      // coord[i] = pts[i];
     }
     ring = geometryFactory.createLinearRing(coord);
     _isHole = Orientation.isCCW(ring!.getCoordinates());
@@ -2245,13 +2248,16 @@ class EdgeIntersectionList {
       npts--;
     }
 
-    List<Coordinate> pts = []..length = (npts);
+    List<Coordinate> pts = []; //..length = (npts);
     int ipt = 0;
-    pts[ipt++] = new Coordinate.fromCoordinate(ei0.coord);
+    pts.add(Coordinate.fromCoordinate(ei0.coord));
+    // pts[ipt++] = new Coordinate.fromCoordinate(ei0.coord);
     for (int i = ei0.segmentIndex + 1; i <= ei1.segmentIndex; i++) {
-      pts[ipt++] = edge.pts[i];
+      pts.add(edge.pts[i]);
+      // pts[ipt++] = edge.pts[i];
     }
-    if (useIntPt1) pts[ipt] = ei1.coord;
+    if (useIntPt1) pts.add(ei1.coord);
+    // if (useIntPt1) pts[ipt] = ei1.coord;
     return new Edge(pts, new Label.fromLabel(edge.label!));
   }
 
@@ -2279,7 +2285,7 @@ class Depth {
     return NULL_VALUE;
   }
 
-  List<List<int>> depth = MatrixUtils.createMatrix(2, 3, 0);
+  List<List<int>> depth = MatrixUtils.createIntMatrixWithDefault(2, 3, 0);
 
   Depth() {
     // initialize depth array to a sentinel value
@@ -2782,7 +2788,7 @@ class Edge extends GraphComponent {
  * @version 1.7
  */
 class TopologyLocation {
-  late List<int> location;
+  late List<int?> location;
 
   TopologyLocation.fromList(List<int> location) {
     init(location.length);
@@ -2822,7 +2828,7 @@ class TopologyLocation {
   }
 
   int get(int posIndex) {
-    if (posIndex < location.length) return location[posIndex];
+    if (posIndex < location.length) return location[posIndex]!;
     return Location.NONE;
   }
 
@@ -2860,7 +2866,7 @@ class TopologyLocation {
 
   void flip() {
     if (location.length <= 1) return;
-    int temp = location[Position.LEFT];
+    int temp = location[Position.LEFT]!;
     location[Position.LEFT] = location[Position.RIGHT];
     location[Position.RIGHT] = temp;
   }
@@ -2885,7 +2891,7 @@ class TopologyLocation {
     setLocationWithIndex(Position.ON, locValue);
   }
 
-  List<int> getLocations() {
+  List<int?> getLocations() {
     return location;
   }
 
@@ -2909,7 +2915,7 @@ class TopologyLocation {
   void merge(TopologyLocation gl) {
     // if the src is an Area label & and the dest is not, increase the dest to be an Area
     if (gl.location.length > location.length) {
-      List<int> newLoc = []..length = (3);
+      List<int?> newLoc = []..length = (3);
       newLoc[Position.ON] = location[Position.ON];
       newLoc[Position.LEFT] = Location.NONE;
       newLoc[Position.RIGHT] = Location.NONE;
@@ -2924,10 +2930,10 @@ class TopologyLocation {
   String toString() {
     StringBuffer buf = new StringBuffer();
     if (location.length > 1)
-      buf.write(Location.toLocationSymbol(location[Position.LEFT]));
-    buf.write(Location.toLocationSymbol(location[Position.ON]));
+      buf.write(Location.toLocationSymbol(location[Position.LEFT]!));
+    buf.write(Location.toLocationSymbol(location[Position.ON]!));
     if (location.length > 1)
-      buf.write(Location.toLocationSymbol(location[Position.RIGHT]));
+      buf.write(Location.toLocationSymbol(location[Position.RIGHT]!));
     return buf.toString();
   }
 }
@@ -2992,7 +2998,7 @@ class Label {
     return lineLabel;
   }
 
-  List<TopologyLocation> elt = []..length = (2);
+  List<TopologyLocation?> elt = []..length = (2);
 
   /**
    * Construct a Label with a single location for both Geometries.
@@ -3010,7 +3016,7 @@ class Label {
   Label.args2(int geomIndex, int onLoc) {
     elt[0] = new TopologyLocation.fromOn(Location.NONE);
     elt[1] = new TopologyLocation.fromOn(Location.NONE);
-    elt[geomIndex].setLocation(onLoc);
+    elt[geomIndex]!.setLocation(onLoc);
   }
 
   /**
@@ -3029,44 +3035,44 @@ class Label {
   Label.args4(int geomIndex, int onLoc, int leftLoc, int rightLoc) {
     elt[0] = new TopologyLocation(Location.NONE, Location.NONE, Location.NONE);
     elt[1] = new TopologyLocation(Location.NONE, Location.NONE, Location.NONE);
-    elt[geomIndex].setLocations(onLoc, leftLoc, rightLoc);
+    elt[geomIndex]!.setLocations(onLoc, leftLoc, rightLoc);
   }
 
   /**
    * Construct a Label with the same values as the argument Label.
    */
   Label.fromLabel(Label lbl) {
-    elt[0] = new TopologyLocation.fromTL(lbl.elt[0]);
-    elt[1] = new TopologyLocation.fromTL(lbl.elt[1]);
+    elt[0] = new TopologyLocation.fromTL(lbl.elt[0]!);
+    elt[1] = new TopologyLocation.fromTL(lbl.elt[1]!);
   }
 
   void flip() {
-    elt[0].flip();
-    elt[1].flip();
+    elt[0]!.flip();
+    elt[1]!.flip();
   }
 
   int getLocationWithPosIndex(int geomIndex, int posIndex) {
-    return elt[geomIndex].get(posIndex);
+    return elt[geomIndex]!.get(posIndex);
   }
 
   int getLocation(int geomIndex) {
-    return elt[geomIndex].get(Position.ON);
+    return elt[geomIndex]!.get(Position.ON);
   }
 
   void setLocation(int geomIndex, int posIndex, int location) {
-    elt[geomIndex].setLocationWithIndex(posIndex, location);
+    elt[geomIndex]!.setLocationWithIndex(posIndex, location);
   }
 
   void setLocationWithIndex(int geomIndex, int location) {
-    elt[geomIndex].setLocationWithIndex(Position.ON, location);
+    elt[geomIndex]!.setLocationWithIndex(Position.ON, location);
   }
 
   void setAllLocations(int geomIndex, int location) {
-    elt[geomIndex].setAllLocations(location);
+    elt[geomIndex]!.setAllLocations(location);
   }
 
   void setAllLocationsIfNullWithIndex(int geomIndex, int location) {
-    elt[geomIndex].setAllLocationsIfNull(location);
+    elt[geomIndex]!.setAllLocationsIfNull(location);
   }
 
   void setAllLocationsIfNull(int location) {
@@ -3081,30 +3087,30 @@ class Label {
   void merge(Label lbl) {
     for (int i = 0; i < 2; i++) {
       if (elt[i] == null && lbl.elt[i] != null) {
-        elt[i] = new TopologyLocation.fromTL(lbl.elt[i]);
+        elt[i] = new TopologyLocation.fromTL(lbl.elt[i]!);
       } else {
-        elt[i].merge(lbl.elt[i]);
+        elt[i]!.merge(lbl.elt[i]!);
       }
     }
   }
 
   int getGeometryCount() {
     int count = 0;
-    if (!elt[0].isNull()) count++;
-    if (!elt[1].isNull()) count++;
+    if (!elt[0]!.isNull()) count++;
+    if (!elt[1]!.isNull()) count++;
     return count;
   }
 
   bool isNull(int geomIndex) {
-    return elt[geomIndex].isNull();
+    return elt[geomIndex]!.isNull();
   }
 
   bool isAnyNull(int geomIndex) {
-    return elt[geomIndex].isAnyNull();
+    return elt[geomIndex]!.isAnyNull();
   }
 
   bool isArea() {
-    return elt[0].isArea() || elt[1].isArea();
+    return elt[0]!.isArea() || elt[1]!.isArea();
   }
 
   bool isAreaWithIndex(int geomIndex) {
@@ -3113,28 +3119,29 @@ class Label {
   		System.out.println(this);
   	}
   		*/
-    return elt[geomIndex].isArea();
+    return elt[geomIndex]!.isArea();
   }
 
   bool isLine(int geomIndex) {
-    return elt[geomIndex].isLine();
+    return elt[geomIndex]!.isLine();
   }
 
   bool isEqualOnSide(Label lbl, int side) {
-    return this.elt[0].isEqualOnSide(lbl.elt[0], side) &&
-        this.elt[1].isEqualOnSide(lbl.elt[1], side);
+    return this.elt[0]!.isEqualOnSide(lbl.elt[0]!, side) &&
+        this.elt[1]!.isEqualOnSide(lbl.elt[1]!, side);
   }
 
   bool allPositionsEqual(int geomIndex, int loc) {
-    return elt[geomIndex].allPositionsEqual(loc);
+    return elt[geomIndex]!.allPositionsEqual(loc);
   }
 
   /**
    * Converts one GeometryLocation to a Line location
    */
   void toLine(int geomIndex) {
-    if (elt[geomIndex].isArea())
-      elt[geomIndex] = new TopologyLocation.fromOn(elt[geomIndex].location[0]);
+    if (elt[geomIndex]!.isArea())
+      elt[geomIndex] =
+          new TopologyLocation.fromOn(elt[geomIndex]!.location[0]!);
   }
 
   String toString() {

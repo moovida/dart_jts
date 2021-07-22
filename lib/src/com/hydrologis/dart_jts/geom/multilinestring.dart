@@ -85,18 +85,22 @@ class MultiLineString extends GeometryCollection implements Lineal {
    * @return a {@link MultiLineString} in the reverse order
    */
   Geometry reverse() {
-    int nLines = geometries.length;
-    List<LineString> revLines = []..length = nLines;
-    for (int i = 0; i < geometries.length; i++) {
-      revLines[nLines - 1 - i] = geometries[i].reverse() as LineString;
-    }
+    // int nLines = geometries.length;
+    List<LineString> revLines = []; //..length = nLines;
+    geometries.reversed.forEach((geom) {
+      revLines.add(geom.reverse() as LineString);
+    });
+    // for (int i = 0; i < geometries.length; i++) {
+    //   revLines[nLines - 1 - i] = geometries[i].reverse() as LineString;
+    // }
     return getFactory().createMultiLineString(revLines);
   }
 
   MultiLineString copyInternal() {
-    List<LineString> lineStrings = []..length = this.geometries.length;
+    List<LineString> lineStrings = []; //..length = this.geometries.length;
     for (int i = 0; i < lineStrings.length; i++) {
-      lineStrings[i] = this.geometries[i].copy() as LineString;
+      // lineStrings[i] = this.geometries[i].copy() as LineString;
+      lineStrings.add(this.geometries[i].copy() as LineString);
     }
     return new MultiLineString.withFactory(lineStrings, geomFactory);
   }

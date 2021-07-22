@@ -1038,7 +1038,8 @@ class DD implements Comparable {
     String? specialStr = getSpecialNumberString();
     if (specialStr != null) return specialStr;
 
-    List<int> magnitude = []..length = 1;
+    List<int> magnitude = List.filled(1, 0);
+
     String sigDigits = extractSignificantDigits(true, magnitude);
     int decimalPointPos = magnitude[0] + 1;
 
@@ -1087,7 +1088,7 @@ class DD implements Comparable {
     String? specialStr = getSpecialNumberString();
     if (specialStr != null) return specialStr;
 
-    List<int> magnitudeList = []..length = (1);
+    List<int> magnitudeList = List.filled(1, 0);
     String digits = extractSignificantDigits(false, magnitudeList);
     String expStr = "$SCI_NOT_EXPONENT_CHAR${magnitudeList[0]}";
 
@@ -1378,7 +1379,7 @@ class Matrix {
    * 
    * @throws IllegalArgumentException if the matrix is the wrong size 
    */
-  static List<double>? solve(List<List<double>> a, List<double> b) {
+  static List<double?>? solve(List<List<double>> a, List<double> b) {
     int n = b.length;
     if (a.length != n || a[0].length != n)
       throw ArgumentError("Matrix A is incorrectly sized");
@@ -1409,10 +1410,10 @@ class Matrix {
      * A is now (virtually) in upper-triangular form.
      * The solution vector is determined by back-substitution.
      */
-    List<double> solution = []..length = (n);
+    List<double?> solution = []..length = (n);
     for (int j = n - 1; j >= 0; j--) {
       double t = 0.0;
-      for (int k = j + 1; k < n; k++) t += a[j][k] * solution[k];
+      for (int k = j + 1; k < n; k++) t += a[j][k] * solution[k]!;
       solution[j] = (b[j] - t) / a[j][j];
     }
     return solution;
