@@ -1,3 +1,8 @@
+== Version 0.2.0
+
+- migration to null safety
+- libraries upgrade
+
 == Version 0.1.0
 
 Ported linearref package.
