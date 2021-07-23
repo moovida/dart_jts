@@ -721,7 +721,7 @@ class CfPlusOne implements CoordinateFilter {
   @override
   void filter(Coordinate? coord) {
     coord!.x += 1;
-    coord!.y += 1;
+    coord.y += 1;
   }
 }
 
