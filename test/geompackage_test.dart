@@ -7,7 +7,8 @@ double TOLERANCE = 1E-5;
 
 PrecisionModel precisionModel = PrecisionModel.fixedPrecision(1);
 
-GeometryFactory geometryFactory = GeometryFactory.withPrecisionModelSrid(precisionModel, 0);
+GeometryFactory geometryFactory =
+    GeometryFactory.withPrecisionModelSrid(precisionModel, 0);
 
 WKTReader reader = WKTReader.withFactory(geometryFactory);
 
@@ -26,8 +27,17 @@ void main() {
       LineSegmentTest.checkLineIntersection(0, 0, 10, 10, 0, 10, 10, 0, 5, 5);
 
       //Almost collinear - See JTS GitHub issue #464
-      LineSegmentTest.checkLineIntersection(35613471.6165017, 4257145.306132293, 35613477.7705378, 4257160.528222711, 35613477.77505724, 4257160.539653536,
-          35613479.85607389, 4257165.92369170, 35613477.772841461, 4257160.5339209242);
+      LineSegmentTest.checkLineIntersection(
+          35613471.6165017,
+          4257145.306132293,
+          35613477.7705378,
+          4257160.528222711,
+          35613477.77505724,
+          4257160.539653536,
+          35613479.85607389,
+          4257165.92369170,
+          35613477.772841461,
+          4257160.5339209242);
     });
     test("testOrientationIndexCoordinate", () {
       LineSegment seg = new LineSegment(0, 0, 10, 10);
@@ -51,50 +61,68 @@ void main() {
       LineSegmentTest.checkOrientationIndexLSCoords(seg, 200, 200, 210, 210, 0);
     });
     test("testOffset", () {
-      LineSegmentTest.checkOffset(0, 0, 10, 10, 0.0, LineSegmentTest.ROOT2, -1, 1);
-      LineSegmentTest.checkOffset(0, 0, 10, 10, 0.0, -LineSegmentTest.ROOT2, 1, -1);
+      LineSegmentTest.checkOffset(
+          0, 0, 10, 10, 0.0, LineSegmentTest.ROOT2, -1, 1);
+      LineSegmentTest.checkOffset(
+          0, 0, 10, 10, 0.0, -LineSegmentTest.ROOT2, 1, -1);
 
-      LineSegmentTest.checkOffset(0, 0, 10, 10, 1.0, LineSegmentTest.ROOT2, 9, 11);
-      LineSegmentTest.checkOffset(0, 0, 10, 10, 0.5, LineSegmentTest.ROOT2, 4, 6);
+      LineSegmentTest.checkOffset(
+          0, 0, 10, 10, 1.0, LineSegmentTest.ROOT2, 9, 11);
+      LineSegmentTest.checkOffset(
+          0, 0, 10, 10, 0.5, LineSegmentTest.ROOT2, 4, 6);
 
-      LineSegmentTest.checkOffset(0, 0, 10, 10, 0.5, -LineSegmentTest.ROOT2, 6, 4);
-      LineSegmentTest.checkOffset(0, 0, 10, 10, 0.5, -LineSegmentTest.ROOT2, 6, 4);
+      LineSegmentTest.checkOffset(
+          0, 0, 10, 10, 0.5, -LineSegmentTest.ROOT2, 6, 4);
+      LineSegmentTest.checkOffset(
+          0, 0, 10, 10, 0.5, -LineSegmentTest.ROOT2, 6, 4);
 
-      LineSegmentTest.checkOffset(0, 0, 10, 10, 2.0, LineSegmentTest.ROOT2, 19, 21);
-      LineSegmentTest.checkOffset(0, 0, 10, 10, 2.0, -LineSegmentTest.ROOT2, 21, 19);
+      LineSegmentTest.checkOffset(
+          0, 0, 10, 10, 2.0, LineSegmentTest.ROOT2, 19, 21);
+      LineSegmentTest.checkOffset(
+          0, 0, 10, 10, 2.0, -LineSegmentTest.ROOT2, 21, 19);
 
-      LineSegmentTest.checkOffset(0, 0, 10, 10, 2.0, 5 * LineSegmentTest.ROOT2, 15, 25);
-      LineSegmentTest.checkOffset(0, 0, 10, 10, -2.0, 5 * LineSegmentTest.ROOT2, -25, -15);
+      LineSegmentTest.checkOffset(
+          0, 0, 10, 10, 2.0, 5 * LineSegmentTest.ROOT2, 15, 25);
+      LineSegmentTest.checkOffset(
+          0, 0, 10, 10, -2.0, 5 * LineSegmentTest.ROOT2, -25, -15);
     });
   });
   group("IsRectangleTest - ", () {
     WKTReader rdr = WKTReader();
     test("testValidRectangles", () {
-      assertTrue(isRectangle(rdr, "POLYGON ((0 0, 0 100, 100 100, 100 0, 0 0))"));
-      assertTrue(isRectangle(rdr, "POLYGON ((0 0, 0 200, 100 200, 100 0, 0 0))"));
+      assertTrue(
+          isRectangle(rdr, "POLYGON ((0 0, 0 100, 100 100, 100 0, 0 0))"));
+      assertTrue(
+          isRectangle(rdr, "POLYGON ((0 0, 0 200, 100 200, 100 0, 0 0))"));
     });
     test("testRectangleWithHole", () {
-      assertTrue(!isRectangle(rdr, "POLYGON ((0 0, 0 100, 100 100, 100 0, 0 0), (10 10, 10 90, 90 90, 90 10, 10 10) ))"));
+      assertTrue(!isRectangle(rdr,
+          "POLYGON ((0 0, 0 100, 100 100, 100 0, 0 0), (10 10, 10 90, 90 90, 90 10, 10 10) ))"));
     });
     test("testNotRectilinear", () {
-      assertTrue(!isRectangle(rdr, "POLYGON ((0 0, 0 100, 99 100, 100 0, 0 0))"));
+      assertTrue(
+          !isRectangle(rdr, "POLYGON ((0 0, 0 100, 99 100, 100 0, 0 0))"));
     });
     test("testTooManyPoints", () {
-      assertTrue(!isRectangle(rdr, "POLYGON ((0 0, 0 100, 100 50, 100 100, 100 0, 0 0))"));
+      assertTrue(!isRectangle(
+          rdr, "POLYGON ((0 0, 0 100, 100 50, 100 100, 100 0, 0 0))"));
     });
     test("testTooFewPoints", () {
       assertTrue(!isRectangle(rdr, "POLYGON ((0 0, 0 100, 100 0, 0 0))"));
     });
     test("testRectangularLinestring", () {
-      assertTrue(!isRectangle(rdr, "LINESTRING (0 0, 0 100, 100 100, 100 0, 0 0)"));
+      assertTrue(
+          !isRectangle(rdr, "LINESTRING (0 0, 0 100, 100 100, 100 0, 0 0)"));
     });
     test("testPointsInWrongOrder", () {
-      assertTrue(!isRectangle(rdr, "POLYGON ((0 0, 0 100, 100 0, 100 100, 0 0))"));
+      assertTrue(
+          !isRectangle(rdr, "POLYGON ((0 0, 0 100, 100 0, 100 100, 0 0))"));
     });
   });
   group("GeometryFactoryTest - ", () {
     PrecisionModel precisionModel = new PrecisionModel();
-    GeometryFactory geometryFactory = new GeometryFactory.withPrecisionModelSrid(precisionModel, 0);
+    GeometryFactory geometryFactory =
+        new GeometryFactory.withPrecisionModelSrid(precisionModel, 0);
     WKTReader reader = new WKTReader.withFactory(geometryFactory);
 
     test("testCreateGeometry", () {
@@ -102,73 +130,100 @@ void main() {
       checkCreateGeometryExact("POINT ( 10 20 )");
       checkCreateGeometryExact("LINESTRING EMPTY");
       checkCreateGeometryExact("LINESTRING(0 0, 10 10)");
-      checkCreateGeometryExact("MULTILINESTRING ((50 100, 100 200), (100 100, 150 200))");
-      checkCreateGeometryExact("POLYGON ((100 200, 200 200, 200 100, 100 100, 100 200))");
-      checkCreateGeometryExact("MULTIPOLYGON (((100 200, 200 200, 200 100, 100 100, 100 200)), ((300 200, 400 200, 400 100, 300 100, 300 200)))");
-      checkCreateGeometryExact("GEOMETRYCOLLECTION (POLYGON ((100 200, 200 200, 200 100, 100 100, 100 200)), LINESTRING (250 100, 350 200), POINT (350 150))");
+      checkCreateGeometryExact(
+          "MULTILINESTRING ((50 100, 100 200), (100 100, 150 200))");
+      checkCreateGeometryExact(
+          "POLYGON ((100 200, 200 200, 200 100, 100 100, 100 200))");
+      checkCreateGeometryExact(
+          "MULTIPOLYGON (((100 200, 200 200, 200 100, 100 100, 100 200)), ((300 200, 400 200, 400 100, 300 100, 300 200)))");
+      checkCreateGeometryExact(
+          "GEOMETRYCOLLECTION (POLYGON ((100 200, 200 200, 200 100, 100 100, 100 200)), LINESTRING (250 100, 350 200), POINT (350 150))");
     });
     test("testCreateEmpty", () {
-      checkEmpty(geometryFactory.createEmpty(0), geometryFactory.createPointEmpty().runtimeType.toString());
-      checkEmpty(geometryFactory.createEmpty(1), geometryFactory.createLineStringEmpty().runtimeType.toString());
-      checkEmpty(geometryFactory.createEmpty(2), geometryFactory.createPolygonEmpty().runtimeType.toString());
+      checkEmpty(geometryFactory.createEmpty(0),
+          geometryFactory.createPointEmpty().runtimeType.toString());
+      checkEmpty(geometryFactory.createEmpty(1),
+          geometryFactory.createLineStringEmpty().runtimeType.toString());
+      checkEmpty(geometryFactory.createEmpty(2),
+          geometryFactory.createPolygonEmpty().runtimeType.toString());
 
-      checkEmpty(geometryFactory.createPointEmpty(), geometryFactory.createPointEmpty().runtimeType.toString());
-      checkEmpty(geometryFactory.createLineStringEmpty(), geometryFactory.createLineStringEmpty().runtimeType.toString());
-      checkEmpty(geometryFactory.createPolygonEmpty(), geometryFactory.createPolygonEmpty().runtimeType.toString());
+      checkEmpty(geometryFactory.createPointEmpty(),
+          geometryFactory.createPointEmpty().runtimeType.toString());
+      checkEmpty(geometryFactory.createLineStringEmpty(),
+          geometryFactory.createLineStringEmpty().runtimeType.toString());
+      checkEmpty(geometryFactory.createPolygonEmpty(),
+          geometryFactory.createPolygonEmpty().runtimeType.toString());
 
-      checkEmpty(geometryFactory.createMultiPointEmpty(), geometryFactory.createMultiPointEmpty().runtimeType.toString());
-      checkEmpty(geometryFactory.createMultiLineStringEmpty(), geometryFactory.createMultiLineStringEmpty().runtimeType.toString());
-      checkEmpty(geometryFactory.createMultiPolygonEmpty(), geometryFactory.createMultiPolygonEmpty().runtimeType.toString());
-      checkEmpty(geometryFactory.createGeometryCollectionEmpty(), geometryFactory.createGeometryCollectionEmpty().runtimeType.toString());
+      checkEmpty(geometryFactory.createMultiPointEmpty(),
+          geometryFactory.createMultiPointEmpty().runtimeType.toString());
+      checkEmpty(geometryFactory.createMultiLineStringEmpty(),
+          geometryFactory.createMultiLineStringEmpty().runtimeType.toString());
+      checkEmpty(geometryFactory.createMultiPolygonEmpty(),
+          geometryFactory.createMultiPolygonEmpty().runtimeType.toString());
+      checkEmpty(
+          geometryFactory.createGeometryCollectionEmpty(),
+          geometryFactory
+              .createGeometryCollectionEmpty()
+              .runtimeType
+              .toString());
     });
     test("testDeepCopy", () {
-      Point g = read("POINT ( 10 10) ");
-      Geometry g2 = geometryFactory.createGeometry(g);
+      Point g = read("POINT ( 10 10) ")! as Point;
+      Geometry g2 = geometryFactory.createGeometry(g)!;
       g.getCoordinateSequence().setOrdinate(0, 0, 99);
       assertTrue(!g.equalsExactGeom(g2));
     });
     test("testMultiPointCS", () {
-      GeometryFactory gf = GeometryFactory.withCoordinateSequenceFactory(PackedCoordinateSequenceFactory());
-      CoordinateSequence mpSeq = gf.getCoordinateSequenceFactory().createSizeDim(1, 4);
+      GeometryFactory gf = GeometryFactory.withCoordinateSequenceFactory(
+          PackedCoordinateSequenceFactory());
+      CoordinateSequence mpSeq =
+          gf.getCoordinateSequenceFactory().createSizeDim(1, 4);
       mpSeq.setOrdinate(0, 0, 50);
       mpSeq.setOrdinate(0, 1, -2);
       mpSeq.setOrdinate(0, 2, 10);
       mpSeq.setOrdinate(0, 3, 20);
 
       MultiPoint mp = gf.createMultiPointSeq(mpSeq);
-      CoordinateSequence pSeq = (mp.getGeometryN(0) as Point).getCoordinateSequence();
+      CoordinateSequence pSeq =
+          (mp.getGeometryN(0) as Point).getCoordinateSequence();
       assertEquals(4, pSeq.getDimension());
-      for (int i = 0; i < 4; i++) assertEquals(mpSeq.getOrdinate(0, i), pSeq.getOrdinate(0, i));
+      for (int i = 0; i < 4; i++)
+        assertEquals(mpSeq.getOrdinate(0, i), pSeq.getOrdinate(0, i));
     });
     test("testCopyGeometryWithNonDefaultDimension", () {
-      GeometryFactory gf = GeometryFactory.withCoordinateSequenceFactory(CoordinateArraySequenceFactory());
-      CoordinateSequence mpSeq = gf.getCoordinateSequenceFactory().createSizeDim(1, 2);
+      GeometryFactory gf = GeometryFactory.withCoordinateSequenceFactory(
+          CoordinateArraySequenceFactory());
+      CoordinateSequence mpSeq =
+          gf.getCoordinateSequenceFactory().createSizeDim(1, 2);
       mpSeq.setOrdinate(0, 0, 50);
       mpSeq.setOrdinate(0, 1, -2);
 
       Point g = gf.createPointSeq(mpSeq);
-      CoordinateSequence pSeq = (g.getGeometryN(0) as Point).getCoordinateSequence();
+      CoordinateSequence pSeq =
+          (g.getGeometryN(0) as Point).getCoordinateSequence();
       assertEquals(2, pSeq.getDimension());
 
-      Point g2 = geometryFactory.createGeometry(g);
+      Point g2 = geometryFactory.createGeometry(g)! as Point;
       assertEquals(2, g2.getCoordinateSequence().getDimension());
     });
   });
   group("GeometryCopyTest - ", () {
     test("testCopy", () {
-      checkCopy(read(WKT_POINT));
-      checkCopy(read(WKT_LINESTRING));
-      checkCopy(read(WKT_LINEARRING));
-      checkCopy(read(WKT_POLY));
-      checkCopy(read(WKT_MULTIPOINT));
-      checkCopy(read(WKT_MULTILINESTRING));
-      checkCopy(read(WKT_MULTIPOLYGON));
-      checkCopy(read(WKT_GC));
+      checkCopy(read(WKT_POINT)!);
+      checkCopy(read(WKT_LINESTRING)!);
+      checkCopy(read(WKT_LINEARRING)!);
+      checkCopy(read(WKT_POLY)!);
+      checkCopy(read(WKT_MULTIPOINT)!);
+      checkCopy(read(WKT_MULTILINESTRING)!);
+      checkCopy(read(WKT_MULTIPOLYGON)!);
+      checkCopy(read(WKT_GC)!);
     });
   });
   group("GeometryCollectionIteratorTest - ", () {
     test("testGeometryCollection", () {
-      GeometryCollection g = read("GEOMETRYCOLLECTION (GEOMETRYCOLLECTION (POINT (10 10)))");
+      GeometryCollection g =
+          read("GEOMETRYCOLLECTION (GEOMETRYCOLLECTION (POINT (10 10)))")!
+              as GeometryCollection;
       GeometryCollectionIterator i = GeometryCollectionIterator(g);
       assertTrue(i.hasNext());
       assertTrue(i.next() is GeometryCollection);
@@ -179,7 +234,7 @@ void main() {
       assertTrue(!i.hasNext());
     });
     test("testAtomic", () {
-      Polygon g = read("POLYGON ((1 9, 9 9, 9 1, 1 1, 1 9))");
+      Polygon g = read("POLYGON ((1 9, 9 9, 9 1, 1 1, 1 9))")! as Polygon;
       GeometryCollectionIterator i = GeometryCollectionIterator(g);
       assertTrue(i.hasNext());
       assertTrue(i.next() is Polygon);
@@ -188,14 +243,19 @@ void main() {
   });
   group("GeometryCollectionImplTest - ", () {
     PrecisionModel precisionModel1 = PrecisionModel.fixedPrecision(1000);
-    GeometryFactory geometryFactory1 = GeometryFactory.withPrecisionModelSrid(precisionModel1, 0);
+    GeometryFactory geometryFactory1 =
+        GeometryFactory.withPrecisionModelSrid(precisionModel1, 0);
     WKTReader reader1 = WKTReader.withFactory(geometryFactory1);
     test("testGetDimension", () {
-      GeometryCollection g = reader1.read("GEOMETRYCOLLECTION (POINT (10 10), POINT (30 30), LINESTRING (15 15, 20 20))");
+      GeometryCollection g = reader1.read(
+              "GEOMETRYCOLLECTION (POINT (10 10), POINT (30 30), LINESTRING (15 15, 20 20))")
+          as GeometryCollection;
       assertEquals(1, g.getDimension());
     });
     test("testGetCoordinates", () {
-      GeometryCollection g = reader1.read("GEOMETRYCOLLECTION (POINT (10 10), POINT (30 30), LINESTRING (15 15, 20 20))");
+      GeometryCollection g = reader1.read(
+              "GEOMETRYCOLLECTION (POINT (10 10), POINT (30 30), LINESTRING (15 15, 20 20))")
+          as GeometryCollection;
       var coordinates = g.getCoordinates();
       assertEquals(4, g.getNumPoints());
       assertEquals(4, coordinates.length);
@@ -203,7 +263,9 @@ void main() {
       assertEquals(new Coordinate(20, 20), coordinates[3]);
     });
     test("testGeometryCollectionIterator", () {
-      GeometryCollection g = reader1.read("GEOMETRYCOLLECTION (GEOMETRYCOLLECTION (POINT (10 10)))");
+      GeometryCollection g = reader1
+              .read("GEOMETRYCOLLECTION (GEOMETRYCOLLECTION (POINT (10 10)))")
+          as GeometryCollection;
       GeometryCollectionIterator i = GeometryCollectionIterator(g);
       assertTrue(i.hasNext());
       assertTrue(i.next() is GeometryCollection);
@@ -212,8 +274,9 @@ void main() {
     });
     test("testGetLength", () {
       GeometryCollection g = WKTReader().read("MULTIPOLYGON(" +
-          "((0 0, 10 0, 10 10, 0 10, 0 0), (3 3, 3 7, 7 7, 7 3, 3 3))," +
-          "((100 100, 110 100, 110 110, 100 110, 100 100), (103 103, 103 107, 107 107, 107 103, 103 103)))");
+              "((0 0, 10 0, 10 10, 0 10, 0 0), (3 3, 3 7, 7 7, 7 3, 3 3))," +
+              "((100 100, 110 100, 110 110, 100 110, 100 100), (103 103, 103 107, 107 107, 107 103, 103 103)))")
+          as GeometryCollection;
       assertEqualsD(112, g.getLength(), 1E-15);
     });
   });
@@ -321,7 +384,7 @@ void main() {
     });
     test("testClone", () {
       Coordinate c = Coordinate.fromXYZ(100.0, 200.0, 50.0);
-      Coordinate clone = c.clone();
+      Coordinate clone = c.clone() as Coordinate;
       assertTrue(c.equals3D(clone));
     });
     test("testDistance", () {
@@ -398,13 +461,17 @@ void main() {
       checkLength("LINESTRING (220 140, 180 280)", 145.6021977);
       checkLength("LINESTRING (0 0, 100 100)", 141.4213562373095);
       checkLength("POLYGON ((20 20, 40 20, 40 40, 20 40, 20 20))", 80.0);
-      checkLength("POLYGON ((20 20, 40 20, 40 40, 20 40, 20 20), (25 35, 35 35, 35 25, 25 25, 25 35))", 120.0);
+      checkLength(
+          "POLYGON ((20 20, 40 20, 40 40, 20 40, 20 20), (25 35, 35 35, 35 25, 25 25, 25 35))",
+          120.0);
     });
     test("testArea", () {
       checkArea("MULTIPOINT (220 140, 180 280)", 0.0);
       checkArea("LINESTRING (220 140, 180 280)", 0.0);
       checkArea("POLYGON ((20 20, 40 20, 40 40, 20 40, 20 20))", 400.0);
-      checkArea("POLYGON ((20 20, 40 20, 40 40, 20 40, 20 20), (25 35, 35 35, 35 25, 25 25, 25 35))", 300.0);
+      checkArea(
+          "POLYGON ((20 20, 40 20, 40 40, 20 40, 20 20), (25 35, 35 35, 35 25, 25 25, 25 35))",
+          300.0);
     });
   });
   group("BidirectionalComparatorTest - ", () {
@@ -417,7 +484,11 @@ void main() {
           true);
     });
     test("testLineString2", () {
-      expect(0 == compareBiDir("LINESTRING (1389103.293 794193.755, 1389064.931 794188.991)", "LINESTRING (1389064.931 794188.991, 1389103.293 794193.755)"),
+      expect(
+          0 ==
+              compareBiDir(
+                  "LINESTRING (1389103.293 794193.755, 1389064.931 794188.991)",
+                  "LINESTRING (1389064.931 794188.991, 1389103.293 794193.755)"),
           true);
     });
   });
@@ -427,13 +498,18 @@ void main() {
 
     test("testPtNotInList1", () {
       expect(
-          CoordinateArrays.ptNotInList([Coordinate(1, 1), Coordinate(2, 2), Coordinate(3, 3)], [Coordinate(1, 1), Coordinate(1, 2), Coordinate(1, 3)])
+          CoordinateArrays.ptNotInList(
+                  [Coordinate(1, 1), Coordinate(2, 2), Coordinate(3, 3)],
+                  [Coordinate(1, 1), Coordinate(1, 2), Coordinate(1, 3)])!
               .equals2D(Coordinate(2, 2)),
           true);
     });
     test("testPtNotInList2", () {
       expect(
-          CoordinateArrays.ptNotInList([Coordinate(1, 1), Coordinate(2, 2), Coordinate(3, 3)], [Coordinate(1, 1), Coordinate(2, 2), Coordinate(3, 3)]) == null,
+          CoordinateArrays.ptNotInList(
+                  [Coordinate(1, 1), Coordinate(2, 2), Coordinate(3, 3)],
+                  [Coordinate(1, 1), Coordinate(2, 2), Coordinate(3, 3)]) ==
+              null,
           true);
     });
     test("testEnvelope1", () {
@@ -443,36 +519,55 @@ void main() {
       expect(CoordinateArrays.envelope(COORDS_EMPTY), Envelope.empty());
     });
     test("testIntersection_envelope1", () {
-      expect(CoordinateArrays.equals(CoordinateArrays.intersection(COORDS_1, Envelope(1, 2, 1, 2)), [Coordinate(1, 1), Coordinate(2, 2)]), true);
+      expect(
+          CoordinateArrays.equals(
+              CoordinateArrays.intersection(COORDS_1, Envelope(1, 2, 1, 2)),
+              [Coordinate(1, 1), Coordinate(2, 2)]),
+          true);
     });
     test("testIntersection_envelopeDisjoint", () {
-      expect(CoordinateArrays.equals(CoordinateArrays.intersection(COORDS_1, Envelope(10, 20, 10, 20)), COORDS_EMPTY), true);
+      expect(
+          CoordinateArrays.equals(
+              CoordinateArrays.intersection(COORDS_1, Envelope(10, 20, 10, 20)),
+              COORDS_EMPTY),
+          true);
     });
     test("testIntersection_empty_envelope", () {
-      expect(CoordinateArrays.equals(CoordinateArrays.intersection(COORDS_EMPTY, Envelope(1, 2, 1, 2)), COORDS_EMPTY), true);
+      expect(
+          CoordinateArrays.equals(
+              CoordinateArrays.intersection(COORDS_EMPTY, Envelope(1, 2, 1, 2)),
+              COORDS_EMPTY),
+          true);
     });
     test("testIntersection_coords_emptyEnvelope", () {
-      expect(CoordinateArrays.equals(CoordinateArrays.intersection(COORDS_1, Envelope.empty()), COORDS_EMPTY), true);
+      expect(
+          CoordinateArrays.equals(
+              CoordinateArrays.intersection(COORDS_1, Envelope.empty()),
+              COORDS_EMPTY),
+          true);
     });
   });
 
   group("CoordinateListTest - ", () {
     test("testForward and reverse", () {
       checkValue(coordList([0, 0, 1, 1, 2, 2]), [0, 0, 1, 1, 2, 2]);
-      checkValue(coordList([0, 0, 1, 1, 2, 2]).reversed.toList(), [2, 2, 1, 1, 0, 0]);
+      checkValue(
+          coordList([0, 0, 1, 1, 2, 2]).reversed.toList(), [2, 2, 1, 1, 0, 0]);
     });
   });
 
   group("CoordinateSequencesTest - ", () {
     test("testCopyToLargerDim", () {
-      PackedCoordinateSequenceFactory csFactory = PackedCoordinateSequenceFactory();
+      PackedCoordinateSequenceFactory csFactory =
+          PackedCoordinateSequenceFactory();
       CoordinateSequence cs2D = createTestSequence(csFactory, 10, 2);
       CoordinateSequence cs3D = csFactory.createSizeDim(10, 3);
       CoordinateSequences.copy(cs2D, 0, cs3D, 0, cs3D.size());
       expect(CoordinateSequences.isEqual(cs2D, cs3D), true);
     });
     test("testCopyToSmallerDim", () {
-      PackedCoordinateSequenceFactory csFactory = PackedCoordinateSequenceFactory();
+      PackedCoordinateSequenceFactory csFactory =
+          PackedCoordinateSequenceFactory();
       CoordinateSequence cs3D = createTestSequence(csFactory, 10, 3);
       CoordinateSequence cs2D = csFactory.createSizeDim(10, 2);
       CoordinateSequences.copy(cs3D, 0, cs2D, 0, cs2D.size());
@@ -496,7 +591,8 @@ void main() {
     });
     test("testMinCoordinateIndex", () {
       doTestMinCoordinateIndex(CoordinateArraySequenceFactory(), 2);
-      doTestMinCoordinateIndex(PackedCoordinateSequenceFactory.DOUBLE_FACTORY, 5);
+      doTestMinCoordinateIndex(
+          PackedCoordinateSequenceFactory.DOUBLE_FACTORY, 5);
     });
     test("testIsRing", () {
       doTestIsRing(CoordinateArraySequenceFactory(), 2);
@@ -514,7 +610,7 @@ void main() {
 }
 
 bool isRectangle(WKTReader rdr, String wkt) {
-  Geometry a = rdr.read(wkt);
+  Geometry a = rdr.read(wkt)!;
   return a.isRectangle();
 }
 
@@ -527,7 +623,7 @@ int compareBiDir(String wkt0, String wkt1) {
 }
 
 void checkLength(String wkt, double expectedValue) {
-  Geometry g = reader.read(wkt);
+  Geometry g = reader.read(wkt)!;
   double len = g.getLength();
 //		//System.out.println(len);
   expect(NumberUtils.equalsWithTolerance(expectedValue, len, TOLERANCE), true);
@@ -550,8 +646,9 @@ void checkCopy(final Geometry g) {
 }
 
 void checkArea(String wkt, double expectedValue) {
-  Geometry g = reader.read(wkt);
-  expect(NumberUtils.equalsWithTolerance(expectedValue, g.getArea(), TOLERANCE), true);
+  Geometry g = reader.read(wkt)!;
+  expect(NumberUtils.equalsWithTolerance(expectedValue, g.getArea(), TOLERANCE),
+      true);
 }
 
 void checkValue(List<Coordinate> coordArray, List<double> ords) {
@@ -596,8 +693,10 @@ final List<List<double>> ordinateValues = [
   [55.54, 94.07]
 ];
 
-CoordinateSequence createSequenceFromOrdinates(CoordinateSequenceFactory csFactory, int dim) {
-  CoordinateSequence sequence = csFactory.createSizeDim(ordinateValues.length, dim);
+CoordinateSequence createSequenceFromOrdinates(
+    CoordinateSequenceFactory csFactory, int dim) {
+  CoordinateSequence sequence =
+      csFactory.createSizeDim(ordinateValues.length, dim);
   for (int i = 0; i < ordinateValues.length; i++) {
     sequence.setOrdinate(i, 0, ordinateValues[i][0]);
     sequence.setOrdinate(i, 1, ordinateValues[i][1]);
@@ -605,7 +704,8 @@ CoordinateSequence createSequenceFromOrdinates(CoordinateSequenceFactory csFacto
   return fillNonPlanarDimensions(sequence);
 }
 
-CoordinateSequence createTestSequence(CoordinateSequenceFactory csFactory, int size, int dim) {
+CoordinateSequence createTestSequence(
+    CoordinateSequenceFactory csFactory, int size, int dim) {
   CoordinateSequence cs = csFactory.createSizeDim(size, dim);
   // initialize with a data signature where coords look like [1, 10, 100, ...]
   for (int i = 0; i < size; i++) {
@@ -617,11 +717,14 @@ CoordinateSequence createTestSequence(CoordinateSequenceFactory csFactory, int s
 }
 
 /// @deprecated only use to update in conjunction with {@link this.ttestCreateRandomOrdinates}
-CoordinateSequence createRandomTestSequence(CoordinateSequenceFactory csFactory, int size, int dim, math.Random rnd, Envelope range, PrecisionModel pm) {
+CoordinateSequence createRandomTestSequence(CoordinateSequenceFactory csFactory,
+    int size, int dim, math.Random rnd, Envelope range, PrecisionModel pm) {
   CoordinateSequence cs = csFactory.createSizeDim(size, dim);
   for (int i = 0; i < size; i++) {
-    cs.setOrdinate(i, 0, pm.makePrecise(range.getWidth() * rnd.nextDouble() + range.getMinX()));
-    cs.setOrdinate(i, 1, pm.makePrecise(range.getHeight() * rnd.nextDouble() + range.getMinY()));
+    cs.setOrdinate(i, 0,
+        pm.makePrecise(range.getWidth() * rnd.nextDouble() + range.getMinX()));
+    cs.setOrdinate(i, 1,
+        pm.makePrecise(range.getHeight() * rnd.nextDouble() + range.getMinY()));
   }
 
   return fillNonPlanarDimensions(cs);
@@ -636,41 +739,52 @@ void doTestReverse(CoordinateSequenceFactory factory, int dimension) {
   CoordinateSequences.reverse(reversed);
 
   // assert
-  for (int i = 0; i < sequence.size(); i++) checkCoordinateAt(sequence, i, reversed, sequence.size() - i - 1, dimension);
+  for (int i = 0; i < sequence.size(); i++)
+    checkCoordinateAt(
+        sequence, i, reversed, sequence.size() - i - 1, dimension);
 }
 
 void doTestCopy(CoordinateSequenceFactory factory, int dimension) {
   // arrange
   CoordinateSequence sequence = createSequenceFromOrdinates(factory, dimension);
   if (sequence.size() <= 7) {
-    print("sequence has a size of ${sequence.size()}. Execution of this test needs a sequence " + "with more than 6 coordinates.");
+    print(
+        "sequence has a size of ${sequence.size()}. Execution of this test needs a sequence " +
+            "with more than 6 coordinates.");
     return;
   }
 
-  CoordinateSequence fullCopy = factory.createSizeDim(sequence.size(), dimension);
-  CoordinateSequence partialCopy = factory.createSizeDim(sequence.size() - 5, dimension);
+  CoordinateSequence fullCopy =
+      factory.createSizeDim(sequence.size(), dimension);
+  CoordinateSequence partialCopy =
+      factory.createSizeDim(sequence.size() - 5, dimension);
 
   // act
   CoordinateSequences.copy(sequence, 0, fullCopy, 0, sequence.size());
   CoordinateSequences.copy(sequence, 2, partialCopy, 0, partialCopy.size());
 
   // assert
-  for (int i = 0; i < fullCopy.size(); i++) checkCoordinateAt(sequence, i, fullCopy, i, dimension);
-  for (int i = 0; i < partialCopy.size(); i++) checkCoordinateAt(sequence, 2 + i, partialCopy, i, dimension);
+  for (int i = 0; i < fullCopy.size(); i++)
+    checkCoordinateAt(sequence, i, fullCopy, i, dimension);
+  for (int i = 0; i < partialCopy.size(); i++)
+    checkCoordinateAt(sequence, 2 + i, partialCopy, i, dimension);
 
   // ToDo test if dimensions don't match
 }
 
 void doTestIsRing(CoordinateSequenceFactory factory, int dimension) {
   // arrange
-  CoordinateSequence ring = createCircle(factory, dimension, Coordinate.empty2D(), 5);
-  CoordinateSequence noRing = createCircularString(factory, dimension, Coordinate.empty2D(), 5, 0.1, 22);
+  CoordinateSequence ring =
+      createCircle(factory, dimension, Coordinate.empty2D(), 5);
+  CoordinateSequence noRing = createCircularString(
+      factory, dimension, Coordinate.empty2D(), 5, 0.1, 22);
   CoordinateSequence empty = createAlmostRing(factory, dimension, 0);
   CoordinateSequence incomplete1 = createAlmostRing(factory, dimension, 1);
   CoordinateSequence incomplete2 = createAlmostRing(factory, dimension, 2);
   CoordinateSequence incomplete3 = createAlmostRing(factory, dimension, 3);
   CoordinateSequence incomplete4a = createAlmostRing(factory, dimension, 4);
-  CoordinateSequence incomplete4b = CoordinateSequences.ensureValidRing(factory, incomplete4a);
+  CoordinateSequence incomplete4b =
+      CoordinateSequences.ensureValidRing(factory, incomplete4a);
 
   // act
   bool isRingRing = CoordinateSequences.isRing(ring);
@@ -699,13 +813,17 @@ void doTestIndexOf(CoordinateSequenceFactory factory, int dimension) {
 
   // act & assert
   List<Coordinate> coordinates = sequence.toCoordinateArray();
-  for (int i = 0; i < sequence.size(); i++) expect(i, CoordinateSequences.indexOf(coordinates[i], sequence));
+  for (int i = 0; i < sequence.size(); i++)
+    expect(i, CoordinateSequences.indexOf(coordinates[i], sequence));
 }
 
-void doTestMinCoordinateIndex(CoordinateSequenceFactory factory, int dimension) {
+void doTestMinCoordinateIndex(
+    CoordinateSequenceFactory factory, int dimension) {
   CoordinateSequence sequence = createSequenceFromOrdinates(factory, dimension);
   if (sequence.size() <= 6) {
-    print("sequence has a size of ${sequence.size()}. Execution of this test needs a sequence " + "with more than 5 coordinates.");
+    print(
+        "sequence has a size of ${sequence.size()}. Execution of this test needs a sequence " +
+            "with more than 5 coordinates.");
     return;
   }
 
@@ -714,12 +832,16 @@ void doTestMinCoordinateIndex(CoordinateSequenceFactory factory, int dimension) 
   sequence.setOrdinate(minIndex, 1, 5);
 
   expect(minIndex, CoordinateSequences.minCoordinateIndex(sequence));
-  expect(minIndex, CoordinateSequences.minCoordinateIndexWithRange(sequence, 2, sequence.size() - 2));
+  expect(
+      minIndex,
+      CoordinateSequences.minCoordinateIndexWithRange(
+          sequence, 2, sequence.size() - 2));
 }
 
 void doTestScroll(CoordinateSequenceFactory factory, int dimension) {
   // arrange
-  CoordinateSequence sequence = createCircularString(factory, dimension, Coordinate(20, 20), 7.0, 0.1, 22);
+  CoordinateSequence sequence = createCircularString(
+      factory, dimension, Coordinate(20, 20), 7.0, 0.1, 22);
   CoordinateSequence scrolled = sequence.copy();
 
   // act
@@ -737,7 +859,8 @@ void doTestScroll(CoordinateSequenceFactory factory, int dimension) {
 void doTestScrollRing(CoordinateSequenceFactory factory, int dimension) {
   // arrange
   //System.out.println("Testing '" + factory.getClass().getSimpleName() + "' with dim=" +dimension );
-  CoordinateSequence sequence = createCircle(factory, dimension, Coordinate(10, 10), 9.0);
+  CoordinateSequence sequence =
+      createCircle(factory, dimension, Coordinate(10, 10), 9.0);
   CoordinateSequence scrolled = sequence.copy();
 
   // act
@@ -753,7 +876,8 @@ void doTestScrollRing(CoordinateSequenceFactory factory, int dimension) {
   checkCoordinateAt(scrolled, 0, scrolled, scrolled.size() - 1, dimension);
 }
 
-void checkCoordinateAt(CoordinateSequence seq1, int pos1, CoordinateSequence seq2, int pos2, int dim) {
+void checkCoordinateAt(CoordinateSequence seq1, int pos1,
+    CoordinateSequence seq2, int pos2, int dim) {
   expect(seq1.getOrdinate(pos1, 0), seq2.getOrdinate(pos2, 0));
   expect(seq1.getOrdinate(pos1, 1), seq2.getOrdinate(pos2, 1));
 
@@ -763,7 +887,8 @@ void checkCoordinateAt(CoordinateSequence seq1, int pos1, CoordinateSequence seq
   }
 }
 
-CoordinateSequence createAlmostRing(CoordinateSequenceFactory factory, int dimension, int num) {
+CoordinateSequence createAlmostRing(
+    CoordinateSequenceFactory factory, int dimension, int num) {
   if (num > 4) num = 4;
 
   CoordinateSequence sequence = factory.createSizeDim(num, dimension);
@@ -798,17 +923,26 @@ CoordinateSequence fillNonPlanarDimensions(CoordinateSequence seq) {
   return seq;
 }
 
-CoordinateSequence createCircle(CoordinateSequenceFactory factory, int dimension, Coordinate center, double radius) {
+CoordinateSequence createCircle(CoordinateSequenceFactory factory,
+    int dimension, Coordinate center, double radius) {
   // Get a complete circular string
-  CoordinateSequence res = createCircularString(factory, dimension, center, radius, 0, 49);
+  CoordinateSequence res =
+      createCircularString(factory, dimension, center, radius, 0, 49);
 
   // ensure it is closed
-  for (int i = 0; i < dimension; i++) res.setOrdinate(48, i, res.getOrdinate(0, i));
+  for (int i = 0; i < dimension; i++)
+    res.setOrdinate(48, i, res.getOrdinate(0, i));
 
   return res;
 }
 
-CoordinateSequence createCircularString(CoordinateSequenceFactory factory, int dimension, Coordinate center, double radius, double startAngle, int numPoints) {
+CoordinateSequence createCircularString(
+    CoordinateSequenceFactory factory,
+    int dimension,
+    Coordinate center,
+    double radius,
+    double startAngle,
+    int numPoints) {
   final int numSegmentsCircle = 48;
   final double angleCircle = 2 * math.pi;
   final double angleStep = angleCircle / numSegmentsCircle;
@@ -875,13 +1009,16 @@ void checkEmpty(Geometry geom, String clz) {
  * @throws ParseException
  */
 void testCopyGeometryWithNonDefaultDimension() {
-  GeometryFactory gf = new GeometryFactory.withCoordinateSequenceFactory(CoordinateArraySequenceFactory());
-  CoordinateSequence mpSeq = gf.getCoordinateSequenceFactory().createSizeDim(1, 2);
+  GeometryFactory gf = new GeometryFactory.withCoordinateSequenceFactory(
+      CoordinateArraySequenceFactory());
+  CoordinateSequence mpSeq =
+      gf.getCoordinateSequenceFactory().createSizeDim(1, 2);
   mpSeq.setOrdinate(0, 0, 50);
   mpSeq.setOrdinate(0, 1, -2);
 
   Point g = gf.createPointSeq(mpSeq);
-  CoordinateSequence pSeq = (g.getGeometryN(0) as Point).getCoordinateSequence();
+  CoordinateSequence pSeq =
+      (g.getGeometryN(0) as Point).getCoordinateSequence();
   assertEquals(2, pSeq.getDimension());
 
   Point g2 = geometryFactory.createGeometry(g) as Point;
@@ -889,8 +1026,8 @@ void testCopyGeometryWithNonDefaultDimension() {
 }
 
 void checkCreateGeometryExact(String wkt) {
-  Geometry g = read(wkt);
-  Geometry g2 = geometryFactory.createGeometry(g);
+  Geometry g = read(wkt)!;
+  Geometry g2 = geometryFactory.createGeometry(g)!;
   assertTrue(g.equalsExactGeom(g2));
 }
 
@@ -902,22 +1039,33 @@ class LineSegmentTest {
   static final double MAX_ABS_ERROR_INTERSECTION = 1e-5;
 
   static void checkLineIntersection(
-      double p1x, double p1y, double p2x, double p2y, double q1x, double q1y, double q2x, double q2y, double expectedx, double expectedy) {
+      double p1x,
+      double p1y,
+      double p2x,
+      double p2y,
+      double q1x,
+      double q1y,
+      double q2x,
+      double q2y,
+      double expectedx,
+      double expectedy) {
     LineSegment seg1 = new LineSegment(p1x, p1y, p2x, p2y);
     LineSegment seg2 = new LineSegment(q1x, q1y, q2x, q2y);
 
-    Coordinate actual = seg1.lineIntersection(seg2);
+    Coordinate actual = seg1.lineIntersection(seg2)!;
     Coordinate expected = new Coordinate(expectedx, expectedy);
     double dist = actual.distance(expected);
     //System.out.println("Expected: " + expected + "  Actual: " + actual + "  Dist = " + dist);
     assertTrue(dist <= MAX_ABS_ERROR_INTERSECTION);
   }
 
-  static void checkOffset(double x0, double y0, double x1, double y1, double segFrac, double offset, double expectedX, double expectedY) {
+  static void checkOffset(double x0, double y0, double x1, double y1,
+      double segFrac, double offset, double expectedX, double expectedY) {
     LineSegment seg = new LineSegment(x0, y0, x1, y1);
     Coordinate p = seg.pointAlongOffset(segFrac, offset);
 
-    assertTrue(equalsTolerance(new Coordinate(expectedX, expectedY), p, 0.000001));
+    assertTrue(
+        equalsTolerance(new Coordinate(expectedX, expectedY), p, 0.000001));
   }
 
   static bool equalsTolerance(Coordinate p0, Coordinate p1, double tolerance) {
@@ -926,18 +1074,21 @@ class LineSegmentTest {
     return true;
   }
 
-  void checkOrientationIndex(double x0, double y0, double x1, double y1, double px, double py, int expectedOrient) {
+  void checkOrientationIndex(double x0, double y0, double x1, double y1,
+      double px, double py, int expectedOrient) {
     LineSegment seg = new LineSegment(x0, y0, x1, y1);
     checkOrientationIndexLS(seg, px, py, expectedOrient);
   }
 
-  static void checkOrientationIndexLS(LineSegment seg, double px, double py, int expectedOrient) {
+  static void checkOrientationIndexLS(
+      LineSegment seg, double px, double py, int expectedOrient) {
     Coordinate p = new Coordinate(px, py);
     int orient = seg.orientationIndexCoord(p);
     assertTrue(orient == expectedOrient);
   }
 
-  static void checkOrientationIndexLSCoords(LineSegment seg, double s0x, double s0y, double s1x, double s1y, int expectedOrient) {
+  static void checkOrientationIndexLSCoords(LineSegment seg, double s0x,
+      double s0y, double s1x, double s1y, int expectedOrient) {
     LineSegment seg2 = new LineSegment(s0x, s0y, s1x, s1y);
     int orient = seg.orientationIndex(seg2);
     assertTrue(orient == expectedOrient);

@@ -1267,7 +1267,7 @@ abstract class PackedCoordinateSequence extends CoordinateSequence {
 /// Packed coordinate sequence implementation based on doubles
 class Double extends PackedCoordinateSequence {
   /// The packed coordinate array
-  late List<double?> coords;
+  late List<double> coords;
 
   /// Builds a new packed coordinate sequence
   ///
@@ -1302,7 +1302,7 @@ class Double extends PackedCoordinateSequence {
       coordinates = [];
     }
 
-    coords = []..length = (coordinates.length * this.dimension);
+    coords = List.filled(coordinates.length * this.dimension, 0.0);
     for (int i = 0; i < coordinates.length; i++) {
       int offset = i * dimension;
       coords[offset] = coordinates[i].x;
@@ -1329,24 +1329,24 @@ class Double extends PackedCoordinateSequence {
   /// @param measures the number of measure-ordinates each {@link Coordinate} in this sequence has.
   Double.fromSizeDimMeas(int size, int dimension, int measures)
       : super(dimension, measures) {
-    coords = []..length = (size * this.dimension);
+    coords = List.filled(size * this.dimension, 0.0);
   }
 
   /// @see PackedCoordinateSequence#getCoordinate(int)
   Coordinate getCoordinateInternal(int i) {
-    double x = coords[i * dimension]!;
-    double y = coords[i * dimension + 1]!;
+    double x = coords[i * dimension];
+    double y = coords[i * dimension + 1];
     if (dimension == 2 && measures == 0) {
       return new CoordinateXY.fromXY(x, y);
     } else if (dimension == 3 && measures == 0) {
-      double z = coords[i * dimension + 2]!;
+      double z = coords[i * dimension + 2];
       return new Coordinate.fromXYZ(x, y, z);
     } else if (dimension == 3 && measures == 1) {
-      double m = coords[i * dimension + 2]!;
+      double m = coords[i * dimension + 2];
       return new CoordinateXYM(x, y, m);
     } else if (dimension == 4 && measures == 1) {
-      double z = coords[i * dimension + 2]!;
-      double m = coords[i * dimension + 3]!;
+      double z = coords[i * dimension + 2];
+      double m = coords[i * dimension + 3];
       return new CoordinateXYZM(x, y, z, m);
     }
     return new CoordinateXY.fromXY(x, y);
@@ -1382,7 +1382,7 @@ class Double extends PackedCoordinateSequence {
   ///      it's over dimensions you may not get an exception but a meaningless
   ///      value.
   double getOrdinate(int index, int ordinate) {
-    return coords[index * dimension + ordinate]!;
+    return coords[index * dimension + ordinate];
   }
 
   /// @see PackedCoordinateSequence#setOrdinate(int, int, double)
@@ -1394,7 +1394,7 @@ class Double extends PackedCoordinateSequence {
   /// @see CoordinateSequence#expandEnvelope(Envelope)
   Envelope expandEnvelope(Envelope env) {
     for (int i = 0; i < coords.length; i += dimension) {
-      env.expandToInclude(coords[i]!, coords[i + 1]!);
+      env.expandToInclude(coords[i], coords[i + 1]);
     }
     return env;
   }

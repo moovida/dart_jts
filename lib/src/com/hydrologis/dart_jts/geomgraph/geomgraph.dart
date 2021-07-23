@@ -2788,7 +2788,7 @@ class Edge extends GraphComponent {
  * @version 1.7
  */
 class TopologyLocation {
-  late List<int?> location;
+  late List<int> location;
 
   TopologyLocation.fromList(List<int> location) {
     init(location.length);
@@ -2823,12 +2823,12 @@ class TopologyLocation {
   }
 
   void init(int size) {
-    location = []..length = (size);
+    location = List.filled(size, 0);
     setAllLocations(Location.NONE);
   }
 
   int get(int posIndex) {
-    if (posIndex < location.length) return location[posIndex]!;
+    if (posIndex < location.length) return location[posIndex];
     return Location.NONE;
   }
 
@@ -2866,7 +2866,7 @@ class TopologyLocation {
 
   void flip() {
     if (location.length <= 1) return;
-    int temp = location[Position.LEFT]!;
+    int temp = location[Position.LEFT];
     location[Position.LEFT] = location[Position.RIGHT];
     location[Position.RIGHT] = temp;
   }
@@ -2915,7 +2915,7 @@ class TopologyLocation {
   void merge(TopologyLocation gl) {
     // if the src is an Area label & and the dest is not, increase the dest to be an Area
     if (gl.location.length > location.length) {
-      List<int?> newLoc = []..length = (3);
+      List<int> newLoc = List.filled(3, 0);
       newLoc[Position.ON] = location[Position.ON];
       newLoc[Position.LEFT] = Location.NONE;
       newLoc[Position.RIGHT] = Location.NONE;
@@ -2930,10 +2930,10 @@ class TopologyLocation {
   String toString() {
     StringBuffer buf = new StringBuffer();
     if (location.length > 1)
-      buf.write(Location.toLocationSymbol(location[Position.LEFT]!));
-    buf.write(Location.toLocationSymbol(location[Position.ON]!));
+      buf.write(Location.toLocationSymbol(location[Position.LEFT]));
+    buf.write(Location.toLocationSymbol(location[Position.ON]));
     if (location.length > 1)
-      buf.write(Location.toLocationSymbol(location[Position.RIGHT]!));
+      buf.write(Location.toLocationSymbol(location[Position.RIGHT]));
     return buf.toString();
   }
 }
@@ -3140,8 +3140,7 @@ class Label {
    */
   void toLine(int geomIndex) {
     if (elt[geomIndex]!.isArea())
-      elt[geomIndex] =
-          new TopologyLocation.fromOn(elt[geomIndex]!.location[0]!);
+      elt[geomIndex] = new TopologyLocation.fromOn(elt[geomIndex]!.location[0]);
   }
 
   String toString() {

@@ -170,7 +170,7 @@ class WKBReader {
    * At some point this could be made client-controllable.
    */
   bool isStrict = false;
-  List<double?>? ordValues;
+  List<double>? ordValues;
 
   late ByteOrderDataInStream dis;
 
@@ -262,7 +262,7 @@ class WKBReader {
 
 // only allocate ordValues buffer if necessary
     if (ordValues == null || ordValues!.length < inputDimension)
-      ordValues = []..length = (inputDimension);
+      ordValues = List.filled(inputDimension, 0.0);
 
     late Geometry geom;
     switch (geometryType) {
@@ -392,7 +392,7 @@ class WKBReader {
     for (int i = 0; i < size; i++) {
       readCoordinate();
       for (int j = 0; j < targetDim; j++) {
-        seq.setOrdinate(i, j, ordValues![j]!);
+        seq.setOrdinate(i, j, ordValues![j]);
       }
     }
     return seq;

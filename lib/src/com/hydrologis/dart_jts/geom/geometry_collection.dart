@@ -56,7 +56,7 @@ class GeometryCollection extends Geometry {
   List<Coordinate> getCoordinates() {
     List<Coordinate> coordinates = []; //..length = getNumPoints();
     // int k = -1;
-    for (int i = 0; i < getNumPoints(); i++) {
+    for (int i = 0; i < geometries.length; i++) {
       List<Coordinate> childCoordinates = geometries[i].getCoordinates();
       for (int j = 0; j < childCoordinates.length; j++) {
         // k++;

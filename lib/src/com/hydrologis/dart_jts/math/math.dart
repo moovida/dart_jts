@@ -1410,10 +1410,10 @@ class Matrix {
      * A is now (virtually) in upper-triangular form.
      * The solution vector is determined by back-substitution.
      */
-    List<double?> solution = []..length = (n);
+    List<double> solution = List.filled(n, 0.0);
     for (int j = n - 1; j >= 0; j--) {
       double t = 0.0;
-      for (int k = j + 1; k < n; k++) t += a[j][k] * solution[k]!;
+      for (int k = j + 1; k < n; k++) t += a[j][k] * solution[k];
       solution[j] = (b[j] - t) / a[j][j];
     }
     return solution;

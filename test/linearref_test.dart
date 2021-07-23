@@ -154,7 +154,7 @@ class LengthIndexedLineTest extends AbstractIndexedLineTest {
    * From GEOS Ticket #323
    */
   void testProjectExtractPoint() {
-    Geometry linearGeom = read("MULTILINESTRING ((0 2, 0 0), (-1 1, 1 1))");
+    Geometry linearGeom = read("MULTILINESTRING ((0 2, 0 0), (-1 1, 1 1))")!;
     LengthIndexedLine indexedLine = new LengthIndexedLine(linearGeom);
     double index = indexedLine.project(new Coordinate(1, 0));
     Coordinate pt = indexedLine.extractPoint(index);
@@ -162,7 +162,7 @@ class LengthIndexedLineTest extends AbstractIndexedLineTest {
   }
 
   void testExtractPointBeyondRange() {
-    Geometry linearGeom = read("LINESTRING (0 0, 10 10)");
+    Geometry linearGeom = read("LINESTRING (0 0, 10 10)")!;
     LengthIndexedLine indexedLine = new LengthIndexedLine(linearGeom);
     Coordinate pt = indexedLine.extractPoint(100);
     assertTrue(pt.equals(new Coordinate(10, 10)));
@@ -172,7 +172,7 @@ class LengthIndexedLineTest extends AbstractIndexedLineTest {
   }
 
   void testProjectPointWithDuplicateCoords() {
-    Geometry linearGeom = read("LINESTRING (0 0, 10 0, 10 0, 20 0)");
+    Geometry linearGeom = read("LINESTRING (0 0, 10 0, 10 0, 20 0)")!;
     LengthIndexedLine indexedLine = new LengthIndexedLine(linearGeom);
     double projIndex = indexedLine.project(new Coordinate(10, 1));
     assertTrue(projIndex == 10.0);
@@ -198,7 +198,7 @@ class LengthIndexedLineTest extends AbstractIndexedLineTest {
    *
    */
   void testComputeZ() {
-    Geometry linearGeom = read("LINESTRING Z(0 0 0, 10 10 10)");
+    Geometry linearGeom = read("LINESTRING Z(0 0 0, 10 10 10)")!;
     LengthIndexedLine indexedLine = new LengthIndexedLine(linearGeom);
     double projIndex = indexedLine.project(new Coordinate(5, 5));
     Coordinate projPt = indexedLine.extractPoint(projIndex);
@@ -211,7 +211,7 @@ class LengthIndexedLineTest extends AbstractIndexedLineTest {
    *
    */
   void testComputeZNaN() {
-    Geometry linearGeom = read("LINESTRING Z(0 0, 10 10 10)");
+    Geometry linearGeom = read("LINESTRING Z(0 0, 10 10 10)")!;
     LengthIndexedLine indexedLine = new LengthIndexedLine(linearGeom);
     double projIndex = indexedLine.project(new Coordinate(5, 5));
     Coordinate projPt = indexedLine.extractPoint(projIndex);
@@ -219,7 +219,7 @@ class LengthIndexedLineTest extends AbstractIndexedLineTest {
   }
 
   void checkExtractLine(String wkt, double start, double end, String expected) {
-    Geometry linearGeom = read(wkt);
+    Geometry linearGeom = read(wkt)!;
     LengthIndexedLine indexedLine = new LengthIndexedLine(linearGeom);
     Geometry result = indexedLine.extractLine(start, end);
     checkExpected(result, expected);
@@ -279,7 +279,7 @@ class LinearLocationTest {
   WKTReader reader = new WKTReader();
 
   void testZeroLengthLineString() {
-    Geometry line = reader.read("LINESTRING (10 0, 10 0)");
+    Geometry line = reader.read("LINESTRING (10 0, 10 0)")!;
     LocationIndexedLine indexedLine = new LocationIndexedLine(line);
     LinearLocation loc0 = indexedLine.indexOf(new Coordinate(11, 0));
     assertTrue(
@@ -288,7 +288,7 @@ class LinearLocationTest {
   }
 
   void testRepeatedCoordsLineString() {
-    Geometry line = reader.read("LINESTRING (10 0, 10 0, 20 0)");
+    Geometry line = reader.read("LINESTRING (10 0, 10 0, 20 0)")!;
     LocationIndexedLine indexedLine = new LocationIndexedLine(line);
     LinearLocation loc0 = indexedLine.indexOf(new Coordinate(11, 0));
     assertTrue(
@@ -297,7 +297,7 @@ class LinearLocationTest {
   }
 
   void testEndLocation() {
-    Geometry line = reader.read("LINESTRING (10 0, 20 0)");
+    Geometry line = reader.read("LINESTRING (10 0, 20 0)")!;
     LinearLocation loc0 = LinearLocation.getEndLocation(line);
     assertTrue(0 == loc0.getSegmentFraction());
     assertTrue(1 == loc0.getSegmentIndex());
@@ -315,7 +315,7 @@ class LinearLocationTest {
   }
 
   void testIsEndPoint() {
-    Geometry line = reader.read("LINESTRING (10 0, 20 0)");
+    Geometry line = reader.read("LINESTRING (10 0, 20 0)")!;
 
     assertTrue(
         !(new LinearLocation.fromSegmentIndexFraction(0, 0)).isEndpoint(line));
@@ -348,7 +348,7 @@ class LinearLocationTest {
   }
 
   void testEndPointLowest() {
-    Geometry line = reader.read("LINESTRING (10 0, 20 0, 30 10)");
+    Geometry line = reader.read("LINESTRING (10 0, 20 0, 30 10)")!;
 
     assertTrue(
         (new LinearLocation.fromSegmentIndexFraction(1, 1.0)).isEndpoint(line));
@@ -370,7 +370,7 @@ class LinearLocationTest {
   }
 
   void testSameSegmentLineString() {
-    Geometry line = reader.read("LINESTRING (0 0, 10 0, 20 0, 30 0)");
+    Geometry line = reader.read("LINESTRING (0 0, 10 0, 20 0, 30 0)")!;
     LocationIndexedLine indexedLine = new LocationIndexedLine(line);
 
     LinearLocation loc0 = indexedLine.indexOf(new Coordinate(0, 0));
@@ -407,7 +407,7 @@ class LinearLocationTest {
 
   void testSameSegmentMultiLineString() {
     Geometry line =
-        reader.read("MULTILINESTRING ((0 0, 10 0, 20 0), (20 0, 30 0))");
+        reader.read("MULTILINESTRING ((0 0, 10 0, 20 0), (20 0, 30 0))")!;
     LocationIndexedLine indexedLine = new LocationIndexedLine(line);
 
     LinearLocation loc0 = indexedLine.indexOf(new Coordinate(0, 0));
@@ -449,7 +449,7 @@ class LinearLocationTest {
 
   void testGetSegmentMultiLineString() {
     Geometry line =
-        reader.read("MULTILINESTRING ((0 0, 10 0, 20 0), (20 0, 30 0))");
+        reader.read("MULTILINESTRING ((0 0, 10 0, 20 0), (20 0, 30 0))")!;
     LocationIndexedLine indexedLine = new LocationIndexedLine(line);
 
     LinearLocation loc0 = indexedLine.indexOf(new Coordinate(0, 0));
@@ -499,7 +499,7 @@ class LocationIndexedLineTest extends AbstractIndexedLineTest {
 
   void runExtractLine(
       String wkt, LinearLocation start, LinearLocation end, String expected) {
-    Geometry geom = read(wkt);
+    Geometry geom = read(wkt)!;
     LocationIndexedLine lil = new LocationIndexedLine(geom);
     Geometry result = lil.extractLine(start, end);
     //System.out.println(result);
@@ -675,11 +675,11 @@ abstract class AbstractIndexedLineTest {
   }
 
   Geometry read(String wkt) {
-    try {
-      return reader.read(wkt);
-    } catch (ex) {
-      throw new RuntimeException(ex);
-    }
+    // try {
+    return reader.read(wkt)!;
+    // } catch (ex) {
+    //   throw new RuntimeException(ex);
+    // }
   }
 
   void runIndicesOfThenExtract(String inputStr, String subLineStr)
@@ -718,7 +718,7 @@ abstract class AbstractIndexedLineTest {
   {
     Geometry input = read(inputStr);
     Geometry testPoint = read(testPtWKT);
-    Coordinate testPt = testPoint.getCoordinate();
+    Coordinate testPt = testPoint.getCoordinate()!;
     bool resultOK = indexOfAfterCheck(input, testPt);
     assertTrue(resultOK);
   }
@@ -729,9 +729,9 @@ abstract class AbstractIndexedLineTest {
   {
     Geometry input = read(inputStr);
     Geometry testPoint = read(testPtWKT);
-    Coordinate testPt = testPoint.getCoordinate();
+    Coordinate testPt = testPoint.getCoordinate()!;
     Geometry afterPoint = read(afterPtWKT);
-    Coordinate afterPt = afterPoint.getCoordinate();
+    Coordinate afterPt = afterPoint.getCoordinate()!;
     bool resultOK = indexOfAfterCheckWithAfterCoord(input, testPt, afterPt);
     assertTrue(resultOK);
   }
@@ -760,8 +760,8 @@ abstract class AbstractIndexedLineTest {
     Geometry input = read(inputWKT);
     Geometry testPoint = read(testPtWKT);
     Geometry expectedPoint = read(expectedPtWKT);
-    Coordinate testPt = testPoint.getCoordinate();
-    Coordinate expectedPt = expectedPoint.getCoordinate();
+    Coordinate testPt = testPoint.getCoordinate()!;
+    Coordinate expectedPt = expectedPoint.getCoordinate()!;
     Coordinate offsetPt = extractOffsetAt(input, testPt, offsetDistance);
 
     bool isOk = offsetPt.distance(expectedPt) < TOLERANCE_DIST;
