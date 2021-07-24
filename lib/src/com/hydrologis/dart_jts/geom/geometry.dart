@@ -2006,7 +2006,7 @@ class GeometryFactory {
    *            Polygons, each of which may be empty but not null
    * @return the created MultiPolygon
    */
-  MultiPolygon createMultiPolygon(List<Polygon> polygons) {
+  MultiPolygon createMultiPolygon(List<Polygon>? polygons) {
     return new MultiPolygon.withFactory(polygons, this);
   }
 
@@ -2028,7 +2028,7 @@ class GeometryFactory {
    * @return the created LinearRing
    * @throws IllegalArgumentException if the ring is not closed, or has too few points
    */
-  LinearRing createLinearRing(List<Coordinate> coordinates) {
+  LinearRing createLinearRing(List<Coordinate>? coordinates) {
     return createLinearRingSeq(coordinates != null
         ? getCoordinateSequenceFactory().create(coordinates)
         : null);
@@ -2063,7 +2063,7 @@ class GeometryFactory {
    * @param point an array of Points (without null elements), or an empty array, or <code>null</code>
    * @return a MultiPoint object
    */
-  MultiPoint createMultiPoint(List<Point> point) {
+  MultiPoint createMultiPoint(List<Point>? point) {
     return new MultiPoint.withFactory(point, this);
   }
 
@@ -2144,7 +2144,7 @@ class GeometryFactory {
    *            the empty geometry is to be created.
    * @throws IllegalArgumentException if the boundary ring is invalid
    */
-  Polygon createPolygonFromCoords(List<Coordinate> shell) {
+  Polygon createPolygonFromCoords(List<Coordinate>? shell) {
     return createPolygonFromRing(createLinearRing(shell));
   }
 
@@ -2157,7 +2157,7 @@ class GeometryFactory {
    *            the empty geometry is to be created.
    * @throws IllegalArgumentException if the boundary ring is invalid
    */
-  Polygon createPolygonFromRing(LinearRing shell) {
+  Polygon createPolygonFromRing(LinearRing? shell) {
     return createPolygon(shell, null);
   }
 
@@ -2315,7 +2315,7 @@ class GeometryFactory {
    *
    * @see Geometry#copy()
    */
-  Geometry? createGeometry(Geometry g) {
+  Geometry? createGeometry(Geometry? g) {
     GeometryEditor editor = new GeometryEditor(this);
     return editor.edit(g, new CoordSeqCloneOp(_coordinateSequenceFactory));
   }
