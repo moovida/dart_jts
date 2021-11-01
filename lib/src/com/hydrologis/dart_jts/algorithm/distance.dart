@@ -928,13 +928,12 @@ class DistanceToPoint {
   static void computeDistance(
       Geometry geom, Coordinate pt, PointPairDistance ptDist) {
     if (geom is LineString) {
-      computeDistance(geom as LineString, pt, ptDist);
+      computeDistanceL(geom, pt, ptDist);
     } else if (geom is Polygon) {
-      computeDistance(geom as Polygon, pt, ptDist);
+      computeDistanceP(geom, pt, ptDist);
     } else if (geom is GeometryCollection) {
-      GeometryCollection gc = geom as GeometryCollection;
-      for (int i = 0; i < gc.getNumGeometries(); i++) {
-        Geometry g = gc.getGeometryN(i);
+      for (int i = 0; i < geom.getNumGeometries(); i++) {
+        Geometry g = geom.getGeometryN(i);
         computeDistance(g, pt, ptDist);
       }
     } else {
