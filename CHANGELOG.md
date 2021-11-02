@@ -1,3 +1,7 @@
+== Version 0.2.1
+
+- DistanceToPoint: Fix infinite recursion bug in computeDistance (thanks to Samy Arous)
+
 == Version 0.2.0
 
 - migration to null safety
