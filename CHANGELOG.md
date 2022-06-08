@@ -1,3 +1,7 @@
+== Version 0.2.1+1
+
+- upgrade collections to allow for flutter 3 on depending projects
+
 == Version 0.2.1
 
 - DistanceToPoint: Fix infinite recursion bug in computeDistance (thanks to Samy Arous)
