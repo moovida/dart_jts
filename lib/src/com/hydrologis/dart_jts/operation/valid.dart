@@ -1,4 +1,15 @@
-part of dart_jts;
+import '../algorithm/algorithm.dart';
+import '../geom/coordinate.dart';
+import '../geom/geometry.dart';
+import '../geom/linestring.dart';
+import '../geom/polygon.dart';
+import '../geom/multipolygon.dart';
+import '../geom/util.dart';
+import '../geomgraph/geomgraph.dart';
+import '../geomgraph/index.dart';
+import '../operation/overlay.dart';
+import '../util/util.dart';
+import 'relate.dart';
 
 /**
  * Checks that a {@link GeometryGraph} representing an area
@@ -53,8 +64,7 @@ class ConsistentAreaTester {
      * To fully check validity, it is necessary to
      * compute ALL intersections, including self-intersections within a single edge.
      */
-    SegmentIntersector intersector =
-        geomGraph.computeSelfNodes3(li, true, true);
+    SegmentIntersector intersector = geomGraph.computeSelfNodes3(li, true, true);
     /**
      * A proper intersection means that the area is not consistent.
      */
@@ -182,8 +192,7 @@ class ConnectedInteriorTester {
   void setInteriorEdgesInResult(PlanarGraph graph) {
     for (Iterator it = graph.getEdgeEnds().iterator; it.moveNext();) {
       DirectedEdge de = it.current as DirectedEdge;
-      if (de.getLabel()!.getLocationWithPosIndex(0, Position.RIGHT) ==
-          Location.INTERIOR) {
+      if (de.getLabel()!.getLocationWithPosIndex(0, Position.RIGHT) == Location.INTERIOR) {
         de.setInResult(true);
       }
     }
@@ -240,14 +249,9 @@ class ConnectedInteriorTester {
     Edge e = graph.findEdgeInSameDirection(pt0, pt1)!;
     DirectedEdge de = graph.findEdgeEnd(e) as DirectedEdge;
     DirectedEdge? intDe = null;
-    if (de.getLabel()!.getLocationWithPosIndex(0, Position.RIGHT) ==
-        Location.INTERIOR) {
+    if (de.getLabel()!.getLocationWithPosIndex(0, Position.RIGHT) == Location.INTERIOR) {
       intDe = de;
-    } else if (de
-            .getSym()
-            .getLabel()!
-            .getLocationWithPosIndex(0, Position.RIGHT) ==
-        Location.INTERIOR) {
+    } else if (de.getSym().getLabel()!.getLocationWithPosIndex(0, Position.RIGHT) == Location.INTERIOR) {
       intDe = de.getSym();
     }
     Assert.isTrue(intDe != null, "unable to find dirEdge with Interior on RHS");
@@ -284,8 +288,7 @@ class ConnectedInteriorTester {
       DirectedEdge de = edges[0] as DirectedEdge;
       // don't check CW rings which are holes
       // (MD - this check may now be irrelevant)
-      if (de.getLabel()!.getLocationWithPosIndex(0, Position.RIGHT) !=
-          Location.INTERIOR) continue;
+      if (de.getLabel()!.getLocationWithPosIndex(0, Position.RIGHT) != Location.INTERIOR) continue;
 
       /**
        * the edgeRing is CW ring which surrounds the INT of the area, so check all

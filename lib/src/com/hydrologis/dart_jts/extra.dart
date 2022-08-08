@@ -1,4 +1,12 @@
-part of dart_jts;
+import 'geom/geometry.dart';
+import 'geom/geometry_collection.dart';
+import 'geom/linestring.dart';
+import 'geom/point.dart';
+import 'geom/polygon.dart';
+import 'geom/multipoint.dart';
+import 'geom/multilinestring.dart';
+import 'geom/multipolygon.dart';
+import 'util.dart';
 
 /// This file contains code that has not been ported
 /// from the JTS project.
@@ -8,18 +16,12 @@ part of dart_jts;
 class EGeometryType {
 //  static const NONE = const EGeometryType._(0, 0);
   static const POINT = const EGeometryType._(Point, MultiPoint, "Point");
-  static const MULTIPOINT =
-      const EGeometryType._(MultiPoint, MultiPoint, "MultiPoint");
-  static const LINESTRING =
-      const EGeometryType._(LineString, MultiLineString, "LineString");
-  static const MULTILINESTRING = const EGeometryType._(
-      MultiLineString, MultiLineString, "MultiLineString");
-  static const POLYGON =
-      const EGeometryType._(Polygon, MultiPolygon, "Polygon");
-  static const MULTIPOLYGON =
-      const EGeometryType._(MultiPolygon, MultiPolygon, "MultiPolygon");
-  static const GEOMETRYCOLLECTION = const EGeometryType._(
-      GeometryCollection, GeometryCollection, "GeometryCollection");
+  static const MULTIPOINT = const EGeometryType._(MultiPoint, MultiPoint, "MultiPoint");
+  static const LINESTRING = const EGeometryType._(LineString, MultiLineString, "LineString");
+  static const MULTILINESTRING = const EGeometryType._(MultiLineString, MultiLineString, "MultiLineString");
+  static const POLYGON = const EGeometryType._(Polygon, MultiPolygon, "Polygon");
+  static const MULTIPOLYGON = const EGeometryType._(MultiPolygon, MultiPolygon, "MultiPolygon");
+  static const GEOMETRYCOLLECTION = const EGeometryType._(GeometryCollection, GeometryCollection, "GeometryCollection");
   static const GEOMETRY = const EGeometryType._(Geometry, Geometry, "GEOMETRY");
   static const UNKNOWN = const EGeometryType._(null, null, "Unknown");
 
@@ -122,22 +124,17 @@ class EGeometryType {
   static EGeometryType forWktName(String wktName) {
     if (StringUtils.equalsIgnoreCase(wktName, POINT.getTypeName())) {
       return POINT;
-    } else if (StringUtils.equalsIgnoreCase(
-        wktName, MULTIPOINT.getTypeName())) {
+    } else if (StringUtils.equalsIgnoreCase(wktName, MULTIPOINT.getTypeName())) {
       return MULTIPOINT;
-    } else if (StringUtils.equalsIgnoreCase(
-        wktName, LINESTRING.getTypeName())) {
+    } else if (StringUtils.equalsIgnoreCase(wktName, LINESTRING.getTypeName())) {
       return LINESTRING;
-    } else if (StringUtils.equalsIgnoreCase(
-        wktName, MULTILINESTRING.getTypeName())) {
+    } else if (StringUtils.equalsIgnoreCase(wktName, MULTILINESTRING.getTypeName())) {
       return MULTILINESTRING;
     } else if (StringUtils.equalsIgnoreCase(wktName, POLYGON.getTypeName())) {
       return POLYGON;
-    } else if (StringUtils.equalsIgnoreCase(
-        wktName, MULTIPOLYGON.getTypeName())) {
+    } else if (StringUtils.equalsIgnoreCase(wktName, MULTIPOLYGON.getTypeName())) {
       return MULTIPOLYGON;
-    } else if (StringUtils.equalsIgnoreCase(
-        wktName, GEOMETRYCOLLECTION.getTypeName())) {
+    } else if (StringUtils.equalsIgnoreCase(wktName, GEOMETRYCOLLECTION.getTypeName())) {
       return GEOMETRYCOLLECTION;
     } else if (StringUtils.equalsIgnoreCase(wktName, GEOMETRY.getTypeName())) {
       return GEOMETRY;

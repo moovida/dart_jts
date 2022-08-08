@@ -1,4 +1,13 @@
-part of dart_jts;
+import '../algorithm/algorithm.dart';
+import '../geom/coordinate.dart';
+import '../geom/envelope.dart';
+import '../geom/geom.dart';
+import '../geom/geometry.dart';
+import '../geom/linestring.dart';
+import '../geom/polygon.dart';
+import '../geomgraph/geomgraph.dart';
+import '../util/util.dart';
+import '../util/geom_impl.dart';
 
 /**
  * A ring of {@link DirectedEdge}s which may contain nodes of degree &gt; 2.
@@ -19,8 +28,7 @@ part of dart_jts;
  * @see org.locationtech.jts.operation.overlay.MinimalEdgeRing
  */
 class MaximalEdgeRing extends EdgeRing {
-  MaximalEdgeRing(DirectedEdge start, GeometryFactory geometryFactory)
-      : super(start, geometryFactory);
+  MaximalEdgeRing(DirectedEdge start, GeometryFactory geometryFactory) : super(start, geometryFactory);
 
   DirectedEdge getNext(DirectedEdge de) {
     return de.getNext();
@@ -66,8 +74,7 @@ class MaximalEdgeRing extends EdgeRing {
  * @see org.locationtech.jts.operation.overlay.MaximalEdgeRing
  */
 class MinimalEdgeRing extends EdgeRing {
-  MinimalEdgeRing(DirectedEdge start, GeometryFactory geometryFactory)
-      : super(start, geometryFactory);
+  MinimalEdgeRing(DirectedEdge start, GeometryFactory geometryFactory) : super(start, geometryFactory);
 
   DirectedEdge getNext(DirectedEdge de) {
     return de.getNextMin();
@@ -109,8 +116,7 @@ class PolygonBuilder {
     PlanarGraph.linkResultDirectedEdgesStatic(nodes);
     List maxEdgeRings = buildMaximalEdgeRings(dirEdges);
     List freeHoleList = [];
-    List edgeRings =
-        buildMinimalEdgeRings(maxEdgeRings, shellList, freeHoleList);
+    List edgeRings = buildMinimalEdgeRings(maxEdgeRings, shellList, freeHoleList);
     sortShellsAndHoles(edgeRings, shellList, freeHoleList);
     placeFreeHoles(shellList, freeHoleList);
     //Assert: every hole on freeHoleList has a shell assigned to it
@@ -140,8 +146,7 @@ class PolygonBuilder {
     return maxEdgeRings;
   }
 
-  List buildMinimalEdgeRings(
-      List maxEdgeRings, List shellList, List freeHoleList) {
+  List buildMinimalEdgeRings(List maxEdgeRings, List shellList, List freeHoleList) {
     List edgeRings = [];
     for (MaximalEdgeRing er in maxEdgeRings) {
       if (er.getMaxNodeDegree() > 2) {
@@ -241,8 +246,7 @@ class PolygonBuilder {
       if (hole.getShell() == null) {
         EdgeRing shell = findEdgeRingContaining(hole, shellList);
         if (shell == null)
-          throw new TopologyException.withCoord(
-              "unable to assign hole to a shell", hole.getCoordinate(0));
+          throw new TopologyException.withCoord("unable to assign hole to a shell", hole.getCoordinate(0));
 //        Assert.isTrue(shell != null, "unable to assign hole to a shell");
         hole.setShell(shell);
       }
@@ -279,11 +283,9 @@ class PolygonBuilder {
       // hole must be contained in shell
       if (!tryShellEnv.containsEnvelope(testEnv)) continue;
 
-      testPt = CoordinateArrays.ptNotInList(
-          testRing.getCoordinates(), tryShellRing.getCoordinates());
+      testPt = CoordinateArrays.ptNotInList(testRing.getCoordinates(), tryShellRing.getCoordinates());
       bool isContained = false;
-      if (PointLocation.isInRing(testPt!, tryShellRing.getCoordinates()))
-        isContained = true;
+      if (PointLocation.isInRing(testPt!, tryShellRing.getCoordinates())) isContained = true;
 
       // check if this new containing ring is smaller than the current minimum ring
       if (isContained) {

@@ -1,4 +1,25 @@
-part of dart_jts;
+import 'dart:collection';
+import '../algorithm/algorithm.dart';
+import '../algorithm/locate.dart';
+import '../geom/coordinate.dart';
+import '../geom/envelope.dart';
+import '../geom/geom.dart';
+import '../geom/geometry.dart';
+import '../geom/geometry_collection.dart';
+import '../geom/linestring.dart';
+import '../geom/point.dart';
+import '../geom/polygon.dart';
+import '../geom/multilinestring.dart';
+import '../geom/multipoint.dart';
+import '../geom/multipolygon.dart';
+import '../geom/util.dart';
+import '../geomgraph/geomgraph.dart';
+import '../geomgraph/index.dart';
+import '../index/index.dart';
+import '../index/strtree.dart';
+import '../operation/valid.dart';
+import '../operation/relate.dart';
+import '../util/util.dart';
 
 /**
  * Computes the topological relationship between two Geometries.
@@ -36,10 +57,7 @@ class RelateComputer {
     im.set(Location.EXTERIOR, Location.EXTERIOR, 2);
 
     // if the Geometries don't overlap there is nothing to do
-    if (!arg[0]
-        .getGeometry()!
-        .getEnvelopeInternal()
-        .intersectsEnvelope(arg[1].getGeometry()!.getEnvelopeInternal())) {
+    if (!arg[0].getGeometry()!.getEnvelopeInternal().intersectsEnvelope(arg[1].getGeometry()!.getEnvelopeInternal())) {
       computeDisjointIM(im);
       return im;
     }
@@ -47,8 +65,7 @@ class RelateComputer {
     arg[1].computeSelfNodes(li, false);
 
     // compute intersections between edges of the two input geometries
-    SegmentIntersector intersector =
-        arg[0].computeEdgeIntersections(arg[1], li, false);
+    SegmentIntersector intersector = arg[0].computeEdgeIntersections(arg[1], li, false);
 //System.out.println("computeIM: # segment intersection tests: " + intersector.numTests);
     computeIntersectionNodes(0);
     computeIntersectionNodes(1);
@@ -112,8 +129,7 @@ class RelateComputer {
     }
   }
 
-  void computeProperIntersectionIM(
-      SegmentIntersector intersector, IntersectionMatrix im) {
+  void computeProperIntersectionIM(SegmentIntersector intersector, IntersectionMatrix im) {
     // If a proper intersection is found, we can set a lower bound on the IM.
     int dimA = arg[0].getGeometry()!.getDimension();
     int dimB = arg[1].getGeometry()!.getDimension();
@@ -170,8 +186,7 @@ class RelateComputer {
     for (Iterator i = arg[argIndex].getNodeIterator(); i.moveNext();) {
       Node graphNode = i.current as Node;
       Node newNode = nodes.addNodeFromCoordinate(graphNode.getCoordinate());
-      newNode.setLabelWithIndex(
-          argIndex, graphNode.getLabel()!.getLocation(argIndex));
+      newNode.setLabelWithIndex(argIndex, graphNode.getLabel()!.getLocation(argIndex));
 //node.print(System.out);
     }
   }
@@ -187,15 +202,13 @@ class RelateComputer {
     for (Iterator i = arg[argIndex].getEdgeIterator(); i.moveNext();) {
       Edge e = i.current as Edge;
       int eLoc = e.getLabel()!.getLocation(argIndex);
-      for (Iterator eiIt = e.getEdgeIntersectionList().iterator();
-          eiIt.moveNext();) {
+      for (Iterator eiIt = e.getEdgeIntersectionList().iterator(); eiIt.moveNext();) {
         EdgeIntersection ei = eiIt.current as EdgeIntersection;
         RelateNode n = nodes.addNodeFromCoordinate(ei.coord) as RelateNode;
         if (eLoc == Location.BOUNDARY)
           n.setLabelBoundary(argIndex);
         else {
-          if (n.getLabel()!.isNull(argIndex))
-            n.setLabelWithIndex(argIndex, Location.INTERIOR);
+          if (n.getLabel()!.isNull(argIndex)) n.setLabelWithIndex(argIndex, Location.INTERIOR);
         }
 //Debug.println(n);
       }
@@ -213,8 +226,7 @@ class RelateComputer {
     for (Iterator i = arg[argIndex].getEdgeIterator(); i.moveNext();) {
       Edge e = i.current as Edge;
       int eLoc = e.getLabel()!.getLocation(argIndex);
-      for (Iterator eiIt = e.getEdgeIntersectionList().iterator();
-          eiIt.moveNext();) {
+      for (Iterator eiIt = e.getEdgeIntersectionList().iterator(); eiIt.moveNext();) {
         EdgeIntersection ei = eiIt.current as EdgeIntersection;
         RelateNode n = nodes.find(ei.coord) as RelateNode;
         if (n.getLabel()!.isNull(argIndex)) {
@@ -324,8 +336,7 @@ class RelateComputer {
       Node n = ni.current;
       Label label = n.getLabel()!;
       // isolated nodes should always have at least one geometry in their label
-      Assert.isTrue(
-          label.getGeometryCount() > 0, "node with empty label found");
+      Assert.isTrue(label.getGeometryCount() > 0, "node with empty label found");
       if (n.isIsolated()) {
         if (label.isNull(0))
           labelIsolatedNode(n, 0);
@@ -339,8 +350,7 @@ class RelateComputer {
    * Label an isolated node with its relationship to the target geometry.
    */
   void labelIsolatedNode(Node n, int targetIndex) {
-    int loc =
-        ptLocator.locate(n.getCoordinate(), arg[targetIndex].getGeometry()!);
+    int loc = ptLocator.locate(n.getCoordinate(), arg[targetIndex].getGeometry()!);
     n.getLabel()!.setAllLocations(targetIndex, loc);
 //debugPrintln(n.getLabel());
   }
@@ -365,8 +375,7 @@ class GeometryGraphOperation {
 //         BoundaryNodeRule.ENDPOINT_BOUNDARY_RULE
             );
 
-  GeometryGraphOperation.withRule(
-      Geometry g0, Geometry g1, BoundaryNodeRule boundaryNodeRule) {
+  GeometryGraphOperation.withRule(Geometry g0, Geometry g1, BoundaryNodeRule boundaryNodeRule) {
     // use the most precise model for the result
     if (g0.getPrecisionModel().compareTo(g1.getPrecisionModel()) >= 0)
       setComputationPrecision(g0.getPrecisionModel());
@@ -458,8 +467,7 @@ class IsSimpleOp {
    * @param geom the geometry to test
    * @param boundaryNodeRule the rule to use.
    */
-  IsSimpleOp.withGeomAndRule(
-      this.inputGeom, BoundaryNodeRule boundaryNodeRule) {
+  IsSimpleOp.withGeomAndRule(this.inputGeom, BoundaryNodeRule boundaryNodeRule) {
     isClosedEndpointsInInterior = !boundaryNodeRule.isInBoundary(2);
   }
 
@@ -601,8 +609,7 @@ class IsSimpleOp {
     for (Iterator i = graph.getEdgeIterator(); i.moveNext();) {
       Edge e = i.current as Edge;
       int maxSegmentIndex = e.getMaximumSegmentIndex();
-      for (Iterator eiIt = e.getEdgeIntersectionList().iterator();
-          eiIt.moveNext();) {
+      for (Iterator eiIt = e.getEdgeIntersectionList().iterator(); eiIt.moveNext();) {
         EdgeIntersection ei = eiIt.current as EdgeIntersection;
         if (!ei.isEndPoint(maxSegmentIndex)) {
           nonSimpleLocation = ei.getCoordinate();
@@ -715,8 +722,7 @@ class IsValidOp {
    *
    * @return the point found, or <code>null</code> if none found
    */
-  static Coordinate? findPtNotNode(
-      List<Coordinate> testCoords, LinearRing searchRing, GeometryGraph graph) {
+  static Coordinate? findPtNotNode(List<Coordinate> testCoords, LinearRing searchRing, GeometryGraph graph) {
     // find edge corresponding to searchRing.
     Edge searchEdge = graph.findEdgeFromLine(searchRing)!;
     // find a point in the testCoords which is not a node of the searchRing
@@ -932,8 +938,7 @@ class IsValidOp {
   void checkInvalidCoordinatesList(List<Coordinate> coords) {
     for (int i = 0; i < coords.length; i++) {
       if (!isValidStaticCoord(coords[i])) {
-        validErr = new TopologyValidationError.withCoordinate(
-            TopologyValidationError.INVALID_COORDINATE, coords[i]);
+        validErr = new TopologyValidationError.withCoordinate(TopologyValidationError.INVALID_COORDINATE, coords[i]);
         return;
       }
     }
@@ -962,15 +967,14 @@ class IsValidOp {
     if (!ring.isClosed()) {
       Coordinate? pt = null;
       if (ring.getNumPoints() >= 1) pt = ring.getCoordinateN(0);
-      validErr = new TopologyValidationError.withCoordinate(
-          TopologyValidationError.RING_NOT_CLOSED, pt);
+      validErr = new TopologyValidationError.withCoordinate(TopologyValidationError.RING_NOT_CLOSED, pt);
     }
   }
 
   void checkTooFewPoints(GeometryGraph graph) {
     if (graph.hasTooFewPoints()) {
-      validErr = new TopologyValidationError.withCoordinate(
-          TopologyValidationError.TOO_FEW_POINTS, graph.getInvalidPoint());
+      validErr =
+          new TopologyValidationError.withCoordinate(TopologyValidationError.TOO_FEW_POINTS, graph.getInvalidPoint());
       return;
     }
   }
@@ -987,13 +991,13 @@ class IsValidOp {
     ConsistentAreaTester cat = new ConsistentAreaTester(graph);
     bool isValidArea = cat.isNodeConsistentArea();
     if (!isValidArea) {
-      validErr = new TopologyValidationError.withCoordinate(
-          TopologyValidationError.SELF_INTERSECTION, cat.getInvalidPoint());
+      validErr =
+          new TopologyValidationError.withCoordinate(TopologyValidationError.SELF_INTERSECTION, cat.getInvalidPoint());
       return;
     }
     if (cat.hasDuplicateRings()) {
-      validErr = new TopologyValidationError.withCoordinate(
-          TopologyValidationError.DUPLICATE_RINGS, cat.getInvalidPoint());
+      validErr =
+          new TopologyValidationError.withCoordinate(TopologyValidationError.DUPLICATE_RINGS, cat.getInvalidPoint());
     }
   }
 
@@ -1027,8 +1031,7 @@ class IsValidOp {
         continue;
       }
       if (nodeSet.contains(ei.coord)) {
-        validErr = new TopologyValidationError.withCoordinate(
-            TopologyValidationError.RING_SELF_INTERSECTION, ei.coord);
+        validErr = new TopologyValidationError.withCoordinate(TopologyValidationError.RING_SELF_INTERSECTION, ei.coord);
         return;
       } else {
         nodeSet.add(ei.coord);
@@ -1070,8 +1073,7 @@ class IsValidOp {
 
       bool outside = isShellEmpty || (Location.EXTERIOR == pir.locate(holePt));
       if (outside) {
-        validErr = new TopologyValidationError.withCoordinate(
-            TopologyValidationError.HOLE_OUTSIDE_SHELL, holePt);
+        validErr = new TopologyValidationError.withCoordinate(TopologyValidationError.HOLE_OUTSIDE_SHELL, holePt);
         return;
       }
     }
@@ -1154,8 +1156,7 @@ class IsValidOp {
 
     // if no holes, this is an error!
     if (p.getNumInteriorRing() <= 0) {
-      validErr = new TopologyValidationError.withCoordinate(
-          TopologyValidationError.NESTED_SHELLS, shellPt);
+      validErr = new TopologyValidationError.withCoordinate(TopologyValidationError.NESTED_SHELLS, shellPt);
       return;
     }
 
@@ -1171,8 +1172,7 @@ class IsValidOp {
       badNestedPt = checkShellInsideHole(shell, hole, graph);
       if (badNestedPt == null) return;
     }
-    validErr = new TopologyValidationError.withCoordinate(
-        TopologyValidationError.NESTED_SHELLS, badNestedPt);
+    validErr = new TopologyValidationError.withCoordinate(TopologyValidationError.NESTED_SHELLS, badNestedPt);
   }
 
   /**
@@ -1184,8 +1184,7 @@ class IsValidOp {
    *   a Coordinate which is not inside the hole if it is not
    *
    */
-  Coordinate? checkShellInsideHole(
-      LinearRing shell, LinearRing hole, GeometryGraph graph) {
+  Coordinate? checkShellInsideHole(LinearRing shell, LinearRing hole, GeometryGraph graph) {
     List<Coordinate> shellPts = shell.getCoordinates();
     List<Coordinate> holePts = hole.getCoordinates();
     // TODO: improve performance of this - by sorting pointlists for instance?
@@ -1413,12 +1412,9 @@ class IndexedNestedRingTester {
 
         if (innerRing == searchRing) continue;
 
-        if (!innerRing
-            .getEnvelopeInternal()
-            .intersectsEnvelope(searchRing.getEnvelopeInternal())) continue;
+        if (!innerRing.getEnvelopeInternal().intersectsEnvelope(searchRing.getEnvelopeInternal())) continue;
 
-        Coordinate? innerRingPt =
-            IsValidOp.findPtNotNode(innerRingPts, searchRing, graph);
+        Coordinate? innerRingPt = IsValidOp.findPtNotNode(innerRingPts, searchRing, graph);
 
         /**
          * If no non-node pts can be found, this means
@@ -1561,8 +1557,7 @@ class BoundaryOp {
         return geomFact.createMultiPointEmpty();
       }
     }
-    return geomFact
-        .createMultiPoint([line.getStartPoint()!, line.getEndPoint()!]);
+    return geomFact.createMultiPoint([line.getStartPoint()!, line.getEndPoint()!]);
   }
 }
 

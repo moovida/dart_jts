@@ -1,4 +1,12 @@
-part of dart_jts;
+import '../algorithm/algorithm.dart';
+import '../algorithm/locate.dart';
+import '../geom/coordinate.dart';
+import '../geom/envelope.dart';
+import '../geom/geometry.dart';
+import '../geom/linestring.dart';
+import '../geom/point.dart';
+import '../geom/polygon.dart';
+import '../geom/util.dart';
 
 /**
  * Optimized implementation of the <tt>contains</tt> spatial predicate
@@ -54,8 +62,7 @@ class RectangleContains {
     // polygons can never be wholely contained in the boundary
     if (geom is Polygon) return false;
     if (geom is Point) return isPointContainedInBoundary(geom as Point);
-    if (geom is LineString)
-      return isLineStringContainedInBoundary(geom as LineString);
+    if (geom is LineString) return isLineStringContainedInBoundary(geom as LineString);
 
     for (int i = 0; i < geom.getNumGeometries(); i++) {
       Geometry comp = geom.getGeometryN(i);
@@ -194,16 +201,14 @@ class RectangleIntersects {
     /**
      * Test if any rectangle vertex is contained in the target geometry
      */
-    GeometryContainsPointVisitor ecpVisitor =
-        new GeometryContainsPointVisitor(rectangle);
+    GeometryContainsPointVisitor ecpVisitor = new GeometryContainsPointVisitor(rectangle);
     ecpVisitor.applyTo(geom);
     if (ecpVisitor.containsPoint()) return true;
 
     /**
      * Test if any target geometry line segment intersects the rectangle
      */
-    RectangleIntersectsSegmentVisitor riVisitor =
-        new RectangleIntersectsSegmentVisitor(rectangle);
+    RectangleIntersectsSegmentVisitor riVisitor = new RectangleIntersectsSegmentVisitor(rectangle);
     riVisitor.applyTo(geom);
     if (riVisitor.intersects()) return true;
 
@@ -257,13 +262,11 @@ class EnvelopeIntersectsVisitor extends ShortCircuitedGeometryVisitor {
      * completely bisected. In this case it is not possible to make a conclusion
      * about the presence of an intersection.
      */
-    if (elementEnv.getMinX() >= rectEnv.getMinX() &&
-        elementEnv.getMaxX() <= rectEnv.getMaxX()) {
+    if (elementEnv.getMinX() >= rectEnv.getMinX() && elementEnv.getMaxX() <= rectEnv.getMaxX()) {
       _intersects = true;
       return;
     }
-    if (elementEnv.getMinY() >= rectEnv.getMinY() &&
-        elementEnv.getMaxY() <= rectEnv.getMaxY()) {
+    if (elementEnv.getMinY() >= rectEnv.getMinY() && elementEnv.getMaxY() <= rectEnv.getMaxY()) {
       _intersects = true;
       return;
     }
@@ -320,8 +323,7 @@ class GeometryContainsPointVisitor extends ShortCircuitedGeometryVisitor {
       if (!elementEnv.containsCoordinate(rectPt)) continue;
       // check rect point in poly (rect is known not to touch polygon at this
       // point)
-      if (SimplePointInAreaLocator.containsPointInPolygon(
-          rectPt, geom as Polygon)) {
+      if (SimplePointInAreaLocator.containsPointInPolygon(rectPt, geom as Polygon)) {
         _containsPoint = true;
         return;
       }

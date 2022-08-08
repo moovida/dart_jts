@@ -1,4 +1,9 @@
-part of dart_jts;
+import '../geom/coordinate.dart';
+import '../geom/geom.dart';
+import '../geom/geometry.dart';
+import '../geom/linestring.dart';
+import 'linearlocation.dart';
+
 /*
  * Copyright (c) 2016 Vivid Solutions.
  *
@@ -61,8 +66,7 @@ class LinearIterator {
    * @throws IllegalArgumentException if linearGeom is not lineal
    */
   LinearIterator.withStart(Geometry linear, LinearLocation start)
-      : this.withIndexes(
-            linear, start.getComponentIndex(), segmentEndVertexIndex(start));
+      : this.withIndexes(linear, start.getComponentIndex(), segmentEndVertexIndex(start));
 
   /**
    * Creates an iterator starting at
@@ -73,10 +77,8 @@ class LinearIterator {
    * @param vertexIndex the vertex to start at
    * @throws IllegalArgumentException if linearGeom is not lineal
    */
-  LinearIterator.withIndexes(
-      this.linearGeom, int componentIndex, int vertexIndex) {
-    if (!(linearGeom is Lineal))
-      throw new ArgumentError("Lineal geometry is required");
+  LinearIterator.withIndexes(this.linearGeom, int componentIndex, int vertexIndex) {
+    if (!(linearGeom is Lineal)) throw new ArgumentError("Lineal geometry is required");
     numLines = linearGeom.getNumGeometries();
     this.componentIndex = componentIndex;
     this.vertexIndex = vertexIndex;
@@ -101,8 +103,7 @@ class LinearIterator {
    */
   bool hasNext() {
     if (componentIndex >= numLines) return false;
-    if (componentIndex == numLines - 1 &&
-        vertexIndex >= currentLine!.getNumPoints()) return false;
+    if (componentIndex == numLines - 1 && vertexIndex >= currentLine!.getNumPoints()) return false;
     return true;
   }
 
@@ -174,8 +175,7 @@ class LinearIterator {
    * @return a {@link Coordinate} or <code>null</code>
    */
   Coordinate? getSegmentEnd() {
-    if (vertexIndex < getLine().getNumPoints() - 1)
-      return currentLine!.getCoordinateN(vertexIndex + 1);
+    if (vertexIndex < getLine().getNumPoints() - 1) return currentLine!.getCoordinateN(vertexIndex + 1);
     return null;
   }
 }

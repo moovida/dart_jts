@@ -1,4 +1,5 @@
-part of dart_jts;
+import 'dart:math' as math;
+import 'coordinate.dart';
 
 class Envelope {
   ///  the minimum x-coordinate
@@ -21,10 +22,8 @@ class Envelope {
   static bool intersectsPoint(Coordinate p1, Coordinate p2, Coordinate q) {
     //OptimizeIt shows that Math#min and Math#max here are a bottleneck.
     //Replace with direct comparisons. [Jon Aquino]
-    if (((q.x >= (p1.x < p2.x ? p1.x : p2.x)) &&
-            (q.x <= (p1.x > p2.x ? p1.x : p2.x))) &&
-        ((q.y >= (p1.y < p2.y ? p1.y : p2.y)) &&
-            (q.y <= (p1.y > p2.y ? p1.y : p2.y)))) {
+    if (((q.x >= (p1.x < p2.x ? p1.x : p2.x)) && (q.x <= (p1.x > p2.x ? p1.x : p2.x))) &&
+        ((q.y >= (p1.y < p2.y ? p1.y : p2.y)) && (q.y <= (p1.y > p2.y ? p1.y : p2.y)))) {
       return true;
     }
     return false;
@@ -39,8 +38,7 @@ class Envelope {
   /// @param q1 one extremal point of the envelope Q
   /// @param q2 another extremal point of the envelope Q
   /// @return <code>true</code> if Q intersects P
-  static bool intersectsEnvelopeCoords(
-      Coordinate p1, Coordinate p2, Coordinate q1, Coordinate q2) {
+  static bool intersectsEnvelopeCoords(Coordinate p1, Coordinate p2, Coordinate q1, Coordinate q2) {
     double minq = math.min(q1.x, q2.x);
     double maxq = math.max(q1.x, q2.x);
     double minp = math.min(p1.x, p2.x);
@@ -371,8 +369,7 @@ class Envelope {
     if (isNull()) {
       return;
     }
-    init(getMinX() + transX, getMaxX() + transX, getMinY() + transY,
-        getMaxY() + transY);
+    init(getMinX() + transX, getMaxX() + transX, getMinY() + transY, getMaxY() + transY);
   }
 
   /// Computes the coordinate of the centre of this envelope (as long as it is non-null
@@ -381,8 +378,7 @@ class Envelope {
   /// <code>null</code> if the envelope is null
   Coordinate? centre() {
     if (isNull()) return null;
-    return Coordinate(
-        (getMinX() + getMaxX()) / 2.0, (getMinY() + getMaxY()) / 2.0);
+    return Coordinate((getMinX() + getMaxX()) / 2.0, (getMinY() + getMaxY()) / 2.0);
   }
 
   /// Computes the intersection of two {@link Envelope}s.
@@ -391,8 +387,7 @@ class Envelope {
   /// @return a new Envelope representing the intersection of the envelopes (this will be
   /// the null envelope if either argument is null, or they do not intersect
   Envelope intersection(Envelope env) {
-    if (isNull() || env.isNull() || !intersectsEnvelope(env))
-      return Envelope.empty();
+    if (isNull() || env.isNull() || !intersectsEnvelope(env)) return Envelope.empty();
 
     double intMinX = _minx > env._minx ? _minx : env._minx;
     double intMinY = _miny > env._miny ? _miny : env._miny;
@@ -411,10 +406,7 @@ class Envelope {
     if (isNull() || other.isNull()) {
       return false;
     }
-    return !(other._minx > _maxx ||
-        other._maxx < _minx ||
-        other._miny > _maxy ||
-        other._maxy < _miny);
+    return !(other._minx > _maxx || other._maxx < _minx || other._miny > _maxy || other._maxy < _miny);
   }
 
   /// Tests if the extent defined by two extremal points
@@ -454,10 +446,7 @@ class Envelope {
     if (isNull() || other.isNull()) {
       return true;
     }
-    return other._minx > _maxx ||
-        other._maxx < _minx ||
-        other._miny > _maxy ||
-        other._maxy < _miny;
+    return other._minx > _maxx || other._maxx < _minx || other._miny > _maxy || other._maxy < _miny;
   }
 
   /// Tests if the point <code>p</code>
@@ -558,10 +547,7 @@ class Envelope {
     if (isNull() || other.isNull()) {
       return false;
     }
-    return other.getMinX() >= _minx &&
-        other.getMaxX() <= _maxx &&
-        other.getMinY() >= _miny &&
-        other.getMaxY() <= _maxy;
+    return other.getMinX() >= _minx && other.getMaxX() <= _maxx && other.getMinY() >= _miny && other.getMaxY() <= _maxy;
   }
 
   /// Computes the distance between this and another

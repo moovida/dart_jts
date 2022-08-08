@@ -1,4 +1,8 @@
-part of dart_jts;
+import '../geom/coordinate.dart';
+import '../geom/geometry.dart';
+import '../geom/linestring.dart';
+import '../util/util.dart';
+import 'lineariterator.dart';
 
 /*
  * Copyright (c) 2016 Vivid Solutions.
@@ -25,8 +29,7 @@ class LengthIndexOfPoint {
     return locater.indexOf(inputPt);
   }
 
-  static double indexOfAfterStatic(
-      Geometry linearGeom, Coordinate inputPt, double minIndex) {
+  static double indexOfAfterStatic(Geometry linearGeom, Coordinate inputPt, double minIndex) {
     LengthIndexOfPoint locater = new LengthIndexOfPoint(linearGeom);
     return locater.indexOfAfter(inputPt, minIndex);
   }
@@ -71,8 +74,7 @@ class LengthIndexOfPoint {
     /**
      * Return the minDistanceLocation found.
      */
-    Assert.isTrue(closestAfter >= minIndex,
-        "computed index is before specified minimum index");
+    Assert.isTrue(closestAfter >= minIndex, "computed index is before specified minimum index");
     return closestAfter;
   }
 
@@ -88,8 +90,7 @@ class LengthIndexOfPoint {
         seg.p0 = it.getSegmentStart();
         seg.p1 = it.getSegmentEnd()!;
         double segDistance = seg.distanceCoord(inputPt);
-        double segMeasureToPt =
-            segmentNearestMeasure(seg, inputPt, segmentStartMeasure);
+        double segMeasureToPt = segmentNearestMeasure(seg, inputPt, segmentStartMeasure);
         if (segDistance < minDistance && segMeasureToPt > minIndex) {
           ptMeasure = segMeasureToPt;
           minDistance = segDistance;
@@ -101,13 +102,11 @@ class LengthIndexOfPoint {
     return ptMeasure;
   }
 
-  double segmentNearestMeasure(
-      LineSegment seg, Coordinate inputPt, double segmentStartMeasure) {
+  double segmentNearestMeasure(LineSegment seg, Coordinate inputPt, double segmentStartMeasure) {
     // found new minimum, so compute location distance of point
     double projFactor = seg.projectionFactor(inputPt);
     if (projFactor <= 0.0) return segmentStartMeasure;
-    if (projFactor <= 1.0)
-      return segmentStartMeasure + projFactor * seg.getLength();
+    if (projFactor <= 1.0) return segmentStartMeasure + projFactor * seg.getLength();
     // projFactor > 1.0
     return segmentStartMeasure + seg.getLength();
   }

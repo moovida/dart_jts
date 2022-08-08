@@ -1,4 +1,7 @@
-part of dart_jts;
+import '../geom/coordinate.dart';
+import '../geom/geometry.dart';
+import 'linearlocation.dart';
+import 'lineariterator.dart';
 
 /**
  * Computes the {@link LinearLocation} for a given length
@@ -35,8 +38,7 @@ class LengthLocationMap {
    * @param resolveLower if true lengths are resolved to the lowest possible index
    * @return the {@link LinearLocation} for the length
    */
-  static LinearLocation getLocationStaticWithResolver(
-      Geometry linearGeom, double length, bool resolveLower) {
+  static LinearLocation getLocationStaticWithResolver(Geometry linearGeom, double length, bool resolveLower) {
     LengthLocationMap locater = new LengthLocationMap(linearGeom);
     return locater.getLocationWithResolver(length, resolveLower);
   }
@@ -115,8 +117,7 @@ class LengthLocationMap {
         if (totalLength == length) {
           int compIndex = it.getComponentIndex();
           int segIndex = it.getVertexIndex();
-          return new LinearLocation.fromComponentSegmentIndexFraction(
-              compIndex, segIndex, 0.0);
+          return new LinearLocation.fromComponentSegmentIndexFraction(compIndex, segIndex, 0.0);
         }
       } else {
         Coordinate p0 = it.getSegmentStart();
@@ -127,8 +128,7 @@ class LengthLocationMap {
           double frac = (length - totalLength) / segLen;
           int compIndex = it.getComponentIndex();
           int segIndex = it.getVertexIndex();
-          return new LinearLocation.fromComponentSegmentIndexFraction(
-              compIndex, segIndex, frac);
+          return new LinearLocation.fromComponentSegmentIndexFraction(compIndex, segIndex, frac);
         }
         totalLength += segLen;
       }
@@ -147,11 +147,9 @@ class LengthLocationMap {
 
     do {
       compIndex++;
-    } while (compIndex < linearGeom.getNumGeometries() - 1 &&
-        linearGeom.getGeometryN(compIndex).getLength() == 0);
+    } while (compIndex < linearGeom.getNumGeometries() - 1 && linearGeom.getGeometryN(compIndex).getLength() == 0);
     // resolve to next higher location
-    return new LinearLocation.fromComponentSegmentIndexFraction(
-        compIndex, 0, 0.0);
+    return new LinearLocation.fromComponentSegmentIndexFraction(compIndex, 0, 0.0);
   }
 
   double getLength(LinearLocation loc) {
@@ -164,8 +162,7 @@ class LengthLocationMap {
         Coordinate p1 = it.getSegmentEnd()!;
         double segLen = p1.distance(p0);
         // length falls in this segment
-        if (loc.getComponentIndex() == it.getComponentIndex() &&
-            loc.getSegmentIndex() == it.getVertexIndex()) {
+        if (loc.getComponentIndex() == it.getComponentIndex() && loc.getSegmentIndex() == it.getVertexIndex()) {
           return totalLength + segLen * loc.getSegmentFraction();
         }
         totalLength += segLen;

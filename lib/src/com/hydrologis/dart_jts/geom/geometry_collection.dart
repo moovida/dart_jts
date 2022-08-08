@@ -1,4 +1,11 @@
-part of dart_jts;
+import 'dart:collection';
+import 'dart:math' as math;
+import '../util/util.dart';
+import 'coordinate.dart';
+import 'envelope.dart';
+import 'geom.dart';
+import 'geometry.dart';
+import 'util.dart';
 
 /**
  * Models a collection of {@link Geometry}s of
@@ -15,10 +22,8 @@ class GeometryCollection extends Geometry {
   late List<Geometry> geometries;
 
   /** @deprecated Use GeometryFactory instead */
-  GeometryCollection(
-      List<Geometry> geometries, PrecisionModel precisionModel, int SRID)
-      : this.withFactory(geometries,
-            new GeometryFactory.withPrecisionModelSrid(precisionModel, SRID));
+  GeometryCollection(List<Geometry> geometries, PrecisionModel precisionModel, int SRID)
+      : this.withFactory(geometries, new GeometryFactory.withPrecisionModelSrid(precisionModel, SRID));
 
   /**
    * @param geometries
@@ -27,9 +32,7 @@ class GeometryCollection extends Geometry {
    *            geometry. Elements may be empty <code>Geometry</code>s,
    *            but not <code>null</code>s.
    */
-  GeometryCollection.withFactory(
-      List<Geometry>? geometries, GeometryFactory factory)
-      : super(factory) {
+  GeometryCollection.withFactory(List<Geometry>? geometries, GeometryFactory factory) : super(factory) {
     if (geometries == null) {
       geometries = [];
     }
@@ -57,7 +60,7 @@ class GeometryCollection extends Geometry {
     List<Coordinate> coordinates = []; //..length = getNumPoints();
     // int k = -1;
     for (int i = 0; i < geometries.length; i++) {
-      List<Coordinate> childCoordinates = geometries[i].getCoordinates();
+      List<Coordinate> childCoordinates = geometries[i].getCoordinates() as List<Coordinate>;
       for (int j = 0; j < childCoordinates.length; j++) {
         // k++;
         // coordinates[k] = childCoordinates[j];
@@ -87,8 +90,7 @@ class GeometryCollection extends Geometry {
   int getBoundaryDimension() {
     int dimension = Dimension.FALSE;
     for (int i = 0; i < geometries.length; i++) {
-      dimension = math.max(
-          dimension, (geometries[i] as Geometry).getBoundaryDimension());
+      dimension = math.max(dimension, (geometries[i] as Geometry).getBoundaryDimension());
     }
     return dimension;
   }
@@ -149,8 +151,7 @@ class GeometryCollection extends Geometry {
       return false;
     }
     for (int i = 0; i < geometries.length; i++) {
-      if (!(geometries[i] as Geometry)
-          .equalsExactWithTol(otherCollection.geometries[i], tolerance)) {
+      if (!(geometries[i] as Geometry).equalsExactWithTol(otherCollection.geometries[i], tolerance)) {
         return false;
       }
     }
@@ -229,8 +230,7 @@ class GeometryCollection extends Geometry {
     return compare(theseElements.toList(), otherElements.toList());
   }
 
-  int compareToSameClassWithComparator(
-      Object o, Comparator<CoordinateSequence> comp) {
+  int compareToSameClassWithComparator(Object o, Comparator<CoordinateSequence> comp) {
     GeometryCollection gc = o as GeometryCollection;
 
     int n1 = getNumGeometries();

@@ -1,4 +1,8 @@
-part of dart_jts;
+import 'dart:math' as math;
+import '../geom/envelope.dart';
+import '../geomgraph/index.dart';
+import '../index/index.dart';
+import '../util/util.dart';
 
 /**
  * A function method which computes the distance
@@ -88,41 +92,25 @@ class EnvelopeDistance {
     double bmaxx = b.getMaxX();
     double bmaxy = b.getMaxY();
 
-    double dist =
-        maxDistance(aminx, aminy, aminx, amaxy, bminx, bminy, bminx, bmaxy);
-    dist = math.min(dist,
-        maxDistance(aminx, aminy, aminx, amaxy, bminx, bminy, bmaxx, bminy));
-    dist = math.min(dist,
-        maxDistance(aminx, aminy, aminx, amaxy, bmaxx, bmaxy, bminx, bmaxy));
-    dist = math.min(dist,
-        maxDistance(aminx, aminy, aminx, amaxy, bmaxx, bmaxy, bmaxx, bminy));
+    double dist = maxDistance(aminx, aminy, aminx, amaxy, bminx, bminy, bminx, bmaxy);
+    dist = math.min(dist, maxDistance(aminx, aminy, aminx, amaxy, bminx, bminy, bmaxx, bminy));
+    dist = math.min(dist, maxDistance(aminx, aminy, aminx, amaxy, bmaxx, bmaxy, bminx, bmaxy));
+    dist = math.min(dist, maxDistance(aminx, aminy, aminx, amaxy, bmaxx, bmaxy, bmaxx, bminy));
 
-    dist = math.min(dist,
-        maxDistance(aminx, aminy, amaxx, aminy, bminx, bminy, bminx, bmaxy));
-    dist = math.min(dist,
-        maxDistance(aminx, aminy, amaxx, aminy, bminx, bminy, bmaxx, bminy));
-    dist = math.min(dist,
-        maxDistance(aminx, aminy, amaxx, aminy, bmaxx, bmaxy, bminx, bmaxy));
-    dist = math.min(dist,
-        maxDistance(aminx, aminy, amaxx, aminy, bmaxx, bmaxy, bmaxx, bminy));
+    dist = math.min(dist, maxDistance(aminx, aminy, amaxx, aminy, bminx, bminy, bminx, bmaxy));
+    dist = math.min(dist, maxDistance(aminx, aminy, amaxx, aminy, bminx, bminy, bmaxx, bminy));
+    dist = math.min(dist, maxDistance(aminx, aminy, amaxx, aminy, bmaxx, bmaxy, bminx, bmaxy));
+    dist = math.min(dist, maxDistance(aminx, aminy, amaxx, aminy, bmaxx, bmaxy, bmaxx, bminy));
 
-    dist = math.min(dist,
-        maxDistance(amaxx, amaxy, aminx, amaxy, bminx, bminy, bminx, bmaxy));
-    dist = math.min(dist,
-        maxDistance(amaxx, amaxy, aminx, amaxy, bminx, bminy, bmaxx, bminy));
-    dist = math.min(dist,
-        maxDistance(amaxx, amaxy, aminx, amaxy, bmaxx, bmaxy, bminx, bmaxy));
-    dist = math.min(dist,
-        maxDistance(amaxx, amaxy, aminx, amaxy, bmaxx, bmaxy, bmaxx, bminy));
+    dist = math.min(dist, maxDistance(amaxx, amaxy, aminx, amaxy, bminx, bminy, bminx, bmaxy));
+    dist = math.min(dist, maxDistance(amaxx, amaxy, aminx, amaxy, bminx, bminy, bmaxx, bminy));
+    dist = math.min(dist, maxDistance(amaxx, amaxy, aminx, amaxy, bmaxx, bmaxy, bminx, bmaxy));
+    dist = math.min(dist, maxDistance(amaxx, amaxy, aminx, amaxy, bmaxx, bmaxy, bmaxx, bminy));
 
-    dist = math.min(dist,
-        maxDistance(amaxx, amaxy, amaxx, aminy, bminx, bminy, bminx, bmaxy));
-    dist = math.min(dist,
-        maxDistance(amaxx, amaxy, amaxx, aminy, bminx, bminy, bmaxx, bminy));
-    dist = math.min(dist,
-        maxDistance(amaxx, amaxy, amaxx, aminy, bmaxx, bmaxy, bminx, bmaxy));
-    dist = math.min(dist,
-        maxDistance(amaxx, amaxy, amaxx, aminy, bmaxx, bmaxy, bmaxx, bminy));
+    dist = math.min(dist, maxDistance(amaxx, amaxy, amaxx, aminy, bminx, bminy, bminx, bmaxy));
+    dist = math.min(dist, maxDistance(amaxx, amaxy, amaxx, aminy, bminx, bminy, bmaxx, bminy));
+    dist = math.min(dist, maxDistance(amaxx, amaxy, amaxx, aminy, bmaxx, bmaxy, bminx, bmaxy));
+    dist = math.min(dist, maxDistance(amaxx, amaxy, amaxx, aminy, bmaxx, bmaxy, bmaxx, bminy));
 
     return dist;
   }
@@ -140,8 +128,8 @@ class EnvelopeDistance {
    * @param by2 y ordinate of second endpoint of segment 2
    * @return maximum distance between the segments
    */
-  static double maxDistance(double ax1, double ay1, double ax2, double ay2,
-      double bx1, double by1, double bx2, double by2) {
+  static double maxDistance(
+      double ax1, double ay1, double ax2, double ay2, double bx1, double by1, double bx2, double by2) {
     double dist = distance(ax1, ay1, bx1, by1);
     dist = math.max(dist, distance(ax1, ay1, bx2, by2));
     dist = math.max(dist, distance(ax2, ay2, bx1, by1));
@@ -197,8 +185,7 @@ class BoundablePair implements Comparable {
    * @return the maximum distance between items in the pair
    */
   double maximumDistance() {
-    return EnvelopeDistance.maximumDistance(
-        boundable1.getBounds() as Envelope, boundable2.getBounds() as Envelope);
+    return EnvelopeDistance.maximumDistance(boundable1.getBounds() as Envelope, boundable2.getBounds() as Envelope);
   }
 
   /**
@@ -213,12 +200,10 @@ class BoundablePair implements Comparable {
   double distance() {
     // if items, compute exact distance
     if (isLeaves()) {
-      return itemDistance.distance(
-          boundable1 as ItemBoundable, boundable2 as ItemBoundable);
+      return itemDistance.distance(boundable1 as ItemBoundable, boundable2 as ItemBoundable);
     }
     // otherwise compute distance between bounds of boundables
-    return (boundable1.getBounds() as Envelope)
-        .distance((boundable2.getBounds() as Envelope));
+    return (boundable1.getBounds() as Envelope).distance((boundable2.getBounds() as Envelope));
   }
 
   /**
@@ -308,8 +293,7 @@ class BoundablePair implements Comparable {
     throw new ArgumentError("neither boundable is composite");
   }
 
-  void expand(Boundable bndComposite, Boundable bndOther, bool isFlipped,
-      PriorityQueue priQ, double minDistance) {
+  void expand(Boundable bndComposite, Boundable bndOther, bool isFlipped, PriorityQueue priQ, double minDistance) {
     List children = (bndComposite as AbstractNode).getChildBoundables();
     for (Iterator i = children.iterator; i.moveNext();) {
       Boundable child = i.current as Boundable;
@@ -551,9 +535,7 @@ abstract class AbstractSTRtree {
   // TODO check how to make this method synchronized
   void build() {
     if (built) return;
-    root = itemBoundables!.isEmpty
-        ? createNode(0)
-        : createHigherLevels(itemBoundables!, -1);
+    root = itemBoundables!.isEmpty ? createNode(0) : createHigherLevels(itemBoundables!, -1);
     // the item list is no longer needed
     itemBoundables = null;
     built = true;
@@ -573,8 +555,7 @@ abstract class AbstractSTRtree {
     sortedChildBoundables.sort(getComparator());
     for (Iterator i = sortedChildBoundables.iterator; i.moveNext();) {
       Boundable childBoundable = i.current as Boundable;
-      if (lastNode(parentBoundables).getChildBoundables().length ==
-          getNodeCapacity()) {
+      if (lastNode(parentBoundables).getChildBoundables().length == getNodeCapacity()) {
         parentBoundables.add(createNode(newLevel));
       }
       lastNode(parentBoundables).addChildBoundable(childBoundable);
@@ -606,8 +587,7 @@ abstract class AbstractSTRtree {
    */
   AbstractNode createHigherLevels(List boundablesOfALevel, int level) {
     Assert.isTrue(!boundablesOfALevel.isEmpty);
-    List parentBoundables =
-        createParentBoundables(boundablesOfALevel, level + 1);
+    List parentBoundables = createParentBoundables(boundablesOfALevel, level + 1);
     if (parentBoundables.length == 1) {
       return parentBoundables[0] as AbstractNode;
     }
@@ -687,8 +667,7 @@ abstract class AbstractSTRtree {
   }
 
   void insertObj(Object bounds, Object item) {
-    Assert.isTrue(!built,
-        "Cannot insert items into an STR packed R-tree after it has been built.");
+    Assert.isTrue(!built, "Cannot insert items into an STR packed R-tree after it has been built.");
     itemBoundables!.add(new ItemBoundable(bounds, item));
   }
 
@@ -734,8 +713,7 @@ abstract class AbstractSTRtree {
     List childBoundables = node.getChildBoundables();
     for (int i = 0; i < childBoundables.length; i++) {
       Boundable childBoundable = childBoundables[i] as Boundable;
-      if (!getIntersectsOp()
-          .intersects(childBoundable.getBounds(), searchBounds)) {
+      if (!getIntersectsOp().intersects(childBoundable.getBounds(), searchBounds)) {
         continue;
       }
       if (childBoundable is AbstractNode) {
@@ -748,18 +726,15 @@ abstract class AbstractSTRtree {
     }
   }
 
-  void queryInternalWithVisitor(
-      Object searchBounds, AbstractNode node, ItemVisitor visitor) {
+  void queryInternalWithVisitor(Object searchBounds, AbstractNode node, ItemVisitor visitor) {
     List childBoundables = node.getChildBoundables();
     for (int i = 0; i < childBoundables.length; i++) {
       Boundable childBoundable = childBoundables[i] as Boundable;
-      if (!getIntersectsOp()
-          .intersects(childBoundable.getBounds(), searchBounds)) {
+      if (!getIntersectsOp().intersects(childBoundable.getBounds(), searchBounds)) {
         continue;
       }
       if (childBoundable is AbstractNode) {
-        queryInternalWithVisitor(
-            searchBounds, childBoundable as AbstractNode, visitor);
+        queryInternalWithVisitor(searchBounds, childBoundable as AbstractNode, visitor);
       } else if (childBoundable is ItemBoundable) {
         visitor.visitItem((childBoundable as ItemBoundable).getItem());
       } else {
@@ -793,11 +768,9 @@ abstract class AbstractSTRtree {
     for (Iterator i = node.getChildBoundables().iterator; i.moveNext();) {
       Boundable childBoundable = i.current as Boundable;
       if (childBoundable is AbstractNode) {
-        List? valuesTreeForChild =
-            itemsTreeWithNode(childBoundable as AbstractNode);
+        List? valuesTreeForChild = itemsTreeWithNode(childBoundable as AbstractNode);
         // only add if not null (which indicates an item somewhere in this tree
-        if (valuesTreeForChild != null)
-          valuesTreeForNode.add(valuesTreeForChild);
+        if (valuesTreeForChild != null) valuesTreeForNode.add(valuesTreeForChild);
       } else if (childBoundable is ItemBoundable) {
         valuesTreeForNode.add((childBoundable as ItemBoundable).getItem());
       } else {
@@ -825,8 +798,7 @@ abstract class AbstractSTRtree {
     for (Iterator i = node.getChildBoundables().iterator; i.moveNext();) {
       Boundable childBoundable = i.current as Boundable;
       if (childBoundable is ItemBoundable) {
-        if ((childBoundable as ItemBoundable).getItem() == item)
-          childToRemove = childBoundable;
+        if ((childBoundable as ItemBoundable).getItem() == item) childToRemove = childBoundable;
       }
     }
     if (childToRemove != null) {
@@ -845,13 +817,11 @@ abstract class AbstractSTRtree {
     // next try removing item from lower nodes
     for (Iterator i = node.getChildBoundables().iterator; i.moveNext();) {
       Boundable childBoundable = i.current as Boundable;
-      if (!getIntersectsOp()
-          .intersects(childBoundable.getBounds(), searchBounds)) {
+      if (!getIntersectsOp().intersects(childBoundable.getBounds(), searchBounds)) {
         continue;
       }
       if (childBoundable is AbstractNode) {
-        found =
-            removeWithNode(searchBounds, childBoundable as AbstractNode, item);
+        found = removeWithNode(searchBounds, childBoundable as AbstractNode, item);
         // if found, record child for pruning and exit
         if (found) {
           childToPrune = childBoundable as AbstractNode;
@@ -908,8 +878,7 @@ class STRtreeNode extends AbstractNode {
     for (Iterator i = getChildBoundables().iterator; i.moveNext();) {
       Boundable childBoundable = i.current as Boundable;
       if (bounds == null) {
-        bounds =
-            new Envelope.fromEnvelope(childBoundable.getBounds() as Envelope);
+        bounds = new Envelope.fromEnvelope(childBoundable.getBounds() as Envelope);
       } else {
         bounds.expandToIncludeEnvelope(childBoundable.getBounds() as Envelope);
       }
@@ -948,8 +917,7 @@ class STRtree extends AbstractSTRtree implements SpatialIndex {
 
   static Comparator<dynamic> xComparator = (o1, o2) {
     return AbstractSTRtree.compareDoubles(
-        centreX((o1 as Boundable).getBounds() as Envelope),
-        centreX((o2 as Boundable).getBounds() as Envelope));
+        centreX((o1 as Boundable).getBounds() as Envelope), centreX((o2 as Boundable).getBounds() as Envelope));
   };
 
 //  new Comparator() {
@@ -961,8 +929,7 @@ class STRtree extends AbstractSTRtree implements SpatialIndex {
 //  };
   static Comparator<dynamic> yComparator = (o1, o2) {
     return AbstractSTRtree.compareDoubles(
-        centreY((o1 as Boundable).getBounds() as Envelope),
-        centreY((o2 as Boundable).getBounds() as Envelope));
+        centreY((o1 as Boundable).getBounds() as Envelope), centreY((o2 as Boundable).getBounds() as Envelope));
   };
 
 //  new Comparator() {
@@ -996,29 +963,23 @@ class STRtree extends AbstractSTRtree implements SpatialIndex {
    */
   List createParentBoundables(List childBoundables, int newLevel) {
     Assert.isTrue(!childBoundables.isEmpty);
-    int minLeafCount =
-        ((childBoundables.length / getNodeCapacity().toDouble())).ceil();
+    int minLeafCount = ((childBoundables.length / getNodeCapacity().toDouble())).ceil();
     List sortedChildBoundables = List.from(childBoundables);
     sortedChildBoundables.sort(xComparator);
-    List<List> verticalSlicesList =
-        verticalSlices(sortedChildBoundables, (math.sqrt(minLeafCount)).ceil());
-    return createParentBoundablesFromVerticalSlices(
-        verticalSlicesList, newLevel);
+    List<List> verticalSlicesList = verticalSlices(sortedChildBoundables, (math.sqrt(minLeafCount)).ceil());
+    return createParentBoundablesFromVerticalSlices(verticalSlicesList, newLevel);
   }
 
-  List createParentBoundablesFromVerticalSlices(
-      List<List> verticalSlices, int newLevel) {
+  List createParentBoundablesFromVerticalSlices(List<List> verticalSlices, int newLevel) {
     Assert.isTrue(verticalSlices.length > 0);
     List parentBoundables = [];
     for (int i = 0; i < verticalSlices.length; i++) {
-      parentBoundables.addAll(
-          createParentBoundablesFromVerticalSlice(verticalSlices[i], newLevel));
+      parentBoundables.addAll(createParentBoundablesFromVerticalSlice(verticalSlices[i], newLevel));
     }
     return parentBoundables;
   }
 
-  List createParentBoundablesFromVerticalSlice(
-      List childBoundables, int newLevel) {
+  List createParentBoundablesFromVerticalSlice(List childBoundables, int newLevel) {
     return super.createParentBoundables(childBoundables, newLevel);
   }
 
@@ -1148,8 +1109,7 @@ class STRtree extends AbstractSTRtree implements SpatialIndex {
     if (isEmpty()) return null;
 
     // if tree has only one item this will return null
-    BoundablePair bp =
-        new BoundablePair(this.getRoot(), this.getRoot(), itemDist);
+    BoundablePair bp = new BoundablePair(this.getRoot(), this.getRoot(), itemDist);
     return nearestNeighbourWithPair(bp);
   }
 
@@ -1170,8 +1130,7 @@ class STRtree extends AbstractSTRtree implements SpatialIndex {
    * @return the nearest item in this tree
    *    or <code>null</code> if the tree is empty
    */
-  Object nearestNeighbourWithEnvelope(
-      Envelope env, Object item, ItemDistance itemDist) {
+  Object nearestNeighbourWithEnvelope(Envelope env, Object item, ItemDistance itemDist) {
     Boundable bnd = new ItemBoundable(env, item);
     BoundablePair bp = new BoundablePair(this.getRoot(), bnd, itemDist);
     return nearestNeighbourWithPair(bp)![0];
@@ -1194,8 +1153,7 @@ class STRtree extends AbstractSTRtree implements SpatialIndex {
    */
   List<Object>? nearestNeighbourWithTree(STRtree tree, ItemDistance itemDist) {
     if (isEmpty() || tree.isEmpty()) return null;
-    BoundablePair bp =
-        new BoundablePair(this.getRoot(), tree.getRoot(), itemDist);
+    BoundablePair bp = new BoundablePair(this.getRoot(), tree.getRoot(), itemDist);
     return nearestNeighbourWithPair(bp);
   }
 
@@ -1243,10 +1201,7 @@ class STRtree extends AbstractSTRtree implements SpatialIndex {
     }
     if (minPair == null) return null;
     // done - return items with min distance
-    return [
-      (minPair.getBoundable(0) as ItemBoundable).getItem(),
-      (minPair.getBoundable(1) as ItemBoundable).getItem()
-    ];
+    return [(minPair.getBoundable(0) as ItemBoundable).getItem(), (minPair.getBoundable(1) as ItemBoundable).getItem()];
   }
 
   /**
@@ -1261,10 +1216,8 @@ class STRtree extends AbstractSTRtree implements SpatialIndex {
    * @param maxDistance the distance limit for the search
    * @return true if there are items within the distance
    */
-  bool isWithinDistanceWithTree(
-      STRtree tree, ItemDistance itemDist, double maxDistance) {
-    BoundablePair bp =
-        new BoundablePair(this.getRoot(), tree.getRoot(), itemDist);
+  bool isWithinDistanceWithTree(STRtree tree, ItemDistance itemDist, double maxDistance) {
+    BoundablePair bp = new BoundablePair(this.getRoot(), tree.getRoot(), itemDist);
     return isWithinDistance(bp, maxDistance);
   }
 
@@ -1360,8 +1313,7 @@ class STRtree extends AbstractSTRtree implements SpatialIndex {
    * @param k the K nearest items in kNearestNeighbour
    * @return the K nearest items in this tree
    */
-  List<Object> nearestNeighbourWithEnv(
-      Envelope env, Object item, ItemDistance itemDist, int k) {
+  List<Object> nearestNeighbourWithEnv(Envelope env, Object item, ItemDistance itemDist, int k) {
     Boundable bnd = new ItemBoundable(env, item);
     BoundablePair bp = new BoundablePair(this.getRoot(), bnd, itemDist);
     return nearestNeighbourK(bp, k);
@@ -1371,8 +1323,7 @@ class STRtree extends AbstractSTRtree implements SpatialIndex {
     return nearestNeighbourKWithMaxD(initBndPair, double.infinity, k);
   }
 
-  List<Object> nearestNeighbourKWithMaxD(
-      BoundablePair initBndPair, double maxDistance, int k) {
+  List<Object> nearestNeighbourKWithMaxD(BoundablePair initBndPair, double maxDistance, int k) {
     double distanceLowerBound = maxDistance;
 
     // initialize internal structures

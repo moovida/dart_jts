@@ -1,4 +1,5 @@
-part of dart_jts;
+import '../geom/envelope.dart';
+import '../geomgraph/index.dart';
 
 /**
  * The basic operations supported by classes

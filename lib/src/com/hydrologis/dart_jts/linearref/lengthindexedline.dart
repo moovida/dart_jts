@@ -1,4 +1,10 @@
-part of dart_jts;
+import '../geom/coordinate.dart';
+import '../geom/geometry.dart';
+import 'extractlinebylocation.dart';
+import 'lengthlocationmap.dart';
+import 'lengthindexofpoint.dart';
+import 'linearlocation.dart';
+import 'locationindexofline.dart';
 
 /*
  * Copyright (c) 2016 Vivid Solutions.
@@ -68,9 +74,7 @@ class LengthIndexedLine {
   Coordinate extractPointWithOffset(double index, double offsetDistance) {
     LinearLocation loc = LengthLocationMap.getLocationStatic(linearGeom, index);
     LinearLocation locLow = loc.toLowest(linearGeom);
-    return locLow
-        .getSegment(linearGeom)
-        .pointAlongOffset(locLow.getSegmentFraction(), offsetDistance);
+    return locLow.getSegment(linearGeom).pointAlongOffset(locLow.getSegmentFraction(), offsetDistance);
   }
 
   /**
@@ -88,8 +92,7 @@ class LengthIndexedLine {
     double endIndex2 = clampIndex(endIndex);
     // if extracted line is zero-length, resolve start lower as well to ensure they are equal
     bool resolveStartLower = startIndex2 == endIndex2;
-    LinearLocation startLoc =
-        locationOfWithResolver(startIndex2, resolveStartLower);
+    LinearLocation startLoc = locationOfWithResolver(startIndex2, resolveStartLower);
 //    LinearLocation endLoc = locationOf(endIndex2, true);
 //    LinearLocation startLoc = locationOf(startIndex2);
     LinearLocation endLoc = locationOf(endIndex2);
@@ -101,8 +104,7 @@ class LengthIndexedLine {
   }
 
   LinearLocation locationOfWithResolver(double index, bool resolveLower) {
-    return LengthLocationMap.getLocationStaticWithResolver(
-        linearGeom, index, resolveLower);
+    return LengthLocationMap.getLocationStaticWithResolver(linearGeom, index, resolveLower);
   }
 
   /**
@@ -162,8 +164,7 @@ class LengthIndexedLine {
    * @return a pair of indices for the start and end of the subline.
    */
   List<double> indicesOf(Geometry subLine) {
-    List<LinearLocation> locIndex =
-        LocationIndexOfLine.indicesOfStatic(linearGeom, subLine);
+    List<LinearLocation> locIndex = LocationIndexOfLine.indicesOfStatic(linearGeom, subLine);
     List<double> index = [
       LengthLocationMap.getLengthStatic(linearGeom, locIndex[0]),
       LengthLocationMap.getLengthStatic(linearGeom, locIndex[1])

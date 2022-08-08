@@ -1,4 +1,11 @@
-part of dart_jts;
+import '../geom/coordinate.dart';
+import '../geom/geom.dart';
+import '../geom/geometry.dart';
+import '../geom/linestring.dart';
+import '../util/util.dart';
+import 'lineargeometrybuilder.dart';
+import 'lineariterator.dart';
+import 'linearlocation.dart';
 
 /*
  * Copyright (c) 2016 Vivid Solutions.
@@ -28,8 +35,7 @@ class ExtractLineByLocation {
    * @param end the end location
    * @return the extracted subline
    */
-  static Geometry extractStatic(
-      Geometry line, LinearLocation start, LinearLocation end) {
+  static Geometry extractStatic(Geometry line, LinearLocation start, LinearLocation end) {
     ExtractLineByLocation ls = new ExtractLineByLocation(line);
     return ls.extract(start, end);
   }
@@ -75,8 +81,7 @@ class ExtractLineByLocation {
     if (start.getSegmentFraction() > 0.0) startSegmentIndex += 1;
     int lastSegmentIndex = end.getSegmentIndex();
     if (end.getSegmentFraction() == 1.0) lastSegmentIndex += 1;
-    if (lastSegmentIndex >= coordinates.length)
-      lastSegmentIndex = coordinates.length - 1;
+    if (lastSegmentIndex >= coordinates.length) lastSegmentIndex = coordinates.length - 1;
     // not needed - LinearLocation values should always be correct
     //Assert.isTrue(end.getSegmentFraction() <= 1.0, "invalid segment fraction value");
 
@@ -87,8 +92,7 @@ class ExtractLineByLocation {
     if (!end.isVertex()) newCoordinates.add(end.getCoordinate(line));
 
     // ensure there is at least one coordinate in the result
-    if (newCoordinates._backingList.length <= 0)
-      newCoordinates.add(start.getCoordinate(line));
+    if (newCoordinates.toCoordinateArray().length <= 0) newCoordinates.add(start.getCoordinate(line));
 
     List<Coordinate> newCoordinateArray = newCoordinates.toCoordinateArray();
     /**
@@ -97,10 +101,7 @@ class ExtractLineByLocation {
      * There will always be at least one coordinate in the coordList.
      */
     if (newCoordinateArray.length <= 1) {
-      newCoordinateArray = <Coordinate>[
-        newCoordinateArray[0],
-        newCoordinateArray[0]
-      ];
+      newCoordinateArray = <Coordinate>[newCoordinateArray[0], newCoordinateArray[0]];
     }
     return line.getFactory().createLineString(newCoordinateArray);
   }
@@ -113,18 +114,13 @@ class ExtractLineByLocation {
    * @return a linear geometry
    */
   Geometry computeLinear(LinearLocation start, LinearLocation end) {
-    LinearGeometryBuilder builder =
-        new LinearGeometryBuilder(line.getFactory());
+    LinearGeometryBuilder builder = new LinearGeometryBuilder(line.getFactory());
     builder.setFixInvalidLines(true);
 
     if (!start.isVertex()) builder.add(start.getCoordinate(line));
 
-    for (LinearIterator it = new LinearIterator.withStart(line, start);
-        it.hasNext();
-        it.next()) {
-      if (end.compareLocationValues(
-              it.getComponentIndex(), it.getVertexIndex(), 0.0) <
-          0) break;
+    for (LinearIterator it = new LinearIterator.withStart(line, start); it.hasNext(); it.next()) {
+      if (end.compareLocationValues(it.getComponentIndex(), it.getVertexIndex(), 0.0) < 0) break;
 
       Coordinate pt = it.getSegmentStart();
       builder.add(pt);

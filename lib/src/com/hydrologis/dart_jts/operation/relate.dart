@@ -1,4 +1,9 @@
-part of dart_jts;
+import '../algorithm/algorithm.dart';
+import '../geom/coordinate.dart';
+import '../geom/geometry.dart';
+import '../geom/util.dart';
+import '../geomgraph/geomgraph.dart';
+import 'operation.dart';
 
 /**
  * Implements the SFS <tt>relate()</tt> generalized spatial predicate on two {@link Geometry}s.
@@ -45,8 +50,7 @@ class RelateOp extends GeometryGraphOperation {
    * @param boundaryNodeRule the Boundary Node Rule to use
    * @return the IntersectionMatrix for the spatial relationship between the input geometries
    */
-  static IntersectionMatrix relateStaticWithRule(
-      Geometry a, Geometry b, BoundaryNodeRule boundaryNodeRule) {
+  static IntersectionMatrix relateStaticWithRule(Geometry a, Geometry b, BoundaryNodeRule boundaryNodeRule) {
     RelateOp relOp = new RelateOp.withRule(a, b, boundaryNodeRule);
     IntersectionMatrix im = relOp.getIntersectionMatrix();
     return im;
@@ -141,8 +145,7 @@ class EdgeEndBuilder {
    * <br>
    * eiCurr will always be an EdgeIntersection, but eiPrev may be null.
    */
-  void createEdgeEndForPrev(
-      Edge edge, List l, EdgeIntersection eiCurr, EdgeIntersection? eiPrev) {
+  void createEdgeEndForPrev(Edge edge, List l, EdgeIntersection eiCurr, EdgeIntersection? eiPrev) {
     int iPrev = eiCurr.segmentIndex;
     if (eiCurr.dist == 0.0) {
       // if at the start of the edge there is no previous edge
@@ -169,8 +172,7 @@ class EdgeEndBuilder {
    * <br>
    * eiCurr will always be an EdgeIntersection, but eiNext may be null.
    */
-  void createEdgeEndForNext(
-      Edge edge, List l, EdgeIntersection eiCurr, EdgeIntersection? eiNext) {
+  void createEdgeEndForNext(Edge edge, List l, EdgeIntersection eiCurr, EdgeIntersection? eiNext) {
     int iNext = eiCurr.segmentIndex + 1;
     // if there is no next edge there is nothing to do
     if (iNext >= edge.getNumPoints() && eiNext == null) return;
@@ -178,11 +180,9 @@ class EdgeEndBuilder {
     Coordinate pNext = edge.getCoordinateWithIndex(iNext);
 
     // if the next intersection is in the same segment as the current, use it as the endpoint
-    if (eiNext != null && eiNext.segmentIndex == eiCurr.segmentIndex)
-      pNext = eiNext.coord;
+    if (eiNext != null && eiNext.segmentIndex == eiCurr.segmentIndex) pNext = eiNext.coord;
 
-    EdgeEnd e = new EdgeEnd.withCoordsLabel(
-        edge, eiCurr.coord, pNext, new Label.fromLabel(edge.getLabel()!));
+    EdgeEnd e = new EdgeEnd.withCoordsLabel(edge, eiCurr.coord, pNext, new Label.fromLabel(edge.getLabel()!));
 //Debug.println(e);
     l.add(e);
   }
@@ -199,8 +199,8 @@ class EdgeEndBundle extends EdgeEnd {
   List edgeEnds = [];
 
   EdgeEndBundle.withRule(BoundaryNodeRule? boundaryNodeRule, EdgeEnd e)
-      : super.withCoordsLabel(e.getEdge(), e.getCoordinate()!,
-            e.getDirectedCoordinate()!, new Label.fromLabel(e.getLabel()!)) {
+      : super.withCoordsLabel(
+            e.getEdge(), e.getCoordinate()!, e.getDirectedCoordinate()!, new Label.fromLabel(e.getLabel()!)) {
     insert(e);
     /*
     if (boundaryNodeRule != null)
@@ -324,8 +324,7 @@ class EdgeEndBundle extends EdgeEnd {
         if (loc == Location.INTERIOR) {
           label!.setLocation(geomIndex, side, Location.INTERIOR);
           return;
-        } else if (loc == Location.EXTERIOR)
-          label!.setLocation(geomIndex, side, Location.EXTERIOR);
+        } else if (loc == Location.EXTERIOR) label!.setLocation(geomIndex, side, Location.EXTERIOR);
       }
     }
   }
@@ -485,15 +484,13 @@ class RelateNodeGraph {
     for (Iterator edgeIt = geomGraph.getEdgeIterator(); edgeIt.moveNext();) {
       Edge e = edgeIt.current as Edge;
       int eLoc = e.getLabel()!.getLocation(argIndex);
-      for (Iterator eiIt = e.getEdgeIntersectionList().iterator();
-          eiIt.moveNext();) {
+      for (Iterator eiIt = e.getEdgeIntersectionList().iterator(); eiIt.moveNext();) {
         EdgeIntersection ei = eiIt.current as EdgeIntersection;
         RelateNode n = nodes.addNodeFromCoordinate(ei.coord) as RelateNode;
         if (eLoc == Location.BOUNDARY)
           n.setLabelBoundary(argIndex);
         else {
-          if (n.getLabel()!.isNull(argIndex))
-            n.setLabelWithIndex(argIndex, Location.INTERIOR);
+          if (n.getLabel()!.isNull(argIndex)) n.setLabelWithIndex(argIndex, Location.INTERIOR);
         }
 //Debug.println(n);
       }
@@ -513,8 +510,7 @@ class RelateNodeGraph {
     for (Iterator nodeIt = geomGraph.getNodeIterator(); nodeIt.moveNext();) {
       Node graphNode = nodeIt.current as Node;
       Node newNode = nodes.addNodeFromCoordinate(graphNode.getCoordinate());
-      newNode.setLabelWithIndex(
-          argIndex, graphNode.getLabel()!.getLocation(argIndex));
+      newNode.setLabelWithIndex(argIndex, graphNode.getLabel()!.getLocation(argIndex));
 //node.print(System.out);
     }
   }

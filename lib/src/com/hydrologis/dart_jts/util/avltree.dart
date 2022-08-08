@@ -1,4 +1,4 @@
-part of dart_jts;
+import 'dart:collection';
 
 class _AvlTreeNode<T> {
   _AvlTreeNode<T>? parent;
@@ -44,19 +44,14 @@ class _AvlTreeNode<T> {
   bool containsIdentical(T? value) => _values.any((v) => identical(v, value));
 
   addEquivalent(T? value) {
-    var l = new List.generate(
-        _values.length + 1, (i) => i < _values.length ? values[i] : value,
-        growable: false);
+    var l = new List.generate(_values.length + 1, (i) => i < _values.length ? values[i] : value, growable: false);
     _values = l;
   }
 
   bool removeEquivalent(T value) {
-    if (!hasMultipleValues)
-      throw new StateError("can't remove from a single value");
+    if (!hasMultipleValues) throw new StateError("can't remove from a single value");
     var j = _values.indexOf(value);
-    _values = new List.generate(
-        _values.length - 1, (i) => (i < j) ? _values[i] : _values[i + 1],
-        growable: false);
+    _values = new List.generate(_values.length - 1, (i) => (i < j) ? _values[i] : _values[i + 1], growable: false);
     return true;
   }
 
@@ -239,12 +234,10 @@ class AvlTree<T> {
 
           case 0:
             if (!_withEquivalenceClasses) {
-              throw new StateError(
-                  "can't add value, value already present: $value");
+              throw new StateError("can't add value, value already present: $value");
             }
             if (node.containsIdentical(value)) {
-              throw new StateError(
-                  "can't add value, value already present: $value");
+              throw new StateError("can't add value, value already present: $value");
             }
             node.addEquivalent(value);
             _size++;
@@ -423,8 +416,7 @@ class AvlTree<T> {
     var nodeToRefactor = null;
     if (replacementNode != null) nodeToRefactor = replacementNode.parent;
     if (nodeToRefactor == null) nodeToRefactor = nodeToRemove.parent;
-    if (nodeToRefactor != null && nodeToRefactor == nodeToRemove)
-      nodeToRefactor = replacementNode;
+    if (nodeToRefactor != null && nodeToRefactor == nodeToRemove) nodeToRefactor = replacementNode;
 
     // Replace the node
     _replaceNodeWithNode(nodeToRemove, replacementNode);
@@ -463,16 +455,12 @@ class AvlTree<T> {
       if (replacementParent != null && replacementParent != node) {
         var replacementParentLeft = replacementParent.left;
         var replacementParentRight = replacementParent.right;
-        if (replacementParentLeft != null &&
-            replacementParentLeft == replacement) {
+        if (replacementParentLeft != null && replacementParentLeft == replacement) {
           replacementParent.left = replacementRight;
-          if (replacementRight != null)
-            replacementRight.parent = replacementParent;
-        } else if (replacementParentRight != null &&
-            replacementParentRight == replacement) {
+          if (replacementRight != null) replacementRight.parent = replacementParent;
+        } else if (replacementParentRight != null && replacementParentRight == replacement) {
           replacementParent.right = replacementLeft;
-          if (replacementLeft != null)
-            replacementLeft.parent = replacementParent;
+          if (replacementLeft != null) replacementLeft.parent = replacementParent;
         }
       }
     }
@@ -687,16 +675,15 @@ class AvlTree<T> {
    *
    * Returns an empty [Iterable] if the tree is empty.
    */
-  Iterable<dynamic> get inorder => new _InorderIterable.fromRoot(this._root!,
-      withEquivalenceClasses: _withEquivalenceClasses);
+  Iterable<dynamic> get inorder =>
+      new _InorderIterable.fromRoot(this._root!, withEquivalenceClasses: _withEquivalenceClasses);
 
   /**
    * Returns an iterable of all values traversing the tree
    * in reverse order. See [inorder] for details.
    */
   Iterable<dynamic> get inReverseOrder =>
-      new _InorderIterable.fromRoot(this._root!,
-          withEquivalenceClasses: _withEquivalenceClasses, reverse: true);
+      new _InorderIterable.fromRoot(this._root!, withEquivalenceClasses: _withEquivalenceClasses, reverse: true);
 
   /**
    * Returns an iterable
@@ -724,9 +711,7 @@ class AvlTree<T> {
     if (n == null) {
       return inorder;
     } else {
-      return new _InorderIterable.fromNode(n,
-              withEquivalenceClasses: _withEquivalenceClasses)
-          .skip(1);
+      return new _InorderIterable.fromNode(n, withEquivalenceClasses: _withEquivalenceClasses).skip(1);
     }
   }
 
@@ -740,9 +725,7 @@ class AvlTree<T> {
     if (n == null) {
       return inReverseOrder;
     } else {
-      return new _InorderIterable.fromNode(n,
-              withEquivalenceClasses: _withEquivalenceClasses, reverse: true)
-          .skip(1);
+      return new _InorderIterable.fromNode(n, withEquivalenceClasses: _withEquivalenceClasses, reverse: true).skip(1);
     }
   }
 
@@ -918,8 +901,7 @@ class _InorderIterator implements Iterator {
   final bool withEquivalenceClasses;
   final bool reverse;
 
-  _InorderIterator.fromRoot(root,
-      {this.withEquivalenceClasses: false, this.reverse: false}) {
+  _InorderIterator.fromRoot(root, {this.withEquivalenceClasses: false, this.reverse: false}) {
     cursor = root;
     if (cursor == null) return;
     while (true) {
@@ -929,8 +911,7 @@ class _InorderIterator implements Iterator {
     }
   }
 
-  _InorderIterator.fromNode(node,
-      {this.withEquivalenceClasses: false, this.reverse: false}) {
+  _InorderIterator.fromNode(node, {this.withEquivalenceClasses: false, this.reverse: false}) {
     cursor = node;
   }
 
@@ -977,15 +958,13 @@ class _InorderIterator implements Iterator {
 class _InorderIterable extends Object with IterableMixin implements Iterable {
   Iterator _iterator;
 
-  _InorderIterable.fromRoot(_AvlTreeNode root,
-      {withEquivalenceClasses: false, reverse: false})
-      : _iterator = new _InorderIterator.fromRoot(root,
-            withEquivalenceClasses: withEquivalenceClasses, reverse: reverse);
+  _InorderIterable.fromRoot(_AvlTreeNode root, {withEquivalenceClasses: false, reverse: false})
+      : _iterator =
+            new _InorderIterator.fromRoot(root, withEquivalenceClasses: withEquivalenceClasses, reverse: reverse);
 
-  _InorderIterable.fromNode(_AvlTreeNode node,
-      {withEquivalenceClasses: false, reverse: false})
-      : _iterator = new _InorderIterator.fromNode(node,
-            withEquivalenceClasses: withEquivalenceClasses, reverse: reverse);
+  _InorderIterable.fromNode(_AvlTreeNode node, {withEquivalenceClasses: false, reverse: false})
+      : _iterator =
+            new _InorderIterator.fromNode(node, withEquivalenceClasses: withEquivalenceClasses, reverse: reverse);
 
   Iterator get iterator => _iterator;
 }

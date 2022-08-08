@@ -1,4 +1,11 @@
-part of dart_jts;
+import '../algorithm/algorithm.dart';
+import '../util/geom_impl.dart';
+import 'coordinate.dart';
+import 'envelope.dart';
+import 'geom.dart';
+import 'geometry.dart';
+import 'linestring.dart';
+import 'util.dart';
 
 /**
  * Represents a polygon with linear edges, which may include holes.
@@ -54,8 +61,7 @@ class Polygon extends Geometry implements Polygonal {
    * @deprecated Use GeometryFactory instead
    */
   Polygon(LinearRing shell, PrecisionModel precisionModel, int SRID)
-      : this.withFactory(shell, <LinearRing>[],
-            new GeometryFactory.withPrecisionModelSrid(precisionModel, SRID));
+      : this.withFactory(shell, <LinearRing>[], new GeometryFactory.withPrecisionModelSrid(precisionModel, SRID));
 
   /**
    *  Constructs a <code>Polygon</code> with the given exterior boundary and
@@ -73,10 +79,8 @@ class Polygon extends Geometry implements Polygonal {
    *      <code>Polygon</code>
    * @deprecated Use GeometryFactory instead
    */
-  Polygon.withPrecisionModelSrid(LinearRing shell, List<LinearRing> holes,
-      PrecisionModel precisionModel, int SRID)
-      : this.withFactory(shell, holes,
-            new GeometryFactory.withPrecisionModelSrid(precisionModel, SRID));
+  Polygon.withPrecisionModelSrid(LinearRing shell, List<LinearRing> holes, PrecisionModel precisionModel, int SRID)
+      : this.withFactory(shell, holes, new GeometryFactory.withPrecisionModelSrid(precisionModel, SRID));
 
   /**
    *  Constructs a <code>Polygon</code> with the given exterior boundary and
@@ -89,9 +93,7 @@ class Polygon extends Geometry implements Polygonal {
    *      , or <code>null</code> or empty <code>LinearRing</code>s if the empty
    *      geometry is to be created.
    */
-  Polygon.withFactory(
-      LinearRing? shell, List<LinearRing>? holes, GeometryFactory factory)
-      : super(factory) {
+  Polygon.withFactory(LinearRing? shell, List<LinearRing>? holes, GeometryFactory factory) : super(factory) {
     if (shell == null) {
       shell = getFactory().createLinearRingEmpty();
     }
@@ -248,8 +250,7 @@ class Polygon extends Geometry implements Polygonal {
       // rings[i + 1] = holes![i];
     }
     // create LineString or MultiLineString as appropriate
-    if (rings.length <= 1)
-      return getFactory().createLinearRingSeq(rings[0].getCoordinateSequence());
+    if (rings.length <= 1) return getFactory().createLinearRingSeq(rings[0].getCoordinateSequence());
     return getFactory().createMultiLineString(rings);
   }
 
@@ -347,14 +348,12 @@ class Polygon extends Geometry implements Polygonal {
     return thisShell.compareToSameClass(otherShell);
   }
 
-  int compareToSameClassWithComparator(
-      Object o, Comparator<CoordinateSequence> comp) {
+  int compareToSameClassWithComparator(Object o, Comparator<CoordinateSequence> comp) {
     Polygon poly = o as Polygon;
 
     LinearRing thisShell = shell!;
     LinearRing otherShell = poly.shell!;
-    int shellComp =
-        thisShell.compareToSameClassWithComparator(otherShell, comp);
+    int shellComp = thisShell.compareToSameClassWithComparator(otherShell, comp);
     if (shellComp != 0) return shellComp;
 
     int nHole1 = getNumInteriorRing();
@@ -388,12 +387,9 @@ class Polygon extends Geometry implements Polygonal {
     }
 
     CoordinateSequence seq = ring.getCoordinateSequence();
-    int minCoordinateIndex =
-        CoordinateSequences.minCoordinateIndexWithRange(seq, 0, seq.size() - 2);
-    CoordinateSequences.scrollWithIndexAndRingcheck(
-        seq, minCoordinateIndex, true);
-    if (Orientation.isCCWFromSeq(seq) == clockwise)
-      CoordinateSequences.reverse(seq);
+    int minCoordinateIndex = CoordinateSequences.minCoordinateIndexWithRange(seq, 0, seq.size() - 2);
+    CoordinateSequences.scrollWithIndexAndRingcheck(seq, minCoordinateIndex, true);
+    if (Orientation.isCCWFromSeq(seq) == clockwise) CoordinateSequences.reverse(seq);
   }
 
   Geometry reverse() {

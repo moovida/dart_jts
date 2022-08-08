@@ -1,4 +1,8 @@
-part of dart_jts;
+import '../geom/coordinate.dart';
+import '../geom/geometry.dart';
+import '../geom/linestring.dart';
+import 'linearlocation.dart';
+import 'locationindexofpoint.dart';
 
 /*
  * Copyright (c) 2016 Vivid Solutions.
@@ -27,8 +31,7 @@ class LocationIndexOfLine {
   * because it is intended to validate that the subline truly is a subline,
   * and also to use the internal vertex information to unambiguously locate the subline.
   */
-  static List<LinearLocation> indicesOfStatic(
-      Geometry linearGeom, Geometry subLine) {
+  static List<LinearLocation> indicesOfStatic(Geometry linearGeom, Geometry subLine) {
     LocationIndexOfLine locater = new LocationIndexOfLine(linearGeom);
     return locater.indicesOf(subLine);
   }
@@ -38,10 +41,8 @@ class LocationIndexOfLine {
   LocationIndexOfLine(this.linearGeom);
 
   List<LinearLocation> indicesOf(Geometry subLine) {
-    Coordinate startPt =
-        (subLine.getGeometryN(0) as LineString).getCoordinateN(0);
-    LineString lastLine =
-        subLine.getGeometryN(subLine.getNumGeometries() - 1) as LineString;
+    Coordinate startPt = (subLine.getGeometryN(0) as LineString).getCoordinateN(0);
+    LineString lastLine = subLine.getGeometryN(subLine.getNumGeometries() - 1) as LineString;
     Coordinate endPt = lastLine.getCoordinateN(lastLine.getNumPoints() - 1);
 
     LocationIndexOfPoint locPt = new LocationIndexOfPoint(linearGeom);

@@ -1,4 +1,9 @@
-part of dart_jts;
+import '../geom/coordinate.dart';
+import '../geom/geometry.dart';
+import '../geom/linestring.dart';
+import '../util/util.dart';
+import 'linearlocation.dart';
+import 'lineariterator.dart';
 
 /*
  * Copyright (c) 2016 Vivid Solutions.
@@ -25,8 +30,7 @@ class LocationIndexOfPoint {
     return locater.indexOf(inputPt);
   }
 
-  static LinearLocation indexOfAfterStatic(
-      Geometry linearGeom, Coordinate inputPt, LinearLocation minIndex) {
+  static LinearLocation indexOfAfterStatic(Geometry linearGeom, Coordinate inputPt, LinearLocation minIndex) {
     LocationIndexOfPoint locater = new LocationIndexOfPoint(linearGeom);
     return locater.indexOfAfter(inputPt, minIndex);
   }
@@ -72,22 +76,18 @@ class LocationIndexOfPoint {
      * Return the minDistanceLocation found.
      * This will not be null, since it was initialized to minLocation
      */
-    Assert.isTrue(closestAfter.compareTo(minIndex) >= 0,
-        "computed location is before specified minimum location");
+    Assert.isTrue(closestAfter.compareTo(minIndex) >= 0, "computed location is before specified minimum location");
     return closestAfter;
   }
 
-  LinearLocation indexOfFromStart(
-      Coordinate inputPt, LinearLocation? minIndex) {
+  LinearLocation indexOfFromStart(Coordinate inputPt, LinearLocation? minIndex) {
     double minDistance = double.maxFinite;
     int minComponentIndex = 0;
     int minSegmentIndex = 0;
     double minFrac = -1.0;
 
     LineSegment seg = new LineSegment.empty();
-    for (LinearIterator it = new LinearIterator(linearGeom);
-        it.hasNext();
-        it.next()) {
+    for (LinearIterator it = new LinearIterator(linearGeom); it.hasNext(); it.next()) {
       if (!it.isEndOfLine()) {
         seg.p0 = it.getSegmentStart();
         seg.p1 = it.getSegmentEnd()!;
@@ -99,9 +99,7 @@ class LocationIndexOfPoint {
         if (segDistance < minDistance) {
           // ensure after minLocation, if any
           if (minIndex == null ||
-              minIndex.compareLocationValues(
-                      candidateComponentIndex, candidateSegmentIndex, segFrac) <
-                  0) {
+              minIndex.compareLocationValues(candidateComponentIndex, candidateSegmentIndex, segFrac) < 0) {
             // otherwise, save this as new minimum
             minComponentIndex = candidateComponentIndex;
             minSegmentIndex = candidateSegmentIndex;
@@ -116,8 +114,8 @@ class LocationIndexOfPoint {
       return new LinearLocation.fromLocation(minIndex!);
     }
     // otherwise, return computed location
-    LinearLocation loc = new LinearLocation.fromComponentSegmentIndexFraction(
-        minComponentIndex, minSegmentIndex, minFrac);
+    LinearLocation loc =
+        new LinearLocation.fromComponentSegmentIndexFraction(minComponentIndex, minSegmentIndex, minFrac);
     return loc;
   }
 

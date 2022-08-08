@@ -1,4 +1,11 @@
-part of dart_jts;
+import '../geom/coordinate.dart';
+import '../geom/geometry.dart';
+import '../geom/linestring.dart';
+import '../geom/multilinestring.dart';
+import 'extractlinebylocation.dart';
+import 'linearlocation.dart';
+import 'locationindexofpoint.dart';
+import 'locationindexofline.dart';
 
 /*
  * Copyright (c) 2016 Vivid Solutions.
@@ -66,12 +73,9 @@ class LocationIndexedLine {
    *    (positive is to the left, negative is to the right)
    * @return the Coordinate at the given index
    */
-  Coordinate extractPointWithOffset(
-      LinearLocation index, double offsetDistance) {
+  Coordinate extractPointWithOffset(LinearLocation index, double offsetDistance) {
     LinearLocation indexLow = index.toLowest(linearGeom);
-    return indexLow
-        .getSegment(linearGeom)
-        .pointAlongOffset(indexLow.getSegmentFraction(), offsetDistance);
+    return indexLow.getSegment(linearGeom).pointAlongOffset(indexLow.getSegmentFraction(), offsetDistance);
   }
 
   /**
@@ -85,8 +89,7 @@ class LocationIndexedLine {
    * @return the linear geometry between the indices
    */
   Geometry extractLine(LinearLocation startIndex, LinearLocation endIndex) {
-    return ExtractLineByLocation.extractStatic(
-        linearGeom, startIndex, endIndex);
+    return ExtractLineByLocation.extractStatic(linearGeom, startIndex, endIndex);
   }
 
   /**

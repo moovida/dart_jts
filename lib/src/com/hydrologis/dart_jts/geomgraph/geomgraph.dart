@@ -1,4 +1,24 @@
-part of dart_jts;
+import 'dart:collection';
+import 'dart:math' as math;
+import '../algorithm/algorithm.dart';
+import '../algorithm/locate.dart';
+import '../geom/coordinate.dart';
+import '../geom/envelope.dart';
+import '../geom/geom.dart';
+import '../geom/geometry.dart';
+import '../geom/geometry_collection.dart';
+import '../geom/linestring.dart';
+import '../geom/multilinestring.dart';
+import '../geom/multipolygon.dart';
+import '../geom/multipoint.dart';
+import '../geom/point.dart';
+import '../geom/polygon.dart';
+import '../geom/util.dart';
+import '../noding/noding.dart';
+import '../util.dart';
+import '../util/geom_impl.dart';
+import '../util/util.dart';
+import 'index.dart';
 
 /**
  * @version 1.7
@@ -84,8 +104,7 @@ class NodeMap {
     List bdyNodes = [];
     for (Iterator i = iterator(); i.moveNext();) {
       Node node = i.current;
-      if (node.getLabel()!.getLocation(geomIndex) == Location.BOUNDARY)
-        bdyNodes.add(node);
+      if (node.getLabel()!.getLocation(geomIndex) == Location.BOUNDARY) bdyNodes.add(node);
     }
     return bdyNodes;
   }
@@ -156,8 +175,7 @@ class PlanarGraph {
     Node? node = nodes.find(coord);
     if (node == null) return false;
     Label? label = node.getLabel();
-    if (label != null && label.getLocation(geomIndex) == Location.BOUNDARY)
-      return true;
+    if (label != null && label.getLocation(geomIndex) == Location.BOUNDARY) return true;
     return false;
   }
 
@@ -281,9 +299,7 @@ class PlanarGraph {
       List<Coordinate> eCoord = e.getCoordinates();
       if (matchInSameDirection(p0, p1, eCoord[0], eCoord[1])) return e;
 
-      if (matchInSameDirection(
-          p0, p1, eCoord[eCoord.length - 1], eCoord[eCoord.length - 2]))
-        return e;
+      if (matchInSameDirection(p0, p1, eCoord[eCoord.length - 1], eCoord[eCoord.length - 2])) return e;
     }
     return null;
   }
@@ -293,13 +309,11 @@ class PlanarGraph {
    * E.g. the segments are parallel and in the same quadrant
    * (as opposed to parallel and opposite!).
    */
-  bool matchInSameDirection(
-      Coordinate p0, Coordinate p1, Coordinate ep0, Coordinate ep1) {
+  bool matchInSameDirection(Coordinate p0, Coordinate p1, Coordinate ep0, Coordinate ep1) {
     if (!p0.equals(ep0)) return false;
 
     if (Orientation.index(p0, p1, ep1) == Orientation.COLLINEAR &&
-        Quadrant.quadrantFromCoords(p0, p1) ==
-            Quadrant.quadrantFromCoords(ep0, ep1)) return true;
+        Quadrant.quadrantFromCoords(p0, p1) == Quadrant.quadrantFromCoords(ep0, ep1)) return true;
     return false;
   }
 
@@ -352,11 +366,8 @@ class GeometryGraph extends PlanarGraph {
   }
 */
 
-  static int determineBoundary(
-      BoundaryNodeRule boundaryNodeRule, int boundaryCount) {
-    return boundaryNodeRule.isInBoundary(boundaryCount)
-        ? Location.BOUNDARY
-        : Location.INTERIOR;
+  static int determineBoundary(BoundaryNodeRule boundaryNodeRule, int boundaryCount) {
+    return boundaryNodeRule.isInBoundary(boundaryCount) ? Location.BOUNDARY : Location.INTERIOR;
   }
 
   Geometry? parentGeom;
@@ -375,8 +386,7 @@ class GeometryGraph extends PlanarGraph {
    * whether nodes are in the boundary or not
    */
   bool useBoundaryDeterminationRule = true;
-  int argIndex =
-      0; // the index of this geometry as an argument to a spatial function (used for labelling)
+  int argIndex = 0; // the index of this geometry as an argument to a spatial function (used for labelling)
   List? boundaryNodes;
   bool _hasTooFewPoints = false;
   Coordinate? invalidPoint;
@@ -400,8 +410,7 @@ class GeometryGraph extends PlanarGraph {
   }
 
   GeometryGraph(int argIndex, Geometry parentGeom)
-      : this.args3(
-            argIndex, parentGeom, BoundaryNodeRule.OGC_SFS_BOUNDARY_RULE);
+      : this.args3(argIndex, parentGeom, BoundaryNodeRule.OGC_SFS_BOUNDARY_RULE);
 
   GeometryGraph.args3(int argIndex, this.parentGeom, this.boundaryNodeRule) {
     this.argIndex = argIndex;
@@ -525,8 +534,7 @@ class GeometryGraph extends PlanarGraph {
     // don't bother adding empty holes
     if (lr.isEmpty()) return;
 
-    List<Coordinate> coord =
-        CoordinateArrays.removeRepeatedPoints(lr.getCoordinates());
+    List<Coordinate> coord = CoordinateArrays.removeRepeatedPoints(lr.getCoordinates());
 
     if (coord.length < 4) {
       _hasTooFewPoints = true;
@@ -562,8 +570,7 @@ class GeometryGraph extends PlanarGraph {
   }
 
   void addLineString(LineString line) {
-    List<Coordinate> coord =
-        CoordinateArrays.removeRepeatedPoints(line.getCoordinates());
+    List<Coordinate> coord = CoordinateArrays.removeRepeatedPoints(line.getCoordinates());
 
     if (coord.length < 2) {
       _hasTooFewPoints = true;
@@ -615,8 +622,7 @@ class GeometryGraph extends PlanarGraph {
    * @param computeRingSelfNodes if <code>false</code>, intersection checks are optimized to not test rings for self-intersection
    * @return the computed SegmentIntersector containing information about the intersections found
    */
-  SegmentIntersector computeSelfNodes(
-      LineIntersector li, bool computeRingSelfNodes) {
+  SegmentIntersector computeSelfNodes(LineIntersector li, bool computeRingSelfNodes) {
     return computeSelfNodes3(li, computeRingSelfNodes, false);
   }
 
@@ -630,15 +636,12 @@ class GeometryGraph extends PlanarGraph {
    * @param isDoneIfProperInt short-circuit the intersection computation if a proper intersection is found
    * @return the computed SegmentIntersector containing information about the intersections found
    */
-  SegmentIntersector computeSelfNodes3(
-      LineIntersector li, bool computeRingSelfNodes, bool isDoneIfProperInt) {
+  SegmentIntersector computeSelfNodes3(LineIntersector li, bool computeRingSelfNodes, bool isDoneIfProperInt) {
     SegmentIntersector si = new SegmentIntersector(li, true, false);
     si.setIsDoneIfProperInt(isDoneIfProperInt);
     EdgeSetIntersector esi = createEdgeSetIntersector();
     // optimize intersection search for valid Polygons and LinearRings
-    bool isRings = parentGeom is LinearRing ||
-        parentGeom is Polygon ||
-        parentGeom is MultiPolygon;
+    bool isRings = parentGeom is LinearRing || parentGeom is Polygon || parentGeom is MultiPolygon;
     bool computeAllSegments = computeRingSelfNodes || !isRings;
     esi.computeIntersections(edges, si, computeAllSegments);
 
@@ -647,8 +650,7 @@ class GeometryGraph extends PlanarGraph {
     return si;
   }
 
-  SegmentIntersector computeEdgeIntersections(
-      GeometryGraph g, LineIntersector li, bool includeProper) {
+  SegmentIntersector computeEdgeIntersections(GeometryGraph g, LineIntersector li, bool includeProper) {
     SegmentIntersector si = new SegmentIntersector(li, includeProper, true);
     si.setBoundaryNodes(this.getBoundaryNodes(), g.getBoundaryNodes());
 
@@ -826,8 +828,7 @@ class DirectedEdgeStar extends EdgeEndStar {
       Label eLabel = e.getLabel()!;
       for (int i = 0; i < 2; i++) {
         int eLoc = eLabel.getLocation(i);
-        if (eLoc == Location.INTERIOR || eLoc == Location.BOUNDARY)
-          label!.setLocationWithIndex(i, Location.INTERIOR);
+        if (eLoc == Location.INTERIOR || eLoc == Location.BOUNDARY) label!.setLocationWithIndex(i, Location.INTERIOR);
       }
     }
 //Debug.print(this);
@@ -863,8 +864,7 @@ class DirectedEdgeStar extends EdgeEndStar {
     resultAreaEdgeList = [];
     for (Iterator it = iterator(); it.moveNext();) {
       DirectedEdge de = it.current as DirectedEdge;
-      if (de.isInResult() || de.getSym().isInResult())
-        resultAreaEdgeList!.add(de);
+      if (de.isInResult() || de.getSym().isInResult()) resultAreaEdgeList!.add(de);
     }
     return resultAreaEdgeList!;
   }
@@ -925,9 +925,7 @@ class DirectedEdgeStar extends EdgeEndStar {
 //Debug.print(this);
     if (state == LINKING_TO_OUTGOING) {
 //Debug.print(firstOut == null, this);
-      if (firstOut == null)
-        throw new TopologyException(
-            "no outgoing dirEdge found ${getCoordinate()}");
+      if (firstOut == null) throw new TopologyException("no outgoing dirEdge found ${getCoordinate()}");
       //Assert.isTrue(firstOut != null, "no outgoing dirEdge found (at " + getCoordinate() );
       assert(firstOut.isInResult(), "unable to link last incoming dirEdge");
       incoming!.setNext(firstOut);
@@ -963,8 +961,7 @@ class DirectedEdgeStar extends EdgeEndStar {
 //print(System.out);
     if (state == LINKING_TO_OUTGOING) {
       assert(firstOut != null, "found null for first outgoing dirEdge");
-      assert(firstOut!.getEdgeRing() == er,
-          "unable to link last incoming dirEdge");
+      assert(firstOut!.getEdgeRing() == er, "unable to link last incoming dirEdge");
       incoming!.setNextMin(firstOut!);
     }
   }
@@ -1053,8 +1050,7 @@ class DirectedEdgeStar extends EdgeEndStar {
     int lastDepth = computeDepths3(0, edgeIndex, nextDepth);
 //Debug.print(lastDepth != targetLastDepth, this);
 //Debug.print(lastDepth != targetLastDepth, "mismatch: " + lastDepth + " / " + targetLastDepth);
-    if (lastDepth != targetLastDepth)
-      throw new TopologyException("depth mismatch at ${de.getCoordinate()}");
+    if (lastDepth != targetLastDepth) throw new TopologyException("depth mismatch at ${de.getCoordinate()}");
     //Assert.isTrue(lastDepth == targetLastDepth, "depth mismatch at " + de.getCoordinate());
   }
 
@@ -1101,8 +1097,7 @@ class DirectedEdgeStar extends EdgeEndStar {
 class EdgeIntersection implements Comparable {
   late Coordinate coord; // the point of intersection
   int segmentIndex; // the index of the containing line segment in the parent edge
-  double
-      dist; // the edge distance of this point along the containing line segment
+  double dist; // the edge distance of this point along the containing line segment
 
   EdgeIntersection(Coordinate coord, this.segmentIndex, this.dist) {
     this.coord = new Coordinate.fromCoordinate(coord);
@@ -1159,17 +1154,15 @@ class EdgeIntersection implements Comparable {
  * @version 1.7
  */
 abstract class EdgeRing {
-  DirectedEdge?
-      startDe; // the directed edge which starts the list of edges for this EdgeRing
+  DirectedEdge? startDe; // the directed edge which starts the list of edges for this EdgeRing
   int maxNodeDegree = -1;
   List edges = []; // the DirectedEdges making up this EdgeRing
   List pts = [];
-  Label label = new Label(Location
-      .NONE); // label stores the locations of each geometry on the face surrounded by this ring
+  Label label =
+      new Label(Location.NONE); // label stores the locations of each geometry on the face surrounded by this ring
   LinearRing? ring; // the ring created for this EdgeRing
   bool _isHole = false;
-  EdgeRing?
-      shell; // if non-null, the ring is a hole and this EdgeRing is its containing shell
+  EdgeRing? shell; // if non-null, the ring is a hole and this EdgeRing is its containing shell
   List holes = []; // a list of EdgeRings which are holes in this EdgeRing
 
   GeometryFactory geometryFactory;
@@ -1267,8 +1260,7 @@ abstract class EdgeRing {
 //      Assert.isTrue(de != null, "found null Directed Edge");
       if (de == null) throw new TopologyException("Found null DirectedEdge");
       if (de.getEdgeRing() == this)
-        throw new TopologyException(
-            "Directed Edge visited twice during ring-building at ${de.getCoordinate()}");
+        throw new TopologyException("Directed Edge visited twice during ring-building at ${de.getCoordinate()}");
 
       edges.add(de);
 //Debug.println(de);
@@ -1293,8 +1285,7 @@ abstract class EdgeRing {
     DirectedEdge de = startDe!;
     do {
       Node node = de.getNode()!;
-      int degree =
-          (node.getEdges() as DirectedEdgeStar).getOutgoingDegreeWithRing(this);
+      int degree = (node.getEdges() as DirectedEdgeStar).getOutgoingDegreeWithRing(this);
       if (degree > maxNodeDegree) maxNodeDegree = degree;
       de = getNext(de);
     } while (de != startDe);
@@ -1379,8 +1370,7 @@ class DirectedEdge extends EdgeEnd {
   static int depthFactor(int currLocation, int nextLocation) {
     if (currLocation == Location.EXTERIOR && nextLocation == Location.INTERIOR)
       return 1;
-    else if (currLocation == Location.INTERIOR &&
-        nextLocation == Location.EXTERIOR) return -1;
+    else if (currLocation == Location.INTERIOR && nextLocation == Location.EXTERIOR) return -1;
     return 0;
   }
 
@@ -1389,10 +1379,8 @@ class DirectedEdge extends EdgeEnd {
   bool _isVisited = false;
 
   late DirectedEdge sym; // the symmetric edge
-  late DirectedEdge
-      next; // the next edge in the edge ring for the polygon containing this edge
-  late DirectedEdge
-      nextMin; // the next edge in the MinimalEdgeRing that contains this edge
+  late DirectedEdge next; // the next edge in the edge ring for the polygon containing this edge
+  late DirectedEdge nextMin; // the next edge in the MinimalEdgeRing that contains this edge
   EdgeRing? edgeRing; // the EdgeRing that this edge is part of
   EdgeRing? minEdgeRing; // the MinimalEdgeRing that this edge is part of
   /**
@@ -1458,8 +1446,7 @@ class DirectedEdge extends EdgeEnd {
 //        Debug.print(this);
 //      }
       if (depth[position] != depthVal) {
-        throw new TopologyException(
-            "assigned depths do not match ${getCoordinate()}");
+        throw new TopologyException("assigned depths do not match ${getCoordinate()}");
       }
       //Assert.isTrue(depth[position] == depthVal, "assigned depths do not match at " + getCoordinate());
     }
@@ -1524,10 +1511,8 @@ class DirectedEdge extends EdgeEnd {
    */
   bool isLineEdge() {
     bool isLine = label!.isLine(0) || label!.isLine(1);
-    bool isExteriorIfArea0 = !label!.isAreaWithIndex(0) ||
-        label!.allPositionsEqual(0, Location.EXTERIOR);
-    bool isExteriorIfArea1 = !label!.isAreaWithIndex(1) ||
-        label!.allPositionsEqual(1, Location.EXTERIOR);
+    bool isExteriorIfArea0 = !label!.isAreaWithIndex(0) || label!.allPositionsEqual(0, Location.EXTERIOR);
+    bool isExteriorIfArea1 = !label!.isAreaWithIndex(1) || label!.allPositionsEqual(1, Location.EXTERIOR);
 
     return isLine && isExteriorIfArea0 && isExteriorIfArea1;
   }
@@ -1545,10 +1530,8 @@ class DirectedEdge extends EdgeEnd {
     bool isInteriorAreaEdge = true;
     for (int i = 0; i < 2; i++) {
       if (!(label!.isAreaWithIndex(i) &&
-          label!.getLocationWithPosIndex(i, Position.LEFT) ==
-              Location.INTERIOR &&
-          label!.getLocationWithPosIndex(i, Position.RIGHT) ==
-              Location.INTERIOR)) {
+          label!.getLocationWithPosIndex(i, Position.LEFT) == Location.INTERIOR &&
+          label!.getLocationWithPosIndex(i, Position.RIGHT) == Location.INTERIOR)) {
         isInteriorAreaEdge = false;
       }
     }
@@ -1650,9 +1633,7 @@ class Quadrant {
    * @throws IllegalArgumentException if the points are equal
    */
   static int quadrantFromCoords(Coordinate p0, Coordinate p1) {
-    if (p1.x == p0.x && p1.y == p0.y)
-      throw ArgumentError(
-          "Cannot compute the quadrant for two identical points $p0");
+    if (p1.x == p0.x && p1.y == p0.y) throw ArgumentError("Cannot compute the quadrant for two identical points $p0");
 
     if (p1.x >= p0.x) {
       if (p1.y >= p0.y)
@@ -1733,17 +1714,14 @@ class EdgeEnd implements Comparable {
 
   Node? node; // the node this edge end originates at
   Coordinate? p0, p1; // points of initial line segment
-  double dx = 0,
-      dy = 0; // the direction vector for this edge from its starting point
+  double dx = 0, dy = 0; // the direction vector for this edge from its starting point
   int quadrant = 0;
 
   EdgeEnd(this.edge);
 
-  EdgeEnd.withCoords(Edge edge, Coordinate p0, Coordinate p1)
-      : this.withCoordsLabel(edge, p0, p1, null);
+  EdgeEnd.withCoords(Edge edge, Coordinate p0, Coordinate p1) : this.withCoordsLabel(edge, p0, p1, null);
 
-  EdgeEnd.withCoordsLabel(
-      this.edge, Coordinate p0, Coordinate p1, Label? label) {
+  EdgeEnd.withCoordsLabel(this.edge, Coordinate p0, Coordinate p1, Label? label) {
     init(p0, p1);
     this.label = label;
   }
@@ -1966,8 +1944,7 @@ abstract class EdgeEndStar {
       EdgeEnd e = it.current;
       Label label = e.getLabel()!;
       for (int geomi = 0; geomi < 2; geomi++) {
-        if (label.isLine(geomi) &&
-            label.getLocation(geomi) == Location.BOUNDARY)
+        if (label.isLine(geomi) && label.getLocation(geomi) == Location.BOUNDARY)
           hasDimensionalCollapseEdge[geomi] = true;
       }
     }
@@ -2005,8 +1982,7 @@ abstract class EdgeEndStar {
   int getLocation(int geomIndex, Coordinate p, List<GeometryGraph> geom) {
     // compute location only on demand
     if (ptInAreaLocation[geomIndex] == Location.NONE) {
-      ptInAreaLocation[geomIndex] = SimplePointInAreaLocator.locatePointInGeom(
-          p, geom[geomIndex].getGeometry()!);
+      ptInAreaLocation[geomIndex] = SimplePointInAreaLocator.locatePointInGeom(p, geom[geomIndex].getGeometry()!);
     }
     return ptInAreaLocation[geomIndex];
   }
@@ -2063,9 +2039,7 @@ abstract class EdgeEndStar {
     for (Iterator it = iterator(); it.moveNext();) {
       EdgeEnd e = it.current;
       Label label = e.getLabel()!;
-      if (label.isAreaWithIndex(geomIndex) &&
-          label.getLocationWithPosIndex(geomIndex, Position.LEFT) !=
-              Location.NONE)
+      if (label.isAreaWithIndex(geomIndex) && label.getLocationWithPosIndex(geomIndex, Position.LEFT) != Location.NONE)
         startLoc = label.getLocationWithPosIndex(geomIndex, Position.LEFT);
     }
 
@@ -2077,8 +2051,8 @@ abstract class EdgeEndStar {
       EdgeEnd e = it.current;
       Label label = e.getLabel()!;
       // set null ON values to be in current location
-      if (label.getLocationWithPosIndex(geomIndex, Position.ON) ==
-          Location.NONE) label.setLocation(geomIndex, Position.ON, currLoc);
+      if (label.getLocationWithPosIndex(geomIndex, Position.ON) == Location.NONE)
+        label.setLocation(geomIndex, Position.ON, currLoc);
       // set side labels (if any)
       if (label.isAreaWithIndex(geomIndex)) {
         int leftLoc = label.getLocationWithPosIndex(geomIndex, Position.LEFT);
@@ -2086,12 +2060,9 @@ abstract class EdgeEndStar {
         // if there is a right location, that is the next location to propagate
         if (rightLoc != Location.NONE) {
 //Debug.print(rightLoc != currLoc, this);
-          if (rightLoc != currLoc)
-            throw new TopologyException(
-                "side location conflict ${e.getCoordinate()}");
+          if (rightLoc != currLoc) throw new TopologyException("side location conflict ${e.getCoordinate()}");
           if (leftLoc == Location.NONE) {
-            Assert.shouldNeverReachHere(
-                "found single null side (at ${e.getCoordinate()})");
+            Assert.shouldNeverReachHere("found single null side (at ${e.getCoordinate()})");
           }
           currLoc = leftLoc;
         } else {
@@ -2101,10 +2072,7 @@ abstract class EdgeEndStar {
            *  the other geometry (which is determined by the current location).
            *  Assign both sides to be the current location.
            */
-          assert(
-              label.getLocationWithPosIndex(geomIndex, Position.LEFT) ==
-                  Location.NONE,
-              "found single null side");
+          assert(label.getLocationWithPosIndex(geomIndex, Position.LEFT) == Location.NONE, "found single null side");
           label.setLocation(geomIndex, Position.RIGHT, currLoc);
           label.setLocation(geomIndex, Position.LEFT, currLoc);
         }
@@ -2519,13 +2487,13 @@ class Edge extends GraphComponent {
    * Handles edges from both L and A geometries.
    */
   static void updateIMStatic(Label label, IntersectionMatrix im) {
-    im.setAtLeastIfValid(label.getLocationWithPosIndex(0, Position.ON),
-        label.getLocationWithPosIndex(1, Position.ON), 1);
+    im.setAtLeastIfValid(
+        label.getLocationWithPosIndex(0, Position.ON), label.getLocationWithPosIndex(1, Position.ON), 1);
     if (label.isArea()) {
-      im.setAtLeastIfValid(label.getLocationWithPosIndex(0, Position.LEFT),
-          label.getLocationWithPosIndex(1, Position.LEFT), 2);
-      im.setAtLeastIfValid(label.getLocationWithPosIndex(0, Position.RIGHT),
-          label.getLocationWithPosIndex(1, Position.RIGHT), 2);
+      im.setAtLeastIfValid(
+          label.getLocationWithPosIndex(0, Position.LEFT), label.getLocationWithPosIndex(1, Position.LEFT), 2);
+      im.setAtLeastIfValid(
+          label.getLocationWithPosIndex(0, Position.RIGHT), label.getLocationWithPosIndex(1, Position.RIGHT), 2);
     }
   }
 
@@ -2536,8 +2504,7 @@ class Edge extends GraphComponent {
   MonotoneChainEdge? mce;
   bool _isIsolated = true;
   Depth depth = new Depth();
-  int depthDelta =
-      0; // the change in area depth from the R to L side of this edge
+  int depthDelta = 0; // the change in area depth from the R to L side of this edge
 
   Edge(this.pts, Label? label) {
     eiList = new EdgeIntersectionList(this);
@@ -2653,10 +2620,8 @@ class Edge extends GraphComponent {
    * An intersection that falls exactly on a vertex of the edge is normalized
    * to use the higher of the two possible segmentIndexes
    */
-  void addIntersection(
-      LineIntersector li, int segmentIndex, int geomIndex, int intIndex) {
-    Coordinate intPt =
-        new Coordinate.fromCoordinate(li.getIntersection(intIndex));
+  void addIntersection(LineIntersector li, int segmentIndex, int geomIndex, int intIndex) {
+    Coordinate intPt = new Coordinate.fromCoordinate(li.getIntersection(intIndex));
     int normalizedSegmentIndex = segmentIndex;
     double dist = li.getEdgeDistance(geomIndex, intIndex);
 //Debug.println("edge intpt: " + intPt + " dist: " + dist);
@@ -2922,18 +2887,15 @@ class TopologyLocation {
       location = newLoc;
     }
     for (int i = 0; i < location.length; i++) {
-      if (location[i] == Location.NONE && i < gl.location.length)
-        location[i] = gl.location[i];
+      if (location[i] == Location.NONE && i < gl.location.length) location[i] = gl.location[i];
     }
   }
 
   String toString() {
     StringBuffer buf = new StringBuffer();
-    if (location.length > 1)
-      buf.write(Location.toLocationSymbol(location[Position.LEFT]));
+    if (location.length > 1) buf.write(Location.toLocationSymbol(location[Position.LEFT]));
     buf.write(Location.toLocationSymbol(location[Position.ON]));
-    if (location.length > 1)
-      buf.write(Location.toLocationSymbol(location[Position.RIGHT]));
+    if (location.length > 1) buf.write(Location.toLocationSymbol(location[Position.RIGHT]));
     return buf.toString();
   }
 }
@@ -3127,8 +3089,7 @@ class Label {
   }
 
   bool isEqualOnSide(Label lbl, int side) {
-    return this.elt[0]!.isEqualOnSide(lbl.elt[0]!, side) &&
-        this.elt[1]!.isEqualOnSide(lbl.elt[1]!, side);
+    return this.elt[0]!.isEqualOnSide(lbl.elt[0]!, side) && this.elt[1]!.isEqualOnSide(lbl.elt[1]!, side);
   }
 
   bool allPositionsEqual(int geomIndex, int loc) {
@@ -3139,8 +3100,7 @@ class Label {
    * Converts one GeometryLocation to a Line location
    */
   void toLine(int geomIndex) {
-    if (elt[geomIndex]!.isArea())
-      elt[geomIndex] = new TopologyLocation.fromOn(elt[geomIndex]!.location[0]);
+    if (elt[geomIndex]!.isArea()) elt[geomIndex] = new TopologyLocation.fromOn(elt[geomIndex]!.location[0]);
   }
 
   String toString() {
@@ -3265,8 +3225,7 @@ class EdgeList {
    */
   void add(Edge e) {
     edges.add(e);
-    OrientedCoordinateArray oca =
-        new OrientedCoordinateArray(e.getCoordinates());
+    OrientedCoordinateArray oca = new OrientedCoordinateArray(e.getCoordinates());
     ocaMap[oca] = e;
   }
 
@@ -3287,8 +3246,7 @@ class EdgeList {
    *          null otherwise
    */
   Edge? findEqualEdge(Edge e) {
-    OrientedCoordinateArray oca =
-        new OrientedCoordinateArray(e.getCoordinates());
+    OrientedCoordinateArray oca = new OrientedCoordinateArray(e.getCoordinates());
     // will return null if no edge matches
     Edge? matchEdge = ocaMap[oca];
     return matchEdge;

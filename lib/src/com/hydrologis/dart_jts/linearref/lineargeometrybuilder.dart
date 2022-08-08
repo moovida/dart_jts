@@ -1,4 +1,8 @@
-part of dart_jts;
+import '../geom/coordinate.dart';
+import '../geom/geom.dart';
+import '../geom/geometry.dart';
+import '../geom/linestring.dart';
+
 /*
  * Copyright (c) 2016 Vivid Solutions.
  *
@@ -80,7 +84,7 @@ class LinearGeometryBuilder {
     if (coordList == null) {
       return;
     }
-    if (ignoreInvalidLines && coordList!._backingList.length < 2) {
+    if (ignoreInvalidLines && coordList!.toCoordinateArray().length < 2) {
       coordList = null;
       return;
     }

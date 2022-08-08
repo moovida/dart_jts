@@ -1,4 +1,26 @@
-part of dart_jts;
+import 'dart:collection';
+import 'dart:math' as math;
+import '../algorithm/algorithm.dart';
+import '../algorithm/distance.dart';
+import '../geom/coordinate.dart';
+import '../geom/envelope.dart';
+import '../geom/geom.dart';
+import '../geom/geometry.dart';
+import '../geom/geometry_collection.dart';
+import '../geom/linestring.dart';
+import '../geom/point.dart';
+import '../geom/polygon.dart';
+import '../geom/multipolygon.dart';
+import '../geom/multipoint.dart';
+import '../geom/multilinestring.dart';
+import '../geom/util.dart';
+import '../geomgraph/geomgraph.dart';
+import '../operation/valid.dart';
+import '../operation/overlay.dart';
+import '../noding/noding.dart';
+import '../util.dart';
+import '../util/util.dart';
+import '../util/geom_impl.dart';
 
 /**
  * A value class containing the parameters which
@@ -111,8 +133,7 @@ class BufferParameters {
    * @param joinStyle the join style to use
    * @param mitreLimit the mitre limit to use
    */
-  BufferParameters.withQS_ECS_JS_ML(
-      int quadrantSegments, int endCapStyle, int joinStyle, double mitreLimit) {
+  BufferParameters.withQS_ECS_JS_ML(int quadrantSegments, int endCapStyle, int joinStyle, double mitreLimit) {
     setQuadrantSegments(quadrantSegments);
     setEndCapStyle(endCapStyle);
     setJoinStyle(joinStyle);
@@ -410,18 +431,15 @@ class BufferOp {
    *
    * @return a scale factor for the buffer computation
    */
-  static double precisionScaleFactor(
-      Geometry g, double distance, int maxPrecisionDigits) {
+  static double precisionScaleFactor(Geometry g, double distance, int maxPrecisionDigits) {
     Envelope env = g.getEnvelopeInternal();
-    double envMax = MathUtils.max4(env.getMaxX().abs(), env.getMaxY().abs(),
-        env.getMinX().abs(), env.getMinY().abs());
+    double envMax = MathUtils.max4(env.getMaxX().abs(), env.getMaxY().abs(), env.getMinX().abs(), env.getMinY().abs());
 
     double expandByDistance = distance > 0.0 ? distance : 0.0;
     double bufEnvMax = envMax + 2 * expandByDistance;
 
     // the smallest power of 10 greater than the buffer envelope
-    int bufEnvPrecisionDigits =
-        (math.log(bufEnvMax) / math.log(10) + 1.0).toInt();
+    int bufEnvPrecisionDigits = (math.log(bufEnvMax) / math.log(10) + 1.0).toInt();
     int minUnitLog10 = maxPrecisionDigits - bufEnvPrecisionDigits;
 
     double scaleFactor = math.pow(10.0, minUnitLog10).toDouble();
@@ -472,8 +490,7 @@ class BufferOp {
    * @return the buffer of the input geometry
    *
    */
-  static Geometry bufferOpWithParams(
-      Geometry g, double distance, BufferParameters params) {
+  static Geometry bufferOpWithParams(Geometry g, double distance, BufferParameters params) {
     BufferOp bufOp = new BufferOp.withParams(g, params);
     Geometry geomBuf = bufOp.getResultGeometry(distance);
     return geomBuf;
@@ -507,8 +524,7 @@ class BufferOp {
    * @return the buffer of the input geometry
    *
    */
-  static Geometry bufferOp4(
-      Geometry g, double distance, int quadrantSegments, int endCapStyle) {
+  static Geometry bufferOp4(Geometry g, double distance, int quadrantSegments, int endCapStyle) {
     BufferOp bufOp = new BufferOp(g);
     bufOp.setQuadrantSegments(quadrantSegments);
     bufOp.setEndCapStyle(endCapStyle);
@@ -616,19 +632,15 @@ class BufferOp {
   }
 
   void bufferReducedPrecisionWithDigits(int precisionDigits) {
-    double sizeBasedScaleFactor =
-        precisionScaleFactor(argGeom, distance, precisionDigits);
+    double sizeBasedScaleFactor = precisionScaleFactor(argGeom, distance, precisionDigits);
 //    System.out.println("recomputing with precision scale factor = " + sizeBasedScaleFactor);
 
-    PrecisionModel fixedPM =
-        PrecisionModel.fixedPrecision(sizeBasedScaleFactor);
+    PrecisionModel fixedPM = PrecisionModel.fixedPrecision(sizeBasedScaleFactor);
     bufferFixedPrecision(fixedPM);
   }
 
   void bufferFixedPrecision(PrecisionModel fixedPM) {
-    Noder noder = new ScaledNoder(
-        new MCIndexSnapRounder(PrecisionModel.fixedPrecision(1.0)),
-        fixedPM.getScale());
+    Noder noder = new ScaledNoder(new MCIndexSnapRounder(PrecisionModel.fixedPrecision(1.0)), fixedPM.getScale());
 
     BufferBuilder bufBuilder = new BufferBuilder(bufParams);
     bufBuilder.setWorkingPrecisionModel(fixedPM);
@@ -710,11 +722,9 @@ class BufferBuilder {
     // factory must be the same as the one used by the input
     geomFact = g.getFactory();
 
-    OffsetCurveBuilder curveBuilder =
-        new OffsetCurveBuilder(precisionModel, bufParams);
+    OffsetCurveBuilder curveBuilder = new OffsetCurveBuilder(precisionModel, bufParams);
 
-    OffsetCurveSetBuilder curveSetBuilder =
-        new OffsetCurveSetBuilder(g, distance, curveBuilder);
+    OffsetCurveSetBuilder curveSetBuilder = new OffsetCurveSetBuilder(g, distance, curveBuilder);
 
     List bufferSegStrList = curveSetBuilder.getCurves();
 
@@ -783,8 +793,7 @@ class BufferBuilder {
       if (pts.length == 2 && pts[0].equals2D(pts[1])) continue;
 
       Label oldLabel = segStr.getData() as Label;
-      Edge edge =
-          new Edge(segStr.getCoordinates(), new Label.fromLabel(oldLabel));
+      Edge edge = new Edge(segStr.getCoordinates(), new Label.fromLabel(oldLabel));
       insertUniqueEdge(edge);
     }
     //saveEdges(edgeList.getEdges(), "run" + runCount + "_collapsedEdges");
@@ -843,8 +852,7 @@ class BufferBuilder {
      * subgraphs for shells will have been built before the subgraphs for
      * any holes they contain.
      */
-    subgraphList.sort(
-        (o1, o2) => (o1 as BufferSubgraph).compareTo((o2 as BufferSubgraph)));
+    subgraphList.sort((o1, o2) => (o1 as BufferSubgraph).compareTo((o2 as BufferSubgraph)));
     var list = subgraphList.reversed.toList();
     return list;
   }
@@ -997,8 +1005,7 @@ class BufferSubgraph implements Comparable {
   void add(Node node, Queue nodeStack) {
     node.setVisited(true);
     nodes.add(node);
-    for (Iterator i = (node.getEdges() as DirectedEdgeStar).iterator();
-        i.moveNext();) {
+    for (Iterator i = (node.getEdges() as DirectedEdgeStar).iterator(); i.moveNext();) {
       DirectedEdge de = i.current;
       dirEdgeList.add(de);
       DirectedEdge sym = de.getSym();
@@ -1057,8 +1064,7 @@ class BufferSubgraph implements Comparable {
 
       // add all adjacent nodes to process queue,
       // unless the node has been visited already
-      for (Iterator i = (n.getEdges() as DirectedEdgeStar).iterator();
-          i.moveNext();) {
+      for (Iterator i = (n.getEdges() as DirectedEdgeStar).iterator(); i.moveNext();) {
         DirectedEdge de = i.current;
         DirectedEdge sym = de.getSym();
         if (sym.isVisited()) continue;
@@ -1074,8 +1080,7 @@ class BufferSubgraph implements Comparable {
   void computeNodeDepth(Node n) {
     // find a visited dirEdge to start at
     DirectedEdge? startEdge = null;
-    for (Iterator i = (n.getEdges() as DirectedEdgeStar).iterator();
-        i.moveNext();) {
+    for (Iterator i = (n.getEdges() as DirectedEdgeStar).iterator(); i.moveNext();) {
       DirectedEdge de = i.current;
       if (de.isVisited() || de.getSym().isVisited()) {
         startEdge = de;
@@ -1087,14 +1092,12 @@ class BufferSubgraph implements Comparable {
 
     // only compute string append if assertion would fail
     if (startEdge == null)
-      throw new TopologyException("unable to find edge to compute depths at " +
-          n.getCoordinate().toString());
+      throw new TopologyException("unable to find edge to compute depths at " + n.getCoordinate().toString());
 
     (n.getEdges() as DirectedEdgeStar).computeDepths(startEdge);
 
     // copy depths to sym edges
-    for (Iterator i = (n.getEdges() as DirectedEdgeStar).iterator();
-        i.moveNext();) {
+    for (Iterator i = (n.getEdges() as DirectedEdgeStar).iterator(); i.moveNext();) {
       DirectedEdge de = i.current;
       de.setVisited(true);
       copySymDepths(de);
@@ -1125,9 +1128,7 @@ class BufferSubgraph implements Comparable {
        * count as "outside".
        */
       // <FIX> - handle negative depths
-      if (de.getDepth(Position.RIGHT) >= 1 &&
-          de.getDepth(Position.LEFT) <= 0 &&
-          !de.isInteriorAreaEdge()) {
+      if (de.getDepth(Position.RIGHT) >= 1 && de.getDepth(Position.LEFT) <= 0 && !de.isInteriorAreaEdge()) {
         de.setInResult(true);
 //Debug.print("in result "); Debug.println(de);
       }
@@ -1224,8 +1225,7 @@ class RightmostEdgeFinder {
      * If the rightmost point is a node, we need to identify which of
      * the incident edges is rightmost.
      */
-    Assert.isTrue(minIndex != 0 || minCoord!.equals(minDe!.getCoordinate()!),
-        "inconsistency in rightmost processing");
+    Assert.isTrue(minIndex != 0 || minCoord!.equals(minDe!.getCoordinate()!), "inconsistency in rightmost processing");
     if (minIndex == 0) {
       findRightmostEdgeAtNode();
     } else {
@@ -1261,20 +1261,15 @@ class RightmostEdgeFinder {
      * determine their relative orientation to decide which is rightmost.
      */
     List<Coordinate> pts = minDe!.getEdge().getCoordinates();
-    Assert.isTrue(minIndex > 0 && minIndex < pts.length,
-        "rightmost point expected to be interior vertex of edge");
+    Assert.isTrue(minIndex > 0 && minIndex < pts.length, "rightmost point expected to be interior vertex of edge");
     Coordinate pPrev = pts[minIndex - 1];
     Coordinate pNext = pts[minIndex + 1];
     int orientation = Orientation.index(minCoord!, pNext, pPrev);
     bool usePrev = false;
     // both segments are below min point
-    if (pPrev.y < minCoord!.y &&
-        pNext.y < minCoord!.y &&
-        orientation == Orientation.COUNTERCLOCKWISE) {
+    if (pPrev.y < minCoord!.y && pNext.y < minCoord!.y && orientation == Orientation.COUNTERCLOCKWISE) {
       usePrev = true;
-    } else if (pPrev.y > minCoord!.y &&
-        pNext.y > minCoord!.y &&
-        orientation == Orientation.CLOCKWISE) {
+    } else if (pPrev.y > minCoord!.y && pNext.y > minCoord!.y && orientation == Orientation.CLOCKWISE) {
       usePrev = true;
     }
     // if both segments are on the same side, do nothing - either is safe
@@ -1316,8 +1311,7 @@ class RightmostEdgeFinder {
     var coord = e.getCoordinates();
 
     if (i < 0 || i + 1 >= coord.length) return -1;
-    if (coord[i].y == coord[i + 1].y)
-      return -1; // indicates edge is parallel to x-axis
+    if (coord[i].y == coord[i + 1].y) return -1; // indicates edge is parallel to x-axis
 
     int pos = Position.LEFT;
     if (coord[i].y < coord[i + 1].y) pos = Position.RIGHT;
@@ -1363,11 +1357,9 @@ class SubgraphDepthLocater {
     for (BufferSubgraph bsg in subgraphs) {
       // optimization - don't bother checking subgraphs which the ray does not intersect
       Envelope env = bsg.getEnvelope();
-      if (stabbingRayLeftPt.y < env.getMinY() ||
-          stabbingRayLeftPt.y > env.getMaxY()) continue;
+      if (stabbingRayLeftPt.y < env.getMinY() || stabbingRayLeftPt.y > env.getMaxY()) continue;
 
-      findStabbedSegments3(
-          stabbingRayLeftPt, bsg.getDirectedEdges(), stabbedSegments);
+      findStabbedSegments3(stabbingRayLeftPt, bsg.getDirectedEdges(), stabbedSegments);
     }
     return stabbedSegments;
   }
@@ -1380,8 +1372,7 @@ class SubgraphDepthLocater {
    * @param stabbingRayLeftPt the left-hand origin of the stabbing line
    * @param stabbedSegments the current list of {@link DepthSegments} intersecting the stabbing line
    */
-  void findStabbedSegments3(
-      Coordinate stabbingRayLeftPt, List dirEdges, List stabbedSegments) {
+  void findStabbedSegments3(Coordinate stabbingRayLeftPt, List dirEdges, List stabbedSegments) {
     /**
      * Check all forward DirectedEdges only.  This is still general,
      * because each Edge has a forward DirectedEdge.
@@ -1400,8 +1391,7 @@ class SubgraphDepthLocater {
    * @param stabbingRayLeftPt the left-hand origin of the stabbing line
    * @param stabbedSegments the current list of {@link DepthSegments} intersecting the stabbing line
    */
-  void findStabbedSegmentsDE(Coordinate stabbingRayLeftPt, DirectedEdge dirEdge,
-      List stabbedSegments) {
+  void findStabbedSegmentsDE(Coordinate stabbingRayLeftPt, DirectedEdge dirEdge, List stabbedSegments) {
     List<Coordinate> pts = dirEdge.getEdge().getCoordinates();
     for (int i = 0; i < pts.length - 1; i++) {
       seg.p0 = pts[i];
@@ -1417,12 +1407,10 @@ class SubgraphDepthLocater {
       if (seg.isHorizontal()) continue;
 
       // skip if segment is above or below stabbing line
-      if (stabbingRayLeftPt.y < seg.p0.y || stabbingRayLeftPt.y > seg.p1.y)
-        continue;
+      if (stabbingRayLeftPt.y < seg.p0.y || stabbingRayLeftPt.y > seg.p1.y) continue;
 
       // skip if stabbing ray is right of the segment
-      if (Orientation.index(seg.p0, seg.p1, stabbingRayLeftPt) ==
-          Orientation.RIGHT) continue;
+      if (Orientation.index(seg.p0, seg.p1, stabbingRayLeftPt) == Orientation.RIGHT) continue;
 
       // stabbing line cuts this segment, so record it
       int depth = dirEdge.getDepth(Position.LEFT);
@@ -1588,8 +1576,7 @@ class OffsetCurveBuilder {
    * @return a Coordinate array representing the curve
    * or null if the curve is empty
    */
-  List<Coordinate>? getRingCurve(
-      List<Coordinate> inputPts, int side, double distance) {
+  List<Coordinate>? getRingCurve(List<Coordinate> inputPts, int side, double distance) {
     this.distance = distance;
     if (inputPts.length <= 2) return getLineCurve(inputPts, distance);
 
@@ -1658,14 +1645,12 @@ class OffsetCurveBuilder {
     }
   }
 
-  void computeLineBufferCurve(
-      List<Coordinate> inputPts, OffsetSegmentGenerator segGen) {
+  void computeLineBufferCurve(List<Coordinate> inputPts, OffsetSegmentGenerator segGen) {
     double distTol = simplifyTolerance(distance);
 
     //--------- compute points for left side of line
     // Simplify the appropriate side of the line before generating
-    List<Coordinate> simp1 =
-        BufferInputLineSimplifier.simplify(inputPts, distTol);
+    List<Coordinate> simp1 = BufferInputLineSimplifier.simplify(inputPts, distTol);
     // MD - used for testing only (to eliminate simplification)
 //    List<Coordinate> simp1 = inputPts;
 
@@ -1680,8 +1665,7 @@ class OffsetCurveBuilder {
 
     //---------- compute points for right side of line
     // Simplify the appropriate side of the line before generating
-    List<Coordinate> simp2 =
-        BufferInputLineSimplifier.simplify(inputPts, -distTol);
+    List<Coordinate> simp2 = BufferInputLineSimplifier.simplify(inputPts, -distTol);
     // MD - used for testing only (to eliminate simplification)
 //    List<Coordinate> simp2 = inputPts;
     int n2 = simp2.length - 1;
@@ -1725,8 +1709,7 @@ class OffsetCurveBuilder {
   }
   */
 
-  void computeSingleSidedBufferCurve(List<Coordinate> inputPts,
-      bool isRightSide, OffsetSegmentGenerator segGen) {
+  void computeSingleSidedBufferCurve(List<Coordinate> inputPts, bool isRightSide, OffsetSegmentGenerator segGen) {
     double distTol = simplifyTolerance(distance);
 
     if (isRightSide) {
@@ -1735,8 +1718,7 @@ class OffsetCurveBuilder {
 
       //---------- compute points for right side of line
       // Simplify the appropriate side of the line before generating
-      List<Coordinate> simp2 =
-          BufferInputLineSimplifier.simplify(inputPts, -distTol);
+      List<Coordinate> simp2 = BufferInputLineSimplifier.simplify(inputPts, -distTol);
       // MD - used for testing only (to eliminate simplification)
       //    List<Coordinate> simp2 = inputPts;
       int n2 = simp2.length - 1;
@@ -1753,8 +1735,7 @@ class OffsetCurveBuilder {
 
       //--------- compute points for left side of line
       // Simplify the appropriate side of the line before generating
-      List<Coordinate> simp1 =
-          BufferInputLineSimplifier.simplify(inputPts, distTol);
+      List<Coordinate> simp1 = BufferInputLineSimplifier.simplify(inputPts, distTol);
       // MD - used for testing only (to eliminate simplification)
 //      List<Coordinate> simp1 = inputPts;
 
@@ -1769,15 +1750,13 @@ class OffsetCurveBuilder {
     segGen.closeRing();
   }
 
-  void computeOffsetCurve(List<Coordinate> inputPts, bool isRightSide,
-      OffsetSegmentGenerator segGen) {
+  void computeOffsetCurve(List<Coordinate> inputPts, bool isRightSide, OffsetSegmentGenerator segGen) {
     double distTol = simplifyTolerance(distance);
 
     if (isRightSide) {
       //---------- compute points for right side of line
       // Simplify the appropriate side of the line before generating
-      List<Coordinate> simp2 =
-          BufferInputLineSimplifier.simplify(inputPts, -distTol);
+      List<Coordinate> simp2 = BufferInputLineSimplifier.simplify(inputPts, -distTol);
       // MD - used for testing only (to eliminate simplification)
       //    List<Coordinate> simp2 = inputPts;
       int n2 = simp2.length - 1;
@@ -1791,8 +1770,7 @@ class OffsetCurveBuilder {
     } else {
       //--------- compute points for left side of line
       // Simplify the appropriate side of the line before generating
-      List<Coordinate> simp1 =
-          BufferInputLineSimplifier.simplify(inputPts, distTol);
+      List<Coordinate> simp1 = BufferInputLineSimplifier.simplify(inputPts, distTol);
       // MD - used for testing only (to eliminate simplification)
 //      List<Coordinate> simp1 = inputPts;
 
@@ -1806,14 +1784,12 @@ class OffsetCurveBuilder {
     segGen.addLastSegment();
   }
 
-  void computeRingBufferCurve(
-      List<Coordinate> inputPts, int side, OffsetSegmentGenerator segGen) {
+  void computeRingBufferCurve(List<Coordinate> inputPts, int side, OffsetSegmentGenerator segGen) {
     // simplify input line to improve performance
     double distTol = simplifyTolerance(distance);
     // ensure that correct side is simplified
     if (side == Position.RIGHT) distTol = -distTol;
-    List<Coordinate> simp =
-        BufferInputLineSimplifier.simplify(inputPts, distTol);
+    List<Coordinate> simp = BufferInputLineSimplifier.simplify(inputPts, distTol);
 //    List<Coordinate> simp = inputPts;
 
     int n = simp.length - 1;
@@ -1913,8 +1889,7 @@ class OffsetSegmentGenerator {
      * them. In any case, non-round joins only really make sense for relatively
      * small buffer distances.
      */
-    if (bufParams.getQuadrantSegments() >= 8 &&
-        bufParams.getJoinStyle() == BufferParameters.JOIN_ROUND)
+    if (bufParams.getQuadrantSegments() >= 8 && bufParams.getJoinStyle() == BufferParameters.JOIN_ROUND)
       closingSegLengthFactor = MAX_CLOSING_SEG_LEN_FACTOR;
     init(distance);
   }
@@ -1943,8 +1918,7 @@ class OffsetSegmentGenerator {
     /**
      * Choose the min vertex separation as a small fraction of the offset distance.
      */
-    segList
-        .setMinimumVertexDistance(distance * CURVE_VERTEX_SNAP_DISTANCE_FACTOR);
+    segList.setMinimumVertexDistance(distance * CURVE_VERTEX_SNAP_DISTANCE_FACTOR);
   }
 
   void initSideSegments(Coordinate s1, Coordinate s2, int side) {
@@ -1995,8 +1969,7 @@ class OffsetSegmentGenerator {
     if (s1.equals(s2)) return;
 
     int orientation = Orientation.index(s0, s1, s2);
-    bool outsideTurn = (orientation == Orientation.CLOCKWISE &&
-            side == Position.LEFT) ||
+    bool outsideTurn = (orientation == Orientation.CLOCKWISE && side == Position.LEFT) ||
         (orientation == Orientation.COUNTERCLOCKWISE && side == Position.RIGHT);
 
     if (orientation == 0) {
@@ -2037,8 +2010,7 @@ class OffsetSegmentGenerator {
         if (addStartPoint) segList.addPt(offset0.p1);
         segList.addPt(offset1.p0);
       } else {
-        addCornerFillet(
-            s1, offset0.p1, offset1.p0, Orientation.CLOCKWISE, distance);
+        addCornerFillet(s1, offset0.p1, offset1.p0, Orientation.CLOCKWISE, distance);
       }
     }
   }
@@ -2057,8 +2029,7 @@ class OffsetSegmentGenerator {
      * where the two segments are almost parallel
      * (which is hard to compute a robust intersection for).
      */
-    if (offset0.p1.distance(offset1.p0) <
-        distance * OFFSET_SEGMENT_SEPARATION_FACTOR) {
+    if (offset0.p1.distance(offset1.p0) < distance * OFFSET_SEGMENT_SEPARATION_FACTOR) {
       segList.addPt(offset0.p1);
       return;
     }
@@ -2120,8 +2091,7 @@ class OffsetSegmentGenerator {
        */
       _hasNarrowConcaveAngle = true;
       //System.out.println("NARROW ANGLE - distance = " + distance);
-      if (offset0.p1.distance(offset1.p0) <
-          distance * INSIDE_TURN_VERTEX_SNAP_DISTANCE_FACTOR) {
+      if (offset0.p1.distance(offset1.p0) < distance * INSIDE_TURN_VERTEX_SNAP_DISTANCE_FACTOR) {
         segList.addPt(offset0.p1);
       } else {
         // add endpoint of this segment offset
@@ -2132,16 +2102,12 @@ class OffsetSegmentGenerator {
          */
         if (closingSegLengthFactor > 0) {
           Coordinate mid0 = new Coordinate(
-              (closingSegLengthFactor * offset0.p1.x + s1.x) /
-                  (closingSegLengthFactor + 1),
-              (closingSegLengthFactor * offset0.p1.y + s1.y) /
-                  (closingSegLengthFactor + 1));
+              (closingSegLengthFactor * offset0.p1.x + s1.x) / (closingSegLengthFactor + 1),
+              (closingSegLengthFactor * offset0.p1.y + s1.y) / (closingSegLengthFactor + 1));
           segList.addPt(mid0);
           Coordinate mid1 = new Coordinate(
-              (closingSegLengthFactor * offset1.p0.x + s1.x) /
-                  (closingSegLengthFactor + 1),
-              (closingSegLengthFactor * offset1.p0.y + s1.y) /
-                  (closingSegLengthFactor + 1));
+              (closingSegLengthFactor * offset1.p0.x + s1.x) / (closingSegLengthFactor + 1),
+              (closingSegLengthFactor * offset1.p0.y + s1.y) / (closingSegLengthFactor + 1));
           segList.addPt(mid1);
         } else {
           /**
@@ -2168,8 +2134,7 @@ class OffsetSegmentGenerator {
    * @param distance the offset distance
    * @param offset the points computed for the offset segment
    */
-  void computeOffsetSegment(
-      LineSegment seg, int side, double distance, LineSegment offset) {
+  void computeOffsetSegment(LineSegment seg, int side, double distance, LineSegment offset) {
     int sideSign = side == Position.LEFT ? 1 : -1;
     double dx = seg.p1.x - seg.p0.x;
     double dy = seg.p1.y - seg.p0.y;
@@ -2202,8 +2167,7 @@ class OffsetSegmentGenerator {
       case BufferParameters.CAP_ROUND:
         // add offset seg points with a fillet between them
         segList.addPt(offsetL.p1);
-        addDirectedFillet(p1, angle + math.pi / 2, angle - math.pi / 2,
-            Orientation.CLOCKWISE, distance);
+        addDirectedFillet(p1, angle + math.pi / 2, angle - math.pi / 2, Orientation.CLOCKWISE, distance);
         segList.addPt(offsetR.p1);
         break;
       case BufferParameters.CAP_FLAT:
@@ -2217,12 +2181,10 @@ class OffsetSegmentGenerator {
         squareCapSideOffset.x = distance.abs() * math.cos(angle);
         squareCapSideOffset.y = distance.abs() * math.sin(angle);
 
-        Coordinate squareCapLOffset = new Coordinate(
-            offsetL.p1.x + squareCapSideOffset.x,
-            offsetL.p1.y + squareCapSideOffset.y);
-        Coordinate squareCapROffset = new Coordinate(
-            offsetR.p1.x + squareCapSideOffset.x,
-            offsetR.p1.y + squareCapSideOffset.y);
+        Coordinate squareCapLOffset =
+            new Coordinate(offsetL.p1.x + squareCapSideOffset.x, offsetL.p1.y + squareCapSideOffset.y);
+        Coordinate squareCapROffset =
+            new Coordinate(offsetR.p1.x + squareCapSideOffset.x, offsetR.p1.y + squareCapSideOffset.y);
         segList.addPt(squareCapLOffset);
         segList.addPt(squareCapROffset);
         break;
@@ -2237,18 +2199,15 @@ class OffsetSegmentGenerator {
    * @param offset1 the second offset segment
    * @param distance the offset distance
    */
-  void addMitreJoin(
-      Coordinate p, LineSegment offset0, LineSegment offset1, double distance) {
+  void addMitreJoin(Coordinate p, LineSegment offset0, LineSegment offset1, double distance) {
     /**
      * This computation is unstable if the offset segments are nearly collinear.
      * However, this situation should have been eliminated earlier by the check
      * for whether the offset segment endpoints are almost coincident
      */
-    Coordinate? intPt = Intersection.intersection(
-        offset0.p0, offset0.p1, offset1.p0, offset1.p1);
+    Coordinate? intPt = Intersection.intersection(offset0.p0, offset0.p1, offset1.p0, offset1.p1);
     if (intPt != null) {
-      double mitreRatio =
-          distance <= 0.0 ? 1.0 : intPt.distance(p) / distance.abs();
+      double mitreRatio = distance <= 0.0 ? 1.0 : intPt.distance(p) / distance.abs();
       if (mitreRatio <= bufParams.getMitreLimit()) {
         segList.addPt(intPt);
         return;
@@ -2269,8 +2228,7 @@ class OffsetSegmentGenerator {
    * @param distance the offset distance
    * @param mitreLimit the mitre limit ratio
    */
-  void addLimitedMitreJoin(LineSegment offset0, LineSegment offset1,
-      double distance, double mitreLimit) {
+  void addLimitedMitreJoin(LineSegment offset0, LineSegment offset1, double distance, double mitreLimit) {
     Coordinate basePt = seg0.p1;
 
     double ang0 = Angle.angle2C(basePt, seg0.p0);
@@ -2298,14 +2256,12 @@ class OffsetSegmentGenerator {
     Coordinate bevelMidPt = new Coordinate(bevelMidX, bevelMidY);
 
     // compute the mitre midline segment from the corner point to the bevel segment midpoint
-    LineSegment mitreMidLine =
-        new LineSegment.fromCoordinates(basePt, bevelMidPt);
+    LineSegment mitreMidLine = new LineSegment.fromCoordinates(basePt, bevelMidPt);
 
     // finally the bevel segment endpoints are computed as offsets from
     // the mitre midline
     Coordinate bevelEndLeft = mitreMidLine.pointAlongOffset(1.0, bevelHalfLen);
-    Coordinate bevelEndRight =
-        mitreMidLine.pointAlongOffset(1.0, -bevelHalfLen);
+    Coordinate bevelEndRight = mitreMidLine.pointAlongOffset(1.0, -bevelHalfLen);
 
     if (side == Position.LEFT) {
       segList.addPt(bevelEndLeft);
@@ -2338,8 +2294,7 @@ class OffsetSegmentGenerator {
    * @param direction the orientation of the fillet
    * @param radius the radius of the fillet
    */
-  void addCornerFillet(Coordinate p, Coordinate p0, Coordinate p1,
-      int direction, double radius) {
+  void addCornerFillet(Coordinate p, Coordinate p0, Coordinate p1, int direction, double radius) {
     double dx0 = p0.x - p.x;
     double dy0 = p0.y - p.y;
     double startAngle = math.atan2(dy0, dx0);
@@ -2367,15 +2322,13 @@ class OffsetSegmentGenerator {
    * @param direction is -1 for a CW angle, 1 for a CCW angle
    * @param radius the radius of the fillet
    */
-  void addDirectedFillet(Coordinate p, double startAngle, double endAngle,
-      int direction, double radius) {
+  void addDirectedFillet(Coordinate p, double startAngle, double endAngle, int direction, double radius) {
     int directionFactor = direction == Orientation.CLOCKWISE ? -1 : 1;
 
     double totalAngle = (startAngle - endAngle).abs();
     int nSegs = (totalAngle / filletAngleQuantum + 0.5).toInt();
 
-    if (nSegs < 1)
-      return; // no segments because angle is less than increment - nothing to do!
+    if (nSegs < 1) return; // no segments because angle is less than increment - nothing to do!
 
     double initAngle, currAngleInc;
 
@@ -2559,8 +2512,7 @@ class BufferInputLineSimplifier {
    * @param distanceTol simplification distance tolerance to use
    * @return the simplified coordinate list
    */
-  static List<Coordinate> simplify(
-      List<Coordinate> inputLine, double distanceTol) {
+  static List<Coordinate> simplify(List<Coordinate> inputLine, double distanceTol) {
     BufferInputLineSimplifier simp = new BufferInputLineSimplifier(inputLine);
     return simp.simplifyWithTol(distanceTol);
   }
@@ -2673,8 +2625,7 @@ class BufferInputLineSimplifier {
     return isShallowSampled(p0, p1, i0, i2, distanceTol);
   }
 
-  bool isShallowConcavity(
-      Coordinate p0, Coordinate p1, Coordinate p2, double distanceTol) {
+  bool isShallowConcavity(Coordinate p0, Coordinate p1, Coordinate p2, double distanceTol) {
     int orientation = Orientation.index(p0, p1, p2);
     bool isAngleToSimplify = (orientation == angleOrientation);
     if (!isAngleToSimplify) return false;
@@ -2697,8 +2648,7 @@ class BufferInputLineSimplifier {
    * @param distanceTol distance tolerance
    * @return
    */
-  bool isShallowSampled(
-      Coordinate p0, Coordinate p2, int i0, int i2, double distanceTol) {
+  bool isShallowSampled(Coordinate p0, Coordinate p2, int i0, int i2, double distanceTol) {
     // check every n'th point to see if it is within tolerance
     int inc = ((i2 - i0) / NUM_PTS_TO_CHECK).toInt();
     if (inc <= 0) inc = 1;
@@ -2709,8 +2659,7 @@ class BufferInputLineSimplifier {
     return true;
   }
 
-  bool isShallow(
-      Coordinate p0, Coordinate p1, Coordinate p2, double distanceTol) {
+  bool isShallow(Coordinate p0, Coordinate p1, Coordinate p2, double distanceTol) {
     double dist = Distance.pointToSegment(p1, p0, p2);
     return dist < distanceTol;
   }
@@ -2762,8 +2711,7 @@ class OffsetCurveSetBuilder {
     // don't add null or trivial curves
     if (coord == null || coord.length < 2) return;
     // add the edge for a coordinate list which is a raw offset curve
-    SegmentString e = new NodedSegmentString(
-        coord, new Label.args4(0, Location.BOUNDARY, leftLoc, rightLoc));
+    SegmentString e = new NodedSegmentString(coord, new Label.args4(0, Location.BOUNDARY, leftLoc, rightLoc));
     curveList.add(e);
   }
 
@@ -2809,10 +2757,8 @@ class OffsetCurveSetBuilder {
 
   void addLineString(LineString line) {
     // a zero or negative width buffer of a line/point is empty
-    if (distance <= 0.0 && !curveBuilder.getBufferParameters().isSingleSided)
-      return;
-    List<Coordinate> coord =
-        CoordinateArrays.removeRepeatedPoints(line.getCoordinates());
+    if (distance <= 0.0 && !curveBuilder.getBufferParameters().isSingleSided) return;
+    List<Coordinate> coord = CoordinateArrays.removeRepeatedPoints(line.getCoordinates());
 
     /**
      * Rings (closed lines) are generated with a continuous curve, 
@@ -2822,8 +2768,7 @@ class OffsetCurveSetBuilder {
      * 
      * Singled-sided buffers currently treat rings as if they are lines.
      */
-    if (CoordinateArrays.isRing(coord) &&
-        !curveBuilder.getBufferParameters().isSingleSided) {
+    if (CoordinateArrays.isRing(coord) && !curveBuilder.getBufferParameters().isSingleSided) {
       addRingBothSides(coord, distance);
     } else {
       List<Coordinate>? curve = curveBuilder.getLineCurve(coord, distance);
@@ -2844,21 +2789,18 @@ class OffsetCurveSetBuilder {
     }
 
     LinearRing shell = p.getExteriorRing();
-    List<Coordinate> shellCoord =
-        CoordinateArrays.removeRepeatedPoints(shell.getCoordinates());
+    List<Coordinate> shellCoord = CoordinateArrays.removeRepeatedPoints(shell.getCoordinates());
     // optimization - don't bother computing buffer
     // if the polygon would be completely eroded
     if (distance < 0.0 && isErodedCompletely(shell, distance)) return;
     // don't attempt to buffer a polygon with too few distinct vertices
     if (distance <= 0.0 && shellCoord.length < 3) return;
 
-    addRingSide(shellCoord, offsetDistance, offsetSide, Location.EXTERIOR,
-        Location.INTERIOR);
+    addRingSide(shellCoord, offsetDistance, offsetSide, Location.EXTERIOR, Location.INTERIOR);
 
     for (int i = 0; i < p.getNumInteriorRing(); i++) {
       LinearRing hole = p.getInteriorRingN(i);
-      List<Coordinate> holeCoord =
-          CoordinateArrays.removeRepeatedPoints(hole.getCoordinates());
+      List<Coordinate> holeCoord = CoordinateArrays.removeRepeatedPoints(hole.getCoordinates());
 
       // optimization - don't bother computing buffer for this hole
       // if the hole would be completely covered
@@ -2867,18 +2809,15 @@ class OffsetCurveSetBuilder {
       // Holes are topologically labelled opposite to the shell, since
       // the interior of the polygon lies on their opposite side
       // (on the left, if the hole is oriented CCW)
-      addRingSide(holeCoord, offsetDistance, Position.opposite(offsetSide),
-          Location.INTERIOR, Location.EXTERIOR);
+      addRingSide(holeCoord, offsetDistance, Position.opposite(offsetSide), Location.INTERIOR, Location.EXTERIOR);
     }
   }
 
   void addRingBothSides(List<Coordinate> coord, double distance) {
-    addRingSide(
-        coord, distance, Position.LEFT, Location.EXTERIOR, Location.INTERIOR);
+    addRingSide(coord, distance, Position.LEFT, Location.EXTERIOR, Location.INTERIOR);
     /* Add the opposite side of the ring
     */
-    addRingSide(
-        coord, distance, Position.RIGHT, Location.INTERIOR, Location.EXTERIOR);
+    addRingSide(coord, distance, Position.RIGHT, Location.INTERIOR, Location.EXTERIOR);
   }
 
   /**
@@ -2895,22 +2834,18 @@ class OffsetCurveSetBuilder {
    * @param cwLeftLoc the location on the L side of the ring (if it is CW)
    * @param cwRightLoc the location on the R side of the ring (if it is CW)
    */
-  void addRingSide(List<Coordinate> coord, double offsetDistance, int side,
-      int cwLeftLoc, int cwRightLoc) {
+  void addRingSide(List<Coordinate> coord, double offsetDistance, int side, int cwLeftLoc, int cwRightLoc) {
     // don't bother adding ring if it is "flat" and will disappear in the output
-    if (offsetDistance == 0.0 && coord.length < LinearRing.MINIMUM_VALID_SIZE)
-      return;
+    if (offsetDistance == 0.0 && coord.length < LinearRing.MINIMUM_VALID_SIZE) return;
 
     int leftLoc = cwLeftLoc;
     int rightLoc = cwRightLoc;
-    if (coord.length >= LinearRing.MINIMUM_VALID_SIZE &&
-        Orientation.isCCW(coord)) {
+    if (coord.length >= LinearRing.MINIMUM_VALID_SIZE && Orientation.isCCW(coord)) {
       leftLoc = cwRightLoc;
       rightLoc = cwLeftLoc;
       side = Position.opposite(side);
     }
-    List<Coordinate>? curve =
-        curveBuilder.getRingCurve(coord, side, offsetDistance);
+    List<Coordinate>? curve = curveBuilder.getRingCurve(coord, side, offsetDistance);
     addCurve(curve, leftLoc, rightLoc);
   }
 
@@ -2927,22 +2862,18 @@ class OffsetCurveSetBuilder {
    * @param cwLeftLoc the location on the L side of the ring (if it is CW)
    * @param cwRightLoc the location on the R side of the ring (if it is CW)
    */
-  void addPolygonRing(List<Coordinate> coord, double offsetDistance, int side,
-      int cwLeftLoc, int cwRightLoc) {
+  void addPolygonRing(List<Coordinate> coord, double offsetDistance, int side, int cwLeftLoc, int cwRightLoc) {
     // don't bother adding ring if it is "flat" and will disappear in the output
-    if (offsetDistance == 0.0 && coord.length < LinearRing.MINIMUM_VALID_SIZE)
-      return;
+    if (offsetDistance == 0.0 && coord.length < LinearRing.MINIMUM_VALID_SIZE) return;
 
     int leftLoc = cwLeftLoc;
     int rightLoc = cwRightLoc;
-    if (coord.length >= LinearRing.MINIMUM_VALID_SIZE &&
-        Orientation.isCCW(coord)) {
+    if (coord.length >= LinearRing.MINIMUM_VALID_SIZE && Orientation.isCCW(coord)) {
       leftLoc = cwRightLoc;
       rightLoc = cwLeftLoc;
       side = Position.opposite(side);
     }
-    List<Coordinate>? curve =
-        curveBuilder.getRingCurve(coord, side, offsetDistance);
+    List<Coordinate>? curve = curveBuilder.getRingCurve(coord, side, offsetDistance);
     addCurve(curve, leftLoc, rightLoc);
   }
 
@@ -2962,14 +2893,12 @@ class OffsetCurveSetBuilder {
 
     // important test to eliminate inverted triangle bug
     // also optimizes erosion test for triangles
-    if (ringCoord.length == 4)
-      return isTriangleErodedCompletely(ringCoord, bufferDistance);
+    if (ringCoord.length == 4) return isTriangleErodedCompletely(ringCoord, bufferDistance);
 
     // if envelope is narrower than twice the buffer distance, ring is eroded
     Envelope env = ring.getEnvelopeInternal();
     double envMinDimension = math.min(env.getHeight(), env.getWidth());
-    if (bufferDistance < 0.0 && 2 * bufferDistance.abs() > envMinDimension)
-      return true;
+    if (bufferDistance < 0.0 && 2 * bufferDistance.abs() > envMinDimension) return true;
 
     return false;
     /**
@@ -3009,10 +2938,8 @@ class OffsetCurveSetBuilder {
    * @param bufferDistance
    * @return
    */
-  bool isTriangleErodedCompletely(
-      List<Coordinate> triangleCoord, double bufferDistance) {
-    Triangle tri =
-        new Triangle(triangleCoord[0], triangleCoord[1], triangleCoord[2]);
+  bool isTriangleErodedCompletely(List<Coordinate> triangleCoord, double bufferDistance) {
+    Triangle tri = new Triangle(triangleCoord[0], triangleCoord[1], triangleCoord[2]);
     Coordinate inCentre = tri.inCentre();
     double distToCentre = Distance.pointToSegment(inCentre, tri.p0, tri.p1);
     return distToCentre < bufferDistance.abs();

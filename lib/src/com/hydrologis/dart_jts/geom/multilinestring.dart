@@ -1,4 +1,9 @@
-part of dart_jts;
+import '../operation/operation.dart';
+import 'geom.dart';
+import 'geometry.dart';
+import 'geometry_collection.dart';
+import 'linestring.dart';
+import 'util.dart';
 
 /**
  * Models a collection of {@link LineString}s.
@@ -21,10 +26,8 @@ class MultiLineString extends GeometryCollection implements Lineal {
    *      <code>MultiLineString</code>
    * @deprecated Use GeometryFactory instead
    */
-  MultiLineString(
-      List<LineString> lineStrings, PrecisionModel precisionModel, int SRID)
-      : super.withFactory(lineStrings,
-            new GeometryFactory.withPrecisionModelSrid(precisionModel, SRID));
+  MultiLineString(List<LineString> lineStrings, PrecisionModel precisionModel, int SRID)
+      : super.withFactory(lineStrings, new GeometryFactory.withPrecisionModelSrid(precisionModel, SRID));
 
   /**
    * @param lineStrings
@@ -33,8 +36,7 @@ class MultiLineString extends GeometryCollection implements Lineal {
    *            geometry. Elements may be empty <code>LineString</code>s,
    *            but not <code>null</code>s.
    */
-  MultiLineString.withFactory(
-      List<LineString>? lineStrings, GeometryFactory factory)
+  MultiLineString.withFactory(List<LineString>? lineStrings, GeometryFactory factory)
       : super.withFactory(lineStrings, factory);
 
   int getDimension() {

@@ -1,4 +1,5 @@
-part of dart_jts;
+import 'dart:math' as math;
+import '../util.dart';
 
 /// A lightweight class used to store coordinates on the 2-dimensional Cartesian plane.
 /// <p>
@@ -188,8 +189,7 @@ class Coordinate implements Comparable<Coordinate> {
         y = value;
         break;
       case Z:
-        setZ(
-            value); // delegate to subclass rather than offer direct field access
+        setZ(value); // delegate to subclass rather than offer direct field access
         break;
       default:
         throw new ArgumentError("Invalid ordinate index: $ordinateIndex");
@@ -236,9 +236,7 @@ class Coordinate implements Comparable<Coordinate> {
   ///@return true if <code>other</code> is a <code>Coordinate</code>
   ///      with the same values for X, Y and Z.
   bool equals3D(Coordinate other) {
-    return (x == other.x) &&
-        (y == other.y) &&
-        ((getZ() == other.getZ()) || (getZ().isNaN && other.getZ().isNaN));
+    return (x == other.x) && (y == other.y) && ((getZ() == other.getZ()) || (getZ().isNaN && other.getZ().isNaN));
   }
 
   /// Tests if another coordinate has the same value for Z, within a tolerance.

@@ -1,4 +1,9 @@
-part of dart_jts;
+import 'geom.dart';
+import 'geometry.dart';
+import 'geometry_collection.dart';
+import 'linestring.dart';
+import 'polygon.dart';
+import 'util.dart';
 
 /**
  * Models a collection of {@link Polygon}s.
@@ -29,8 +34,7 @@ class MultiPolygon extends GeometryCollection implements Polygonal {
    * @deprecated Use GeometryFactory instead
    */
   MultiPolygon(List<Polygon> polygons, PrecisionModel precisionModel, int SRID)
-      : this.withFactory(polygons,
-            new GeometryFactory.withPrecisionModelSrid(precisionModel, SRID));
+      : this.withFactory(polygons, new GeometryFactory.withPrecisionModelSrid(precisionModel, SRID));
 
   /**
    * @param polygons
@@ -42,8 +46,7 @@ class MultiPolygon extends GeometryCollection implements Polygonal {
    *            HREF="http://www.opengis.org/techno/specs.htm">OpenGIS Simple
    *            Features Specification for SQL</A>.
    */
-  MultiPolygon.withFactory(List<Polygon>? polygons, GeometryFactory factory)
-      : super.withFactory(polygons, factory);
+  MultiPolygon.withFactory(List<Polygon>? polygons, GeometryFactory factory) : super.withFactory(polygons, factory);
 
   int getDimension() {
     return 2;

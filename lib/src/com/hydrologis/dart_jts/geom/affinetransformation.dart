@@ -1,4 +1,11 @@
-part of dart_jts;
+import 'dart:math' as math;
+import 'coordinate.dart';
+import 'envelope.dart';
+import 'geom.dart';
+import 'geometry.dart';
+import 'util.dart';
+import '../math/math.dart';
+import '../algorithm/algorithm.dart';
 
 /*
  * Copyright (c) 2016 Vivid Solutions.
@@ -78,8 +85,7 @@ class AffineTransformation implements CoordinateSequenceFilter {
    * @param y1 the y-ordinate of a another point on the reflection line
    * @return a transformation for the reflection
    */
-  static AffineTransformation reflectionInstance(
-      double x0, double y0, double x1, double y1) {
+  static AffineTransformation reflectionInstance(double x0, double y0, double x1, double y1) {
     AffineTransformation trans = new AffineTransformation();
     trans.setToReflection(x0, y0, x1, y1);
     return trans;
@@ -124,8 +130,7 @@ class AffineTransformation implements CoordinateSequenceFilter {
    * @param cosTheta the cosine of the rotation angle
    * @return a transformation for the rotation
    */
-  static AffineTransformation rotationInstanceSinCos(
-      double sinTheta, double cosTheta) {
+  static AffineTransformation rotationInstanceSinCos(double sinTheta, double cosTheta) {
     AffineTransformation trans = new AffineTransformation();
     trans.setToRotationSinCos(sinTheta, cosTheta);
     return trans;
@@ -142,8 +147,7 @@ class AffineTransformation implements CoordinateSequenceFilter {
    * @param y the y-ordinate of the rotation point
    * @return a transformation for the rotation
    */
-  static AffineTransformation rotationInstanceTXY(
-      double theta, double x, double y) {
+  static AffineTransformation rotationInstanceTXY(double theta, double x, double y) {
     return rotationInstanceSinCosXY(math.sin(theta), math.cos(theta), x, y);
   }
 
@@ -160,8 +164,7 @@ class AffineTransformation implements CoordinateSequenceFilter {
    * @param y the y-ordinate of the rotation point
    * @return a transformation for the rotation
    */
-  static AffineTransformation rotationInstanceSinCosXY(
-      double sinTheta, double cosTheta, double x, double y) {
+  static AffineTransformation rotationInstanceSinCosXY(double sinTheta, double cosTheta, double x, double y) {
     AffineTransformation trans = new AffineTransformation();
     trans.setToRotationSinCosXY(sinTheta, cosTheta, x, y);
     return trans;
@@ -189,8 +192,7 @@ class AffineTransformation implements CoordinateSequenceFilter {
    * @param y the y-ordinate of the point to scale around
    * @return a transformation for the scaling
    */
-  static AffineTransformation scaleInstanceScaleXY(
-      double xScale, double yScale, double x, double y) {
+  static AffineTransformation scaleInstanceScaleXY(double xScale, double yScale, double x, double y) {
     AffineTransformation trans = new AffineTransformation();
     trans.translate(-x, -y);
     trans.scale(xScale, yScale);
@@ -268,8 +270,7 @@ class AffineTransformation implements CoordinateSequenceFilter {
    * @param m11 the entry for the [1, 1] element in the transformation matrix
    * @param m12 the entry for the [1, 2] element in the transformation matrix
    */
-  AffineTransformation.fromMatrixValues(
-      double m00, double m01, double m02, double m10, double m11, double m12) {
+  AffineTransformation.fromMatrixValues(double m00, double m01, double m02, double m10, double m11, double m12) {
     setTransformation(m00, m01, m02, m10, m11, m12);
   }
 
@@ -296,8 +297,8 @@ class AffineTransformation implements CoordinateSequenceFilter {
    * @param dest2 the mapped point for source point 2
    * 
    */
-  AffineTransformation.fromCoordinates(Coordinate src0, Coordinate src1,
-      Coordinate src2, Coordinate dest0, Coordinate dest1, Coordinate dest2) {}
+  AffineTransformation.fromCoordinates(
+      Coordinate src0, Coordinate src1, Coordinate src2, Coordinate dest0, Coordinate dest1, Coordinate dest2) {}
 
   /**
    * Sets this transformation to be the identity transformation.
@@ -330,8 +331,7 @@ class AffineTransformation implements CoordinateSequenceFilter {
    * @param m12 the entry for the [1, 2] element in the transformation matrix
    * @return this transformation, with an updated matrix
    */
-  AffineTransformation setTransformation(
-      double m00, double m01, double m02, double m10, double m11, double m12) {
+  AffineTransformation setTransformation(double m00, double m01, double m02, double m10, double m11, double m12) {
     this.m00 = m00;
     this.m01 = m01;
     this.m02 = m02;
@@ -347,8 +347,7 @@ class AffineTransformation implements CoordinateSequenceFilter {
    * @param trans a transformation to copy
    * @return this transformation, with an updated matrix
    */
-  AffineTransformation setTransformationFromTransformation(
-      AffineTransformation trans) {
+  AffineTransformation setTransformationFromTransformation(AffineTransformation trans) {
     m00 = trans.m00;
     m01 = trans.m01;
     m02 = trans.m02;
@@ -443,8 +442,7 @@ class AffineTransformation implements CoordinateSequenceFilter {
     double im02 = (m01 * m12 - m02 * m11) / det;
     double im12 = (-m00 * m12 + m10 * m02) / det;
 
-    return AffineTransformation.fromMatrixValues(
-        im00, im01, im02, im10, im11, im12);
+    return AffineTransformation.fromMatrixValues(im00, im01, im02, im10, im11, im12);
   }
 
   /**
@@ -455,8 +453,7 @@ class AffineTransformation implements CoordinateSequenceFilter {
    * @param y1 the Y ordinate of another point on the reflection line
    * @return this transformation, with an updated matrix
    */
-  AffineTransformation setToReflectionBasic(
-      double x0, double y0, double x1, double y1) {
+  AffineTransformation setToReflectionBasic(double x0, double y0, double x1, double y1) {
     if (x0 == x1 && y0 == y1) {
       throw ArgumentError("Reflection line points must be distinct");
     }
@@ -486,8 +483,7 @@ class AffineTransformation implements CoordinateSequenceFilter {
    * @param y1 the Y ordinate of another point on the reflection line
    * @return this transformation, with an updated matrix
    */
-  AffineTransformation setToReflection(
-      double x0, double y0, double x1, double y1) {
+  AffineTransformation setToReflection(double x0, double y0, double x1, double y1) {
     if (x0 == x1 && y0 == y1) {
       throw ArgumentError("Reflection line points must be distinct");
     }
@@ -646,8 +642,7 @@ class AffineTransformation implements CoordinateSequenceFilter {
    * @param y the y-ordinate of the rotation point
    * @return this transformation, with an updated matrix
    */
-  AffineTransformation setToRotationSinCosXY(
-      double sinTheta, double cosTheta, double x, double y) {
+  AffineTransformation setToRotationSinCosXY(double sinTheta, double cosTheta, double x, double y) {
     m00 = cosTheta;
     m01 = -sinTheta;
     m02 = x - x * cosTheta + y * sinTheta;
@@ -821,8 +816,7 @@ class AffineTransformation implements CoordinateSequenceFilter {
    * @param y the y-ordinate of the rotation point
    * @return this transformation, with an updated matrix
    */
-  AffineTransformation rotateSinCosXY(
-      double sinTheta, double cosTheta, double x, double y) {
+  AffineTransformation rotateSinCosXY(double sinTheta, double cosTheta, double x, double y) {
     compose(rotationInstanceSinCosXY(sinTheta, cosTheta, x, y));
     return this;
   }
@@ -1003,12 +997,7 @@ class AffineTransformation implements CoordinateSequenceFilter {
   * @return true if this is the identity transformation
   */
   bool isIdentity() {
-    return (m00 == 1 &&
-        m01 == 0 &&
-        m02 == 0 &&
-        m10 == 0 &&
-        m11 == 1 &&
-        m12 == 0);
+    return (m00 == 1 && m01 == 0 && m02 == 0 && m10 == 0 && m11 == 1 && m12 == 0);
   }
 
   /**
@@ -1096,8 +1085,7 @@ class AffineTransformationBuilder {
    * @param dest1 the image of control point 1 under the required transformation
    * @param dest2 the image of control point 2 under the required transformation
    */
-  AffineTransformationBuilder(
-      this.src0, this.src1, this.src2, this.dest0, this.dest1, this.dest2);
+  AffineTransformationBuilder(this.src0, this.src1, this.src2, this.dest0, this.dest1, this.dest2);
 
   /**
    * Computes the {@link AffineTransformation}
@@ -1109,9 +1097,7 @@ class AffineTransformationBuilder {
   AffineTransformation? getTransformation() {
     // compute full 3-point transformation
     bool isSolvable = compute();
-    if (isSolvable)
-      return AffineTransformation.fromMatrixValues(
-          m00, m01, m02, m10, m11, m12);
+    if (isSolvable) return AffineTransformation.fromMatrixValues(m00, m01, m02, m10, m11, m12);
     return null;
   }
 
@@ -1180,14 +1166,8 @@ class AffineTransformationFactory {
 	 * @return the computed transformation
 	 */
   static AffineTransformation? createFromControlVectors3(
-      Coordinate src0,
-      Coordinate src1,
-      Coordinate src2,
-      Coordinate dest0,
-      Coordinate dest1,
-      Coordinate dest2) {
-    AffineTransformationBuilder builder =
-        new AffineTransformationBuilder(src0, src1, src2, dest0, dest1, dest2);
+      Coordinate src0, Coordinate src1, Coordinate src2, Coordinate dest0, Coordinate dest1, Coordinate dest2) {
+    AffineTransformationBuilder builder = new AffineTransformationBuilder(src0, src1, src2, dest0, dest1, dest2);
     return builder.getTransformation();
   }
 
@@ -1218,8 +1198,7 @@ class AffineTransformationFactory {
 
     double scale = destDist / srcDist;
 
-    AffineTransformation trans =
-        AffineTransformation.translationInstance(-src0.x, -src0.y);
+    AffineTransformation trans = AffineTransformation.translationInstance(-src0.x, -src0.y);
     trans.rotate(ang);
     trans.scale(scale, scale);
     trans.translate(dest0.x, dest0.y);
@@ -1238,8 +1217,7 @@ class AffineTransformationFactory {
 	 *          the end point of the control vector
 	 * @return the computed transformation
 	 */
-  static AffineTransformation createFromControlVectors(
-      Coordinate? src0, Coordinate? dest0) {
+  static AffineTransformation createFromControlVectors(Coordinate? src0, Coordinate? dest0) {
     double dx = dest0!.x - src0!.x;
     double dy = dest0.y - src0.y;
     return AffineTransformation.translationInstance(dx, dy);
@@ -1258,19 +1236,15 @@ class AffineTransformationFactory {
 	 *           if the control vector arrays are too short, long or of different
 	 *           lengths
 	 */
-  static AffineTransformation? createFromControlVectorsCL(
-      List<Coordinate?> src, List<Coordinate?> dest) {
-    if (src.length != dest.length)
-      throw ArgumentError("Src and Dest arrays are not the same length");
+  static AffineTransformation? createFromControlVectorsCL(List<Coordinate?> src, List<Coordinate?> dest) {
+    if (src.length != dest.length) throw ArgumentError("Src and Dest arrays are not the same length");
     if (src.length <= 0) throw ArgumentError("Too few control points");
     if (src.length > 3) throw ArgumentError("Too many control points");
 
     if (src.length == 1) return createFromControlVectors(src[0], dest[0]);
-    if (src.length == 2)
-      return createFromControlVectors2(src[0]!, src[1]!, dest[0]!, dest[1]!);
+    if (src.length == 2) return createFromControlVectors2(src[0]!, src[1]!, dest[0]!, dest[1]!);
 
-    return createFromControlVectors3(
-        src[0]!, src[1]!, src[2]!, dest[0]!, dest[1]!, dest[2]!);
+    return createFromControlVectors3(src[0]!, src[1]!, src[2]!, dest[0]!, dest[1]!, dest[2]!);
   }
 
   /**
@@ -1292,8 +1266,7 @@ class AffineTransformationFactory {
 	 */
   static AffineTransformation createFromBaseLines(
       Coordinate src0, Coordinate src1, Coordinate dest0, Coordinate dest1) {
-    Coordinate rotPt =
-        new Coordinate(src0.x + dest1.x - dest0.x, src0.y + dest1.y - dest0.y);
+    Coordinate rotPt = new Coordinate(src0.x + dest1.x - dest0.x, src0.y + dest1.y - dest0.y);
 
     double ang = Angle.angleBetweenOriented(src1, src0, rotPt);
 
@@ -1305,8 +1278,7 @@ class AffineTransformationFactory {
 
     double scale = destDist / srcDist;
 
-    AffineTransformation trans =
-        AffineTransformation.translationInstance(-src0.x, -src0.y);
+    AffineTransformation trans = AffineTransformation.translationInstance(-src0.x, -src0.y);
     trans.rotate(ang);
     trans.scale(scale, scale);
     trans.translate(dest0.x, dest0.y);
@@ -1322,12 +1294,11 @@ class AffineTransformationFunctions {
     List<Coordinate?> dest = []..length = nControl;
     for (int i = 0; i < nControl; i++) {
       Geometry contComp = control.getGeometryN(i);
-      List<Coordinate> pts = contComp.getCoordinates();
+      List<Coordinate> pts = contComp.getCoordinates() as List<Coordinate>;
       src[i] = pts[0];
       dest[i] = pts[1];
     }
-    AffineTransformation? trans =
-        AffineTransformationFactory.createFromControlVectorsCL(src, dest);
+    AffineTransformation? trans = AffineTransformationFactory.createFromControlVectorsCL(src, dest);
     return trans!.transformGeom(g);
   }
 
@@ -1340,9 +1311,7 @@ class AffineTransformationFunctions {
     var destPts = destBaseline.getCoordinates();
     Coordinate dest0 = destPts[0];
     Coordinate dest1 = destPts[1];
-    AffineTransformation trans =
-        AffineTransformationFactory.createFromBaseLines(
-            src0, src1, dest0, dest1);
+    AffineTransformation trans = AffineTransformationFactory.createFromBaseLines(src0, src1, dest0, dest1);
     return trans.transformGeom(g);
   }
 
@@ -1373,8 +1342,7 @@ class AffineTransformationFunctions {
     Coordinate viewCentre = viewEnv.centre()!;
 
     // isotropic scaling
-    AffineTransformation trans = AffineTransformation.scaleInstanceScaleXY(
-        scale, scale, centre.x, centre.y);
+    AffineTransformation trans = AffineTransformation.scaleInstanceScaleXY(scale, scale, centre.x, centre.y);
     // translate using envelope centres
     trans.translate(viewCentre.x - centre.x, viewCentre.y - centre.y);
     return trans;
@@ -1382,22 +1350,19 @@ class AffineTransformationFunctions {
 
   static Geometry scale(Geometry g, double scale) {
     Coordinate centre = envelopeCentre(g)!;
-    AffineTransformation trans = AffineTransformation.scaleInstanceScaleXY(
-        scale, scale, centre.x, centre.y);
+    AffineTransformation trans = AffineTransformation.scaleInstanceScaleXY(scale, scale, centre.x, centre.y);
     return trans.transformGeom(g);
   }
 
   static Geometry reflectInX(Geometry g) {
     Coordinate centre = envelopeCentre(g)!;
-    AffineTransformation trans =
-        AffineTransformation.scaleInstanceScaleXY(1, -1, centre.x, centre.y);
+    AffineTransformation trans = AffineTransformation.scaleInstanceScaleXY(1, -1, centre.x, centre.y);
     return trans.transformGeom(g);
   }
 
   static Geometry reflectInY(Geometry g) {
     Coordinate centre = envelopeCentre(g)!;
-    AffineTransformation trans =
-        AffineTransformation.scaleInstanceScaleXY(-1, 1, centre.x, centre.y);
+    AffineTransformation trans = AffineTransformation.scaleInstanceScaleXY(-1, 1, centre.x, centre.y);
     return trans.transformGeom(g);
   }
 
@@ -1407,8 +1372,7 @@ class AffineTransformationFunctions {
       // Angle (multiple of Pi)
       double multipleOfPi) {
     Coordinate centre = envelopeCentre(g)!;
-    AffineTransformation trans = AffineTransformation.rotationInstanceTXY(
-        multipleOfPi * math.pi, centre.x, centre.y);
+    AffineTransformation trans = AffineTransformation.rotationInstanceTXY(multipleOfPi * math.pi, centre.x, centre.y);
     return trans.transformGeom(g);
   }
 
@@ -1425,8 +1389,7 @@ class AffineTransformationFunctions {
     } else {
       loc = pt.getCoordinates()[0];
     }
-    AffineTransformation trans = AffineTransformation.rotationInstanceTXY(
-        multipleOfPi * math.pi, loc.x, loc.y);
+    AffineTransformation trans = AffineTransformation.rotationInstanceTXY(multipleOfPi * math.pi, loc.x, loc.y);
     return trans.transformGeom(g);
   }
 
@@ -1436,8 +1399,7 @@ class AffineTransformationFunctions {
       // Angle (radians)
       double angle) {
     Coordinate centre = envelopeCentre(g)!;
-    AffineTransformation trans =
-        AffineTransformation.rotationInstanceTXY(angle, centre.x, centre.y);
+    AffineTransformation trans = AffineTransformation.rotationInstanceTXY(angle, centre.x, centre.y);
     return trans.transformGeom(g);
   }
 
@@ -1454,22 +1416,19 @@ class AffineTransformationFunctions {
     } else {
       loc = pt.getCoordinates()[0];
     }
-    AffineTransformation trans =
-        AffineTransformation.rotationInstanceTXY(angle, loc.x, loc.y);
+    AffineTransformation trans = AffineTransformation.rotationInstanceTXY(angle, loc.x, loc.y);
     return trans.transformGeom(g);
   }
 
   static Geometry translateCentreToOrigin(Geometry g) {
     Coordinate centre = envelopeCentre(g)!;
-    AffineTransformation trans =
-        AffineTransformation.translationInstance(-centre.x, -centre.y);
+    AffineTransformation trans = AffineTransformation.translationInstance(-centre.x, -centre.y);
     return trans.transformGeom(g);
   }
 
   static Geometry translateToOrigin(Geometry g) {
     Coordinate lowerLeft = envelopeLowerLeft(g);
-    AffineTransformation trans =
-        AffineTransformation.translationInstance(-lowerLeft.x, -lowerLeft.y);
+    AffineTransformation trans = AffineTransformation.translationInstance(-lowerLeft.x, -lowerLeft.y);
     return trans.transformGeom(g);
   }
 }

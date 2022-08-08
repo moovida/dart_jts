@@ -1,4 +1,6 @@
-part of dart_jts;
+import '../geom/coordinate.dart';
+import '../geom/geometry.dart';
+import '../geom/linestring.dart';
 
 /**
  * Represents a location along a {@link LineString} or {@link MultiLineString}.
@@ -35,8 +37,7 @@ class LinearLocation implements Comparable {
    * @param frac the length to the desired point
    * @return the <tt>Coordinate</tt> of the desired point
    */
-  static Coordinate pointAlongSegmentByFraction(
-      Coordinate p0, Coordinate p1, double frac) {
+  static Coordinate pointAlongSegmentByFraction(Coordinate p0, Coordinate p1, double frac) {
     if (frac <= 0.0) return p0;
     if (frac >= 1.0) return p1;
 
@@ -56,21 +57,18 @@ class LinearLocation implements Comparable {
    */
   LinearLocation();
 
-  LinearLocation.fromSegmentIndexFraction(
-      int segmentIndex, double segmentFraction)
-      : this.fromComponentSegmentIndexFraction(
-            0, segmentIndex, segmentFraction);
+  LinearLocation.fromSegmentIndexFraction(int segmentIndex, double segmentFraction)
+      : this.fromComponentSegmentIndexFraction(0, segmentIndex, segmentFraction);
 
-  LinearLocation.fromComponentSegmentIndexFraction(
-      int componentIndex, int segmentIndex, double segmentFraction) {
+  LinearLocation.fromComponentSegmentIndexFraction(int componentIndex, int segmentIndex, double segmentFraction) {
     this.componentIndex = componentIndex;
     this.segmentIndex = segmentIndex;
     this.segmentFraction = segmentFraction;
     normalize();
   }
 
-  LinearLocation.fromComponentSegmentIndexFractionNorm(int componentIndex,
-      int segmentIndex, double segmentFraction, bool doNormalize) {
+  LinearLocation.fromComponentSegmentIndexFractionNorm(
+      int componentIndex, int segmentIndex, double segmentFraction, bool doNormalize) {
     this.componentIndex = componentIndex;
     this.segmentIndex = segmentIndex;
     this.segmentFraction = segmentFraction;
@@ -167,8 +165,7 @@ class LinearLocation implements Comparable {
 
     // ensure segment index is valid
     int segIndex = segmentIndex;
-    if (segmentIndex >= numSegments(lineComp))
-      segIndex = lineComp.getNumPoints() - 2;
+    if (segmentIndex >= numSegments(lineComp)) segIndex = lineComp.getNumPoints() - 2;
 
     Coordinate p0 = lineComp.getCoordinateN(segIndex);
     Coordinate p1 = lineComp.getCoordinateN(segIndex + 1);
@@ -267,14 +264,11 @@ class LinearLocation implements Comparable {
    * @return true if this location is valid
    */
   bool isValid(Geometry linearGeom) {
-    if (componentIndex < 0 || componentIndex >= linearGeom.getNumGeometries())
-      return false;
+    if (componentIndex < 0 || componentIndex >= linearGeom.getNumGeometries()) return false;
 
     LineString lineComp = linearGeom.getGeometryN(componentIndex) as LineString;
-    if (segmentIndex < 0 || segmentIndex > lineComp.getNumPoints())
-      return false;
-    if (segmentIndex == lineComp.getNumPoints() && segmentFraction != 0.0)
-      return false;
+    if (segmentIndex < 0 || segmentIndex > lineComp.getNumPoints()) return false;
+    if (segmentIndex == lineComp.getNumPoints() && segmentFraction != 0.0) return false;
 
     if (segmentFraction < 0.0 || segmentFraction > 1.0) return false;
     return true;
@@ -312,8 +306,7 @@ class LinearLocation implements Comparable {
    * @return    a negative integer, zero, or a positive integer as this <code>LineStringLocation</code>
    *      is less than, equal to, or greater than the specified locationValues
    */
-  int compareLocationValues(
-      int componentIndex1, int segmentIndex1, double segmentFraction1) {
+  int compareLocationValues(int componentIndex1, int segmentIndex1, double segmentFraction1) {
     // compare component indices
     if (componentIndex < componentIndex1) return -1;
     if (componentIndex > componentIndex1) return 1;
@@ -340,13 +333,8 @@ class LinearLocation implements Comparable {
    *      as the first set of location values
    *      is less than, equal to, or greater than the second set of locationValues
    */
-  static int compareLocationValuesStatic(
-      int componentIndex0,
-      int segmentIndex0,
-      double segmentFraction0,
-      int componentIndex1,
-      int segmentIndex1,
-      double segmentFraction1) {
+  static int compareLocationValuesStatic(int componentIndex0, int segmentIndex0, double segmentFraction0,
+      int componentIndex1, int segmentIndex1, double segmentFraction1) {
     // compare component indices
     if (componentIndex0 < componentIndex1) return -1;
     if (componentIndex0 > componentIndex1) return 1;
@@ -370,10 +358,8 @@ class LinearLocation implements Comparable {
   bool isOnSameSegment(LinearLocation loc) {
     if (componentIndex != loc.componentIndex) return false;
     if (segmentIndex == loc.segmentIndex) return true;
-    if (loc.segmentIndex - segmentIndex == 1 && loc.segmentFraction == 0.0)
-      return true;
-    if (segmentIndex - loc.segmentIndex == 1 && segmentFraction == 0.0)
-      return true;
+    if (loc.segmentIndex - segmentIndex == 1 && loc.segmentFraction == 0.0) return true;
+    if (segmentIndex - loc.segmentIndex == 1 && segmentFraction == 0.0) return true;
     return false;
   }
 
@@ -388,8 +374,7 @@ class LinearLocation implements Comparable {
     LineString lineComp = linearGeom.getGeometryN(componentIndex) as LineString;
     // check for endpoint
     int nseg = numSegments(lineComp);
-    return segmentIndex >= nseg ||
-        (segmentIndex == nseg - 1 && segmentFraction >= 1.0);
+    return segmentIndex >= nseg || (segmentIndex == nseg - 1 && segmentFraction >= 1.0);
   }
 
   /**
@@ -412,8 +397,7 @@ class LinearLocation implements Comparable {
     int nseg = numSegments(lineComp);
     // if not an endpoint can be returned directly
     if (segmentIndex < nseg) return this;
-    return new LinearLocation.fromComponentSegmentIndexFractionNorm(
-        componentIndex, nseg - 1, 1.0, false);
+    return new LinearLocation.fromComponentSegmentIndexFractionNorm(componentIndex, nseg - 1, 1.0, false);
   }
 
   /**
@@ -432,8 +416,7 @@ class LinearLocation implements Comparable {
    * @return a copy of this location
    */
   LinearLocation copy() {
-    return new LinearLocation.fromComponentSegmentIndexFraction(
-        componentIndex, segmentIndex, segmentFraction);
+    return new LinearLocation.fromComponentSegmentIndexFraction(componentIndex, segmentIndex, segmentFraction);
   }
 
   String toString() {

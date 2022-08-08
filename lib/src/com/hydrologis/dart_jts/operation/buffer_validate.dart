@@ -1,4 +1,13 @@
-part of dart_jts;
+import '../algorithm/distance.dart';
+import '../geom/coordinate.dart';
+import '../geom/envelope.dart';
+import '../geom/geometry.dart';
+import '../geom/geometry_collection.dart';
+import '../geom/linestring.dart';
+import '../geom/polygon.dart';
+import '../geom/multipolygon.dart';
+import '../geom/util.dart';
+import '../io/io.dart';
 
 /**
  * Validates that the result of a buffer operation
@@ -25,8 +34,7 @@ class BufferResultValidator {
   static final double MAX_ENV_DIFF_FRAC = .012;
 
   static bool isValidGDG(Geometry g, double distance, Geometry result) {
-    BufferResultValidator validator =
-        new BufferResultValidator(g, distance, result);
+    BufferResultValidator validator = new BufferResultValidator(g, distance, result);
     if (validator.isValid()) return true;
     return false;
   }
@@ -42,8 +50,7 @@ class BufferResultValidator {
    * or null if the buffer is valid
    */
   static String? isValidMsg(Geometry g, double distance, Geometry result) {
-    BufferResultValidator validator =
-        new BufferResultValidator(g, distance, result);
+    BufferResultValidator validator = new BufferResultValidator(g, distance, result);
     if (!validator.isValid()) return validator.getErrorMessage();
     return null;
   }
@@ -126,8 +133,7 @@ class BufferResultValidator {
     double padding = distance * MAX_ENV_DIFF_FRAC;
     if (padding == 0.0) padding = 0.001;
 
-    Envelope expectedEnv =
-        new Envelope.fromEnvelope(input.getEnvelopeInternal());
+    Envelope expectedEnv = new Envelope.fromEnvelope(input.getEnvelopeInternal());
     expectedEnv.expandByDistance(distance);
 
     Envelope bufEnv = new Envelope.fromEnvelope(result.getEnvelopeInternal());
@@ -159,8 +165,7 @@ class BufferResultValidator {
   }
 
   void checkDistance() {
-    BufferDistanceValidator distValid =
-        new BufferDistanceValidator(input, distance, result);
+    BufferDistanceValidator distValid = new BufferDistanceValidator(input, distance, result);
     if (!distValid.isValid()) {
       _isValid = false;
       errorMsg = distValid.getErrorMessage();
@@ -266,9 +271,7 @@ class BufferDistanceValidator {
     // Assert: only polygonal inputs can be checked for negative buffers
 
     // MD - could generalize this to handle GCs too
-    if (!(input is Polygon ||
-        input is MultiPolygon ||
-        input is GeometryCollection)) {
+    if (!(input is Polygon || input is MultiPolygon || input is GeometryCollection)) {
       return;
     }
     Geometry inputCurve = getPolygonLines(input);
@@ -280,8 +283,7 @@ class BufferDistanceValidator {
 
   Geometry getPolygonLines(Geometry g) {
     List<LineString> lines = [];
-    LinearComponentExtracter lineExtracter =
-        new LinearComponentExtracter(lines);
+    LinearComponentExtracter lineExtracter = new LinearComponentExtracter(lines);
     List polys = PolygonExtracter.getPolygons(g);
     for (Polygon poly in polys) {
       poly.applyGCF(lineExtracter);
@@ -327,8 +329,7 @@ class BufferDistanceValidator {
 //    BufferCurveMaximumDistanceFinder maxDistFinder = new BufferCurveMaximumDistanceFinder(input);
 //    maxDistanceFound = maxDistFinder.findDistance(bufCurve);
 
-    DiscreteHausdorffDistance haus =
-        new DiscreteHausdorffDistance(bufCurve, input);
+    DiscreteHausdorffDistance haus = new DiscreteHausdorffDistance(bufCurve, input);
     haus.setDensifyFraction(0.25);
     maxDistanceFound = haus.orientedDistance();
 
