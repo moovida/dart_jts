@@ -1,3 +1,7 @@
+== Version 0.2.2
+
+- fix for bad wkb bug in case of 3D geometries.
+
 == Version 0.2.1+1
 
 - upgrade collections to allow for flutter 3 on depending projects

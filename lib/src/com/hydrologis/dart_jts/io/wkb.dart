@@ -242,14 +242,14 @@ class WKBReader {
 // handle 3D and 4D WKB geometries
 // geometries with Z coordinates have the 0x80 flag (postgis EWKB)
 // or are in the 1000 range (Z) or in the 3000 range (ZM) of geometry type (OGC 06-103r4)
-    bool hasZ = ((typeInt & 0x80000000) != 0 ||
-        (typeInt & 0xffff) / 1000 == 1 ||
-        (typeInt & 0xffff) / 1000 == 3);
+    bool hasZ = ((typeInt & 0x80000000).toInt() != 0 ||
+        (typeInt & 0xffff) ~/ 1000 == 1 ||
+        (typeInt & 0xffff) ~/ 1000 == 3);
 // geometries with M coordinates have the 0x40 flag (postgis EWKB)
 // or are in the 1000 range (M) or in the 3000 range (ZM) of geometry type (OGC 06-103r4)
-    bool hasM = ((typeInt & 0x40000000) != 0 ||
-        (typeInt & 0xffff) / 1000 == 2 ||
-        (typeInt & 0xffff) / 1000 == 3);
+    bool hasM = ((typeInt & 0x40000000).toInt() != 0 ||
+        (typeInt & 0xffff) ~/ 1000 == 2 ||
+        (typeInt & 0xffff) ~/ 1000 == 3);
 //System.out.println(typeInt + " - " + geometryType + " - hasZ:" + hasZ);
     inputDimension = 2 + (hasZ ? 1 : 0) + (hasM ? 1 : 0);
 
