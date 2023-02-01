@@ -1,16 +1,16 @@
 name: dart_jts
 description: An ongoing effort to port the Java Topology Suite to the dart programming language and make it available to its mobile, dektop and web environments.
-version: 0.2.2+1
+version: 0.2.2
 homepage: https://www.hydrologis.com
 repository: https://github.com/moovida/dart_jts
 issue_tracker: https://github.com/moovida/dart_jts/issues
 
 environment:
-  sdk: '>=2.12.0'
+  sdk: '>=2.12.0 <3.0.0'
 
 dependencies:
-  intl: '>=0.16.1'
-  collection: '>=1.14.13'
+  intl: ^0.18.0
+  collection: ^1.17.1
 
 dev_dependencies:
   pedantic: ^1.9.0
