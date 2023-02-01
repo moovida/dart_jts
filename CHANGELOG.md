@@ -1,3 +1,7 @@
+== Version 0.2.2+1
+
+- removing unnecessary constraints
+
 == Version 0.2.2
 
 - fix for bad wkb bug in case of 3D geometries.
