@@ -46,6 +46,7 @@ part 'src/com/hydrologis/dart_jts/index/chain.dart';
 part 'src/com/hydrologis/dart_jts/index/strtree.dart';
 part 'src/com/hydrologis/dart_jts/util/avltree.dart';
 part 'src/com/hydrologis/dart_jts/extra.dart';
+part 'src/com/hydrologis/dart_jts/addons/geodesy.dart';
 part 'src/com/hydrologis/dart_jts/geom/affinetransformation.dart';
 part 'src/com/hydrologis/dart_jts/linearref/lengthindexedline.dart';
 part 'src/com/hydrologis/dart_jts/linearref/linearlocation.dart';

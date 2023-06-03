@@ -83,6 +83,8 @@ class Coordinate implements Comparable<Coordinate> {
   ///@param  y  the y-value
   Coordinate(double x, double y) : this.fromXYZ(x, y, NULL_ORDINATE);
 
+  Coordinate.fromYX(double y, double x) : this.fromXYZ(x, y, NULL_ORDINATE);
+
   ///  Sets this <code>Coordinate</code>s (x,y,z) values to that of <code>other</code>.
   ///
   ///@param  other  the <code>Coordinate</code> to copy
