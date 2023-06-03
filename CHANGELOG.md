@@ -1,3 +1,7 @@
+== Version 0.2.3
+
+- adding geodesy class
+
 == Version 0.2.2+1
 
 - removing unnecessary constraints
