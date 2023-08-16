@@ -305,4 +305,16 @@ class Geodesy {
 
     return _area;
   }
+
+  /// Return the length of a given geometry in meters.
+  num length(Geometry geometry) {
+    var length = 0.0;
+    var coords = geometry.getCoordinates();
+    for (var i = 1; i < coords.length; i++) {
+      var c1 = coords[i - 1];
+      var c2 = coords[i];
+      length += distanceBetweenTwoGeoPoints(c1, c2);
+    }
+    return (length * 100).round() / 100;
+  }
 }

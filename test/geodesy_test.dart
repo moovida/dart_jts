@@ -111,12 +111,16 @@ void main() {
     expect((geofencedPoints.contains(pointNotInRange)), false);
   });
 
-  test('area', () async {
+  test('area and length', () async {
     const world_area = 511207893395811.06;
+    const world_perim = 40075016.69;
     const wkt = "POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))";
 
     Geometry polygon = WKTReader().read(wkt)!;
     var area = geodesy.area(polygon);
     expect(area, world_area);
+
+    var length = geodesy.length(polygon);
+    expect(length, world_perim);
   });
 }
