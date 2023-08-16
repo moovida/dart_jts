@@ -1,3 +1,7 @@
+== Version 0.2.3+1
+
+- added geodesy polygon area calculation
+
 == Version 0.2.3
 
 - adding geodesy class

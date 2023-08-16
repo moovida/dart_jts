@@ -110,4 +110,13 @@ void main() {
     expect((geofencedPoints.contains(pointInRange)), true);
     expect((geofencedPoints.contains(pointNotInRange)), false);
   });
+
+  test('area', () async {
+    const world_area = 511207893395811.06;
+    const wkt = "POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))";
+
+    Geometry polygon = WKTReader().read(wkt)!;
+    var area = geodesy.area(polygon);
+    expect(area, world_area);
+  });
 }

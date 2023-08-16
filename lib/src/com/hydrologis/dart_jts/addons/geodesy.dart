@@ -6,7 +6,7 @@ part of dart_jts;
 /// project that is no longer maintained. Changes have been done to work with
 /// coordinates instead of latlng.
 class Geodesy {
-  final num _RADIUS = 6371e3; // meters
+  final num _RADIUS = 6378137.0; // meters
   final num _PI = math.pi;
 
   /// calculate a destination point given the distance and bearing
@@ -227,4 +227,82 @@ class Geodesy {
 
   /// Radian to degree
   double radianToDeg(final double rad) => rad * (180.0 / _PI);
+
+  /// convert degrees to radians
+  // num rad(num value) => value * pi / 180;
+
+  /// Calculate the approximate _area of the polygon were it projected onto
+  ///     the earth.  Note that this _area will be positive if ring is oriented
+  ///     clockwise, otherwise it will be negative.
+  ///
+  /// Reference:
+  ///     Robert. G. Chamberlain and William H. Duquette, "Some Algorithms for
+  ///     Polygons on a Sphere", JPL Publication 07-03, Jet Propulsion
+  ///     Laboratory, Pasadena, CA, June 2007 http://trs-new.jpl.nasa.gov/dspace/handle/2014/40409
+  ///
+  /// Returns:
+  ///
+  /// {num} The approximate signed geodesic _area of the polygon in square meters.
+  num _ringArea(List<Coordinate> coordinates) {
+    num _area = 0;
+
+    if (coordinates.length > 2) {
+      for (int i = 0; i < coordinates.length; i++) {
+        var lowerIndex = i;
+        var middleIndex = i + 1;
+        var upperIndex = i + 2;
+
+        if (i == coordinates.length - 2) {
+          lowerIndex = coordinates.length - 2;
+          middleIndex = coordinates.length - 1;
+          upperIndex = 0;
+        } else if (i == coordinates.length - 1) {
+          lowerIndex = coordinates.length - 1;
+          middleIndex = 0;
+          upperIndex = 1;
+        }
+
+        var p1 = coordinates[lowerIndex];
+        var p2 = coordinates[middleIndex];
+        var p3 = coordinates[upperIndex];
+
+        _area += (degToRadian(p3.x) - degToRadian(p1.x)) *
+            math.sin(degToRadian(p2.y));
+      }
+
+      _area = _area * _RADIUS * _RADIUS / 2;
+    }
+
+    return _area;
+  }
+
+  num _polygonArea(Polygon polygon) {
+    num _area = 0;
+
+    var extRing = polygon.getExteriorRing();
+    _area += _ringArea(extRing.getCoordinates()).abs();
+
+    var interiorCount = polygon.getNumInteriorRing();
+    for (var i = 0; i < interiorCount; i++) {
+      var intRing = polygon.getInteriorRingN(i);
+      _area -= _ringArea(intRing.getCoordinates()).abs();
+    }
+
+    return _area;
+  }
+
+  /// Return area (in sqm) of given polygon geometry.
+  ///
+  /// Adapted from https://github.com/porn/area
+  num area(Geometry geometry) {
+    num _area = 0;
+
+    var geomCount = geometry.getNumGeometries();
+    for (var i = 0; i < geomCount; i++) {
+      var geom = geometry.getGeometryN(i);
+      _area += _polygonArea(geom as Polygon);
+    }
+
+    return _area;
+  }
 }

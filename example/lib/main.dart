@@ -55,7 +55,7 @@ class _ExamplePageState extends State<ExamplePage> {
 }
 
 class ExampleShape extends StatelessWidget {
-  final double buffer;
+  final double? buffer;
   ExampleShape({this.buffer});
 
   @override
@@ -72,11 +72,11 @@ class ExampleShape extends StatelessWidget {
 }
 
 class ExampleShapePainter extends CustomPainter {
-  final double buffer;
-  final List<Offset> shape;
+  final double? buffer;
+  final List<Offset>? shape;
 
   ExampleShapePainter({this.buffer, this.shape})
-      : assert(shape.length == 0 || shape.length >= 4);
+      : assert(shape!.length == 0 || shape.length >= 4);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -89,12 +89,12 @@ class ExampleShapePainter extends CustomPainter {
       ..style = PaintingStyle.fill;
 
     /// Draw inflated shape
-    if (shape.length >= 4) {
+    if (shape!.length >= 4) {
       GeometryFactory geometryFactory = GeometryFactory.defaultPrecision();
 
       /// Convert [List<Offset>] to [List<Coordinate>] to work with dart_jts
       List<Coordinate> coords =
-          shape.map((element) => Coordinate(element.dx, element.dy)).toList();
+          shape!.map((element) => Coordinate(element.dx, element.dy)).toList();
       coords.add(coords.first);
 
       /// First and last coord MUST be identical
@@ -103,8 +103,8 @@ class ExampleShapePainter extends CustomPainter {
       /// Create the polygon with no holes (hence the empty list as the 2nd argument)
       Polygon polygon = geometryFactory.createPolygon(linearRing, []);
 
-      polygon = polygon.buffer(buffer);
-      List<Offset> inflated = polygon.shell.points
+      polygon = polygon.buffer(buffer!) as Polygon;
+      List<Offset> inflated = polygon.shell!.points
           .toCoordinateArray()
           .map((e) => Offset(e.x, e.y))
           .toList();
@@ -117,7 +117,7 @@ class ExampleShapePainter extends CustomPainter {
 
     /// Draw normal shape
     Path path = Path();
-    path.addPolygon(shape, true);
+    path.addPolygon(shape!, true);
     canvas.drawPath(path, bodyPaint);
   }
 
