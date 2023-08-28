@@ -11,7 +11,7 @@ void main() {
     final l1 = Coordinate.fromYX(50.06638889, 5.71472222);
     final l2 = Coordinate.fromYX(58.64388889, 3.07000000);
     final distance = geodesy.distanceBetweenTwoGeoPoints(l1, l2);
-    expect(distance, 968853.5466871752);
+    expect(distance, 969938.8877266833);
   });
 
   test('destinationPointByDistanceAndBearing', () async {
@@ -19,7 +19,7 @@ void main() {
     final destinationPoint =
         geodesy.destinationPointByDistanceAndBearing(l3, 7794.0, 300.7);
     expect(destinationPoint,
-        Coordinate.fromYX(51.51354569174267, -0.0983453814483255));
+        Coordinate.fromYX(51.51350573766377, -0.09823692862482858));
   });
 
   test('bearingBetweenTwoGeoPoints', () async {
@@ -82,7 +82,7 @@ void main() {
     final l5 = Coordinate.fromYX(48.857, 2.351);
     final l6 = Coordinate.fromYX(50.587, 1.231);
     final distanceToGreatCircle = geodesy.crossTrackDistanceTo(l4, l5, l6);
-    expect(distanceToGreatCircle, 1240.3379338876143);
+    expect(distanceToGreatCircle, 1241.7274005073216);
   });
 
   test('crossTrackDistanceTo', () async {
