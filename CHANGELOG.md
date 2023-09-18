@@ -1,3 +1,7 @@
+== Version 0.2.4
+
+- added spatialite binary geometry reader/writer
+
 == Version 0.2.3+1
 
 - added geodesy polygon area calculation

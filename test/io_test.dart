@@ -88,7 +88,7 @@ void main() {
     test("testGeometryCollectionEmpty",
         () => testClass.testGeometryCollectionEmpty());
 
-    test("test Spatialite WKB Geometries reading", () {
+    test("test Spatialite WKB Geometries reading and writing", () {
       var geomStrings = [
         "POLYGON ((71 70, 40 70, 40 40, 5 40, 5 15, 15 15, 15 4, 50 4, 71 70))",
         "POLYGON ((10 42, 11.9 42, 11.9 40, 10 40, 10 42))",
