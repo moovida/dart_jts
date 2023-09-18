@@ -199,7 +199,7 @@ class WKBReader {
 //    }
 //  }
 
-  /**
+/**
    * Reads a {@link Geometry} in binary WKB format from an {@link InStream}.
    *
    * @param is the stream to read from
@@ -207,14 +207,102 @@ class WKBReader {
    * @throws IOException if the underlying stream creates an error
    * @throws ParseException if the WKB is ill-formed
    */
-  Geometry read(List<int> ins) {
+  Geometry read(List<int> ins, {doSpatialite = false}) {
     var bytesList = ins;
     if (!(ins is Uint8List)) {
       bytesList = Uint8List.fromList(ins);
     }
     dis = ByteOrderDataInStream(bytesList);
-    Geometry g = readGeometry();
+    late Geometry g;
+    if (!doSpatialite) {
+      g = readGeometry();
+    } else {
+      g = readSpatialiteGeometry();
+    }
     return g;
+  }
+
+  Geometry readSpatialiteGeometry() {
+    int start = dis.readByte();
+    if (start != 0x00) {
+      throw ArgumentError("Not a geometry, start byte != 0x00");
+    }
+// determine byte order
+    int byteOrderWKB = dis.readByte();
+
+// always set byte order, since it may change from geometry to geometry
+    if (byteOrderWKB == WKBConstants.wkbNDR) {
+      dis.setOrder(Endian.little);
+    } else if (byteOrderWKB == WKBConstants.wkbXDR) {
+      dis.setOrder(Endian.big);
+    } else if (isStrict) {
+      throw new ParseException(
+          "Unknown geometry byte order (not NDR or XDR): $byteOrderWKB");
+    }
+//if not strict and not XDR or NDR, then we just use the dis default set at the
+//start of the geometry (if a multi-geometry).  This  allows WBKReader to work
+//with Spatialite native BLOB WKB, as well as other WKB variants that might just
+//specify endian-ness at the start of the multigeometry.
+
+    SRID = dis.readInt();
+
+    // 6 - 13 MBR_MIN_X a double value [little- big-endian ordered, accordingly with the
+    // precedent one]
+    // corresponding to the MBR minimum X coordinate for this GEOMETRY
+    // 14 - 21 MBR_MIN_Y a double value corresponding to the MBR minimum Y coordinate
+    // 22 - 29 MBR_MAX_X a double value corresponding to the MBR maximum X coordinate
+    // 30 - 37 MBR_MAX_Y a double value corresponding to the MBR maximum Y coordinate
+    double mbrMinX = dis.readDouble();
+    double mbrMinY = dis.readDouble();
+    double mbrMaxX = dis.readDouble();
+    double mbrMaxY = dis.readDouble();
+
+    // // 38 MBR_END [hex 7C] a GEOMETRY encoded BLOB value must always have an 0x7C byte in
+    // this
+    // // position
+    int mbrEnd = dis.readByte();
+    if (mbrEnd != 0x7C) {
+      throw new ArgumentError("Not a geometry, MBR_END != 0x7C");
+    }
+
+    int typeInt = dis.readInt();
+    int geometryType = typeInt & 0xff;
+    // determine if Z values are present
+    bool hasZ = (typeInt & 0x80000000) != 0;
+    inputDimension = hasZ ? 3 : 2;
+
+    // only allocate ordValues buffer if necessary
+    if (ordValues == null || ordValues!.length < inputDimension)
+      ordValues = List.filled(inputDimension, 0.0);
+
+    late Geometry geom;
+    switch (geometryType) {
+      case WKBConstants.wkbPoint:
+        geom = readPoint();
+        break;
+      case WKBConstants.wkbLineString:
+        geom = readLineString();
+        break;
+      case WKBConstants.wkbPolygon:
+        geom = readPolygon();
+        break;
+      case WKBConstants.wkbMultiPoint:
+        geom = readMultiPoint();
+        break;
+      case WKBConstants.wkbMultiLineString:
+        geom = readMultiLineString();
+        break;
+      case WKBConstants.wkbMultiPolygon:
+        geom = readMultiPolygon();
+        break;
+      case WKBConstants.wkbGeometryCollection:
+        geom = readGeometryCollection();
+        break;
+      default:
+        throw new ParseException("Unknown WKB type $geometryType");
+    }
+    setSRID(geom, SRID);
+    return geom;
   }
 
   Geometry readGeometry() {
@@ -590,6 +678,8 @@ class WKBWriter {
   bool includeSRID = false;
   late List<int> byteArrayOutStream;
 
+  bool doSpatialite = false;
+
   // holds output data values
   List<int> buf = List.from([0, 0, 0, 0, 0, 0, 0, 0]);
 
@@ -663,10 +753,42 @@ class WKBWriter {
    * @param geom the geometry to write
    * @return the byte array containing the WKB
    */
-  List<int> write(Geometry geom) {
+  List<int> write(Geometry geom, {doSpatialite = false}) {
+    this.doSpatialite = doSpatialite;
     try {
       byteArrayOutStream = [];
-      writeStream(geom, byteArrayOutStream);
+
+      if (doSpatialite) {
+        // geom starts with byte 0x00
+        byteArrayOutStream.add(0x00);
+        writeByteOrder(byteArrayOutStream);
+        writeInt(geom.getSRID(), byteArrayOutStream);
+
+        // 6 - 13 MBR_MIN_X a double value [little- big-endian ordered, accordingly with the
+        // precedent one]
+        // corresponding to the MBR minimum X coordinate for this GEOMETRY
+        // 14 - 21 MBR_MIN_Y a double value corresponding to the MBR minimum Y coordinate
+        // 22 - 29 MBR_MAX_X a double value corresponding to the MBR maximum X coordinate
+        // 30 - 37 MBR_MAX_Y a double value corresponding to the MBR maximum Y coordinate
+        double mbrMinX = geom.getEnvelopeInternal().getMinX();
+        double mbrMinY = geom.getEnvelopeInternal().getMinY();
+        double mbrMaxX = geom.getEnvelopeInternal().getMaxX();
+        double mbrMaxY = geom.getEnvelopeInternal().getMaxY();
+
+        Byteutils.putFloat64(mbrMinX, buf, byteOrder);
+        byteArrayOutStream.addAll(buf);
+        Byteutils.putFloat64(mbrMinY, buf, byteOrder);
+        byteArrayOutStream.addAll(buf);
+        Byteutils.putFloat64(mbrMaxX, buf, byteOrder);
+        byteArrayOutStream.addAll(buf);
+        Byteutils.putFloat64(mbrMaxY, buf, byteOrder);
+        byteArrayOutStream.addAll(buf);
+
+        // 38 MBR_END [hex 7C] a GEOMETRY encoded BLOB value must always have an 0x7C byte in
+        // this position
+        byteArrayOutStream.add(0x7C);
+      }
+      writeStream(geom, byteArrayOutStream, true);
     } catch (ex) {
       throw RuntimeException("Unexpected IO exception: $ex");
     }
@@ -680,7 +802,10 @@ class WKBWriter {
    * @param os the out stream to write to
    * @throws IOException if an I/O error occurs
    */
-  void writeStream(Geometry geom, List<int> os) {
+  void writeStream(Geometry geom, List<int> os, bool isFirst) {
+    if (doSpatialite && !isFirst) {
+      byteArrayOutStream.add(0x69);
+    }
     if (geom is Point)
       writePoint(geom, os);
     // LinearRings will be written as LineStrings
@@ -704,19 +829,20 @@ class WKBWriter {
   void writePoint(Point pt, List<int> os) {
     if (pt.getCoordinateSequence().size() == 0)
       throw ArgumentError("Empty Points cannot be represented in WKB");
-    writeByteOrder(os);
+    if (!doSpatialite) writeByteOrder(os);
+
     writeGeometryType(WKBConstants.wkbPoint, pt, os);
     writeCoordinateSequence(pt.getCoordinateSequence(), false, os);
   }
 
   void writeLineString(LineString line, List<int> os) {
-    writeByteOrder(os);
+    if (!doSpatialite) writeByteOrder(os);
     writeGeometryType(WKBConstants.wkbLineString, line, os);
     writeCoordinateSequence(line.getCoordinateSequence(), true, os);
   }
 
   void writePolygon(Polygon poly, List<int> os) {
-    writeByteOrder(os);
+    if (!doSpatialite) writeByteOrder(os);
     writeGeometryType(WKBConstants.wkbPolygon, poly, os);
     writeInt(poly.getNumInteriorRing() + 1, os);
     writeCoordinateSequence(
@@ -729,11 +855,11 @@ class WKBWriter {
 
   void writeGeometryCollection(
       int geometryType, GeometryCollection gc, List<int> os) {
-    writeByteOrder(os);
+    if (!doSpatialite) writeByteOrder(os);
     writeGeometryType(geometryType, gc, os);
     writeInt(gc.getNumGeometries(), os);
     for (int i = 0; i < gc.getNumGeometries(); i++) {
-      writeStream(gc.getGeometryN(i), os);
+      writeStream(gc.getGeometryN(i), os, false);
     }
   }
 
@@ -747,9 +873,9 @@ class WKBWriter {
   void writeGeometryType(int geometryType, Geometry g, List<int> os) {
     int flag3D = (outputDimension == 3) ? 0x80000000 : 0;
     int typeInt = geometryType | flag3D;
-    typeInt |= includeSRID ? 0x20000000 : 0;
+    if (!doSpatialite) typeInt |= includeSRID ? 0x20000000 : 0;
     writeInt(typeInt, os);
-    if (includeSRID) {
+    if (includeSRID && !doSpatialite) {
       writeInt(g.getSRID(), os);
     }
   }

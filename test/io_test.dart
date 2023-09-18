@@ -87,6 +87,30 @@ void main() {
     test("testMultiPolygonEmpty", () => testClass.testMultiPolygonEmpty());
     test("testGeometryCollectionEmpty",
         () => testClass.testGeometryCollectionEmpty());
+
+    test("test Spatialite WKB Geometries reading", () {
+      var geomStrings = [
+        "POLYGON ((71 70, 40 70, 40 40, 5 40, 5 15, 15 15, 15 4, 50 4, 71 70))",
+        "POLYGON ((10 42, 11.9 42, 11.9 40, 10 40, 10 42))",
+        "POLYGON ((11.1 43.2, 11.3 41.3, 13.9 41, 13.8 43.2, 11.1 43.2))",
+        "LINESTRING (11.3 44.3, 8.3 41.4, 11.4 38.1, 14.9 41.3)",
+        "POINT (12.7 44.2)",
+        "POINT (15.1 43.3)",
+        "POINT (15 40.4)",
+        "POINT (13.2 38.4)",
+        "MULTIPOLYGON (((6.9 45.9, 8.4 45.9, 8.4 44.3, 6.9 44.3, 6.9 45.9)), ((9.1 46.3, 10.8 46.3, 10.8 44.6, 9.1 44.6, 9.1 46.3)))",
+        "MULTILINESTRING ((7.4 42.6, 7.4 39, 8.6 38.5), (8 40.3, 9.5 38.6, 8.4 37.5))",
+        "MULTIPOINT ((6.8 42.5), (6.8 41.4), (6.6 40.2))",
+      ];
+
+      for (var geomString in geomStrings) {
+        print(geomString);
+        var geom = WKTReader().read(geomString)!;
+        var bytes = WKBWriter().write(geom, doSpatialite: true);
+        var read = WKBReader().read(bytes, doSpatialite: true);
+        expect(read.equalsExactGeom(read), true);
+      }
+    });
   });
 
   group("WKTWriterTest - ", () {
