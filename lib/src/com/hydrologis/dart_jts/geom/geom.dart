@@ -777,6 +777,10 @@ class CoordinateList {
     return _backingList[i];
   }
 
+  int size() {
+    return _backingList.length;
+  }
+
   /**
    * Adds a section of an array of coordinates to the list.
    * @param coord The coordinates
@@ -1492,7 +1496,7 @@ class Triangle {
    *          the point to compute the Z-value of
    * @return the computed Z-value (elevation) of the point
    */
-  double interpolateZ(Coordinate p) {
+  double interpolateZ(Coordinate? p) {
     if (p == null) throw ArgumentError("Supplied point is null.");
     return interpolateZStatic(p, this.p0, this.p1, this.p2);
   }

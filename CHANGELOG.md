@@ -1,3 +1,7 @@
+== Version 0.2.5
+
+- added convex hull
+  
 == Version 0.2.4
 
 - added spatialite binary geometry reader/writer

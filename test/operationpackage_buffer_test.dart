@@ -503,7 +503,7 @@ class BufferValidator {
       return false;
     }
     if (buffer is Polygon) {
-      return (buffer as Polygon).getNumInteriorRing() > 0;
+      return buffer.getNumInteriorRing() > 0;
     }
     MultiPolygon multiPolygon = buffer as MultiPolygon;
     for (int i = 0; i < multiPolygon.getNumGeometries(); i++) {

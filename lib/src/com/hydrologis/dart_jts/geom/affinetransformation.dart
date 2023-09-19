@@ -1415,7 +1415,7 @@ class AffineTransformationFunctions {
   /// Rotate a geometry around a point by an multiple of Pi radians
   static Geometry rotateByPiMultipleAroundPoint(
       Geometry g,
-      Geometry pt,
+      Geometry? pt,
 
       /// Angle (multiple of Pi)
       double multipleOfPi) {
@@ -1444,7 +1444,7 @@ class AffineTransformationFunctions {
   /// Rotate a geometry around a point by an angle in radians
   static Geometry rotateAroundPoint(
       Geometry g,
-      Geometry pt,
+      Geometry? pt,
 
       /// Angle (radians)
       double angle) {

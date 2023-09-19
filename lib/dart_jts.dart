@@ -17,6 +17,7 @@ part 'src/com/hydrologis/dart_jts/geom/envelope.dart';
 part 'src/com/hydrologis/dart_jts/geom/geom.dart';
 part 'src/com/hydrologis/dart_jts/geom/util.dart';
 part 'src/com/hydrologis/dart_jts/algorithm/distance.dart';
+part 'src/com/hydrologis/dart_jts/algorithm/convexthull.dart';
 part 'src/com/hydrologis/dart_jts/algorithm/algorithm.dart';
 part 'src/com/hydrologis/dart_jts/algorithm/locate.dart';
 part 'src/com/hydrologis/dart_jts/operation/operation.dart';

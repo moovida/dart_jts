@@ -978,12 +978,12 @@ class _InorderIterable extends Object with IterableMixin implements Iterable {
   Iterator _iterator;
 
   _InorderIterable.fromRoot(_AvlTreeNode root,
-      {withEquivalenceClasses: false, reverse: false})
+      {withEquivalenceClasses = false, reverse = false})
       : _iterator = new _InorderIterator.fromRoot(root,
             withEquivalenceClasses: withEquivalenceClasses, reverse: reverse);
 
   _InorderIterable.fromNode(_AvlTreeNode node,
-      {withEquivalenceClasses: false, reverse: false})
+      {withEquivalenceClasses = false, reverse = false})
       : _iterator = new _InorderIterator.fromNode(node,
             withEquivalenceClasses: withEquivalenceClasses, reverse: reverse);
 

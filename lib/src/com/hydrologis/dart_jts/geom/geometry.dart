@@ -1166,8 +1166,7 @@ abstract class Geometry implements Comparable {
    *      s points
    */
   Geometry convexHull() {
-    throw UnimplementedError("Not implemented yet"); // TODO
-//    return (new ConvexHull(this)).getConvexHull();
+    return ConvexHull(this).getConvexHull();
   }
 
   /**
@@ -1447,7 +1446,7 @@ abstract class Geometry implements Comparable {
    * @param g a Geometry
    * @return true if the input geometries are exactly equal in their normalized form
    */
-  bool equalsNorm(Geometry g) {
+  bool equalsNorm(Geometry? g) {
     if (g == null) return false;
     return norm().equalsExactGeom(g.norm());
   }

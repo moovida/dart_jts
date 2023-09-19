@@ -122,6 +122,55 @@ class PriorityQueue {
 }
 
 /**
+ *  A {@link CoordinateFilter} that extracts a unique array of <code>Coordinate</code>s.
+ *  The array of coordinates contains no duplicate points.
+ *  It preserves the order of the input points.
+ *
+ *@version 1.7
+ */
+class UniqueCoordinateArrayFilter implements CoordinateFilter {
+  /**
+   * Convenience method which allows running the filter over an array of {@link Coordinate}s.
+   * 
+   * @param coords an array of coordinates
+   * @return an array of the unique coordinates
+   */
+  static List<Coordinate> filterCoordinates(List<Coordinate> coords) {
+    UniqueCoordinateArrayFilter filter = new UniqueCoordinateArrayFilter();
+    for (int i = 0; i < coords.length; i++) {
+      filter.filter(coords[i]);
+    }
+    return filter.getCoordinates();
+  }
+
+  Set<Coordinate> coordSet = new HashSet<Coordinate>();
+  // Use an auxiliary list as well in order to preserve coordinate order
+  List<Coordinate> list = [];
+
+  UniqueCoordinateArrayFilter() {}
+
+  /**
+   *  Returns the gathered <code>Coordinate</code>s.
+   *
+   *@return    the <code>Coordinate</code>s collected by this <code>CoordinateArrayFilter</code>
+   */
+  List<Coordinate> getCoordinates() {
+    return list;
+    // List<Coordinate> coordinates = new Coordinate[list.size()];
+    // return (List<Coordinate>) list.toArray(coordinates);
+  }
+
+  /**
+   * @see CoordinateFilter#filter(Coordinate)
+   */
+  void filter(Coordinate? coord) {
+    if (coordSet.add(coord!)) {
+      list.add(coord);
+    }
+  }
+}
+
+/**
  *  A utility for making programming assertions.
  *
  *@version 1.7

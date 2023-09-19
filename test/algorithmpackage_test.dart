@@ -17,6 +17,95 @@ void main() {
           .equals2DWithTolerance(g.getCentroid().getCoordinate()!, TOLERANCE));
     });
   });
+
+  group("Convex Hull Tests - ", () {
+    PrecisionModel precisionModel = PrecisionModel.fixedPrecision(1000);
+    GeometryFactory geometryFactory =
+        GeometryFactory.withPrecisionModelSrid(precisionModel, 0);
+
+    test("testManyIdenticalPoints", () {
+      List<Coordinate> pts = [];
+      for (int i = 0; i < 99; i++) pts.add(Coordinate(0, 0));
+      pts.add(Coordinate(1, 1));
+      ConvexHull ch = ConvexHull.fromPoints(pts, geometryFactory);
+      Geometry actualGeometry = ch.getConvexHull();
+      Geometry? expectedGeometry = WKTReader().read("LINESTRING (0 0, 1 1)");
+      assertTrue(expectedGeometry?.equalsExactGeom(actualGeometry));
+    });
+    test("testAllIdenticalPoints", () {
+      List<Coordinate> pts = [];
+      for (int i = 0; i < 100; i++) pts.add(Coordinate(0, 0));
+      ConvexHull ch = ConvexHull.fromPoints(pts, geometryFactory);
+      Geometry actualGeometry = ch.getConvexHull();
+      Geometry? expectedGeometry = WKTReader().read("POINT (0 0)");
+      assertTrue(expectedGeometry?.equalsExactGeom(actualGeometry));
+    });
+    test("test1", () {
+      WKTReader reader = WKTReader.withFactory(
+          GeometryFactory.withPrecisionModelSrid(
+              PrecisionModel.fixedPrecision(1), 0));
+      LineString lineString =
+          reader.read("LINESTRING (30 220, 240 220, 240 220)") as LineString;
+      LineString convexHull =
+          reader.read("LINESTRING (30 220, 240 220)") as LineString;
+      assertTrue(convexHull.equalsExactGeom(lineString.convexHull()));
+    });
+    test("test2", () {
+      WKTReader reader = WKTReader.withFactory(
+          GeometryFactory.withPrecisionModelSrid(
+              PrecisionModel.fixedPrecision(1), 0));
+      Geometry? geometry = reader.read(
+          "MULTIPOINT (130 240, 130 240, 130 240, 570 240, 570 240, 570 240, 650 240)");
+      LineString convexHull =
+          reader.read("LINESTRING (130 240, 650 240)") as LineString;
+      assertTrue(convexHull.equalsExactGeom(geometry!.convexHull()));
+    });
+    test("test3", () {
+      WKTReader reader = WKTReader.withFactory(
+          GeometryFactory.withPrecisionModelSrid(
+              PrecisionModel.fixedPrecision(1), 0));
+      Geometry? geometry = reader.read("MULTIPOINT (0 0, 0 0, 10 0)");
+      LineString convexHull =
+          reader.read("LINESTRING (0 0, 10 0)") as LineString;
+      assertTrue(convexHull.equalsExactGeom(geometry!.convexHull()));
+    });
+    test("test4", () {
+      WKTReader reader = WKTReader.withFactory(
+          GeometryFactory.withPrecisionModelSrid(
+              PrecisionModel.fixedPrecision(1), 0));
+      Geometry? geometry = reader.read("MULTIPOINT (0 0, 10 0, 10 0)");
+      LineString convexHull =
+          reader.read("LINESTRING (0 0, 10 0)") as LineString;
+      assertTrue(convexHull.equalsExactGeom(geometry!.convexHull()));
+    });
+    test("test5", () {
+      WKTReader reader = WKTReader.withFactory(
+          GeometryFactory.withPrecisionModelSrid(
+              PrecisionModel.fixedPrecision(1), 0));
+      Geometry? geometry = reader.read("MULTIPOINT (0 0, 5 0, 10 0)");
+      LineString convexHull =
+          reader.read("LINESTRING (0 0, 10 0)") as LineString;
+      assertTrue(convexHull.equalsExactGeom(geometry!.convexHull()));
+    });
+    test("test6", () {
+      WKTReader reader = WKTReader.withFactory(
+          GeometryFactory.withPrecisionModelSrid(
+              PrecisionModel.fixedPrecision(1), 0));
+      Geometry? geometry = reader.read("MULTIPOINT (0 0, 5 1, 10 0)");
+      Geometry? convexHull = reader.read("POLYGON ((0 0, 5 1, 10 0, 0 0))");
+      assertTrue(convexHull!.equalsExactGeom(geometry!.convexHull()));
+    });
+    test("test7", () {
+      WKTReader reader = WKTReader.withFactory(
+          GeometryFactory.withPrecisionModelSrid(
+              PrecisionModel.fixedPrecision(1), 0));
+      Geometry? geometry =
+          reader.read("MULTIPOINT (0 0, 0 0, 5 0, 5 0, 10 0, 10 0)");
+      LineString convexHull =
+          reader.read("LINESTRING (0 0, 10 0)") as LineString;
+      assertTrue(convexHull.equalsExactGeom(geometry!.convexHull()));
+    });
+  });
 }
 
 /** Compute the centroid of a geometry as an area-weighted average of the centroids
