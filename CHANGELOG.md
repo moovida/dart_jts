@@ -1,3 +1,7 @@
+== Version 0.2.6
+
+- fix for convex hull bug with large points geoms
+
 == Version 0.2.5
 
 - added convex hull
