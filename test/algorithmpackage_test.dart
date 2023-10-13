@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import "package:test/test.dart";
 import 'package:dart_jts/dart_jts.dart';
 import "dart:math" as math;
@@ -104,6 +106,22 @@ void main() {
       LineString convexHull =
           reader.read("LINESTRING (0 0, 10 0)") as LineString;
       assertTrue(convexHull.equalsExactGeom(geometry!.convexHull()));
+    });
+
+    // test convexhull from multipoint found in wkt file data/convexhull.wkt
+    test("testConvexHullFromMultipoint", () {
+      // read file data/convexhull.wkt
+      String filename = "./test//data/convexhull.wkt";
+      var file = new File(filename);
+      var wkt = file.readAsStringSync();
+      WKTReader reader = WKTReader();
+      Geometry? geometry = reader.read(wkt);
+      Geometry? convexHull = geometry!.convexHull();
+
+      var expectedWkt =
+          "POLYGON ((12.19209 44.41011016666666, 11.429490500000002 44.52205366666667, 11.429474833333332 44.52207583333334, 12.212261666666667 44.43709083333333, 12.212392833333334 44.43656716666666, 12.212399333333334 44.43644266666667, 12.202527513493703 44.41216171584291, 12.192167333333336 44.41011516666667, 12.19209 44.41011016666666))";
+      Geometry? expectedGeometry = reader.read(expectedWkt);
+      assertTrue(expectedGeometry!.equalsExactGeom(convexHull));
     });
   });
 }

@@ -184,13 +184,9 @@ class ConvexHull {
 
     // sort the points radially around the focal point.
     var radialComparator = RadialComparator(pts[0]);
-    pts.sublist(1).sort((o1, o2) {
-      return radialComparator.compare(o1, o2);
-    });
-
-    // Arrays.sort(pts, 1, pts.length, new RadialComparator(pts[0]));
-
-    //radialSort(pts);
+    var ptsTmp = pts.sublist(1);
+    ptsTmp.sort((a, b) => radialComparator.compare(a, b));
+    pts.setRange(1, pts.length, ptsTmp);
     return pts;
   }
 
