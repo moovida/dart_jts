@@ -665,6 +665,45 @@ class CoordinateArrays {
     }
     return coordList;
   }
+  /**
+   * If the coordinate array argument has repeated or invalid points,
+   * constructs a new array containing no repeated points.
+   * Otherwise, returns the argument.
+   *
+   * @param coord an array of coordinates
+   * @return the array with repeated and invalid coordinates removed
+   * @see #hasRepeatedOrInvalidPoints(Coordinate[])
+   * @see Coordinate#isValid()
+   */
+  static List<Coordinate> removeRepeatedOrInvalidPoints(
+      List<Coordinate> coord) {
+    if (!hasRepeatedOrInvalidPoints(coord)) return coord;
+    CoordinateList coordList = new CoordinateList();
+    for (int i = 0; i < coord.length; i++) {
+      if (!coord[i].isValid()) continue;
+      coordList.addCoord(coord[i], false);
+    }
+    return coordList.toCoordinateArray();
+  }
+
+  /**
+   * Tests whether an array has any repeated or invalid coordinates.
+   *
+   * @param coord an array of coordinates
+   * @return true if the array contains repeated or invalid coordinates
+   * @see Coordinate#isValid()
+   */
+  static bool hasRepeatedOrInvalidPoints(List<Coordinate> coord) {
+    for (int i = 1; i < coord.length; i++) {
+      if (!coord[i].isValid()) return true;
+      if (coord[i - 1].equals(coord[i])) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+
 }
 
 /**

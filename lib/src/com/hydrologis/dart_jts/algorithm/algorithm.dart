@@ -412,6 +412,10 @@ class Orientation {
     }
     return isCCW;
   }
+  static bool isCCWArea(List<Coordinate> ring) {
+    return Area.ofRingSigned(ring) < 0;
+  }
+
 }
 
 /// Contains functions to compute intersections between lines.
