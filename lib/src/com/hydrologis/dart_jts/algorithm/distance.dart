@@ -968,3 +968,450 @@ class DistanceToPoint {
     }
   }
 }
+
+/**
+ * Computes the distance between the facets (segments and vertices)
+ * of two {@link Geometry}s
+ * using a Branch-and-Bound algorithm.
+ * The Branch-and-Bound algorithm operates over a
+ * traversal of R-trees built
+ * on the target and the query geometries.
+ * <p>
+ * This approach provides the following benefits:
+ * <ul>
+ * <li>Performance is dramatically improved due to the use of the
+ * R-tree index
+ * and the pruning due to the Branch-and-Bound approach
+ * <li>The spatial index on the target geometry is cached
+ * which allow reuse in an repeated query situation.
+ * </ul>
+ * Using this technique is usually much more performant
+ * than using the brute-force {@link Geometry#distance(Geometry)}
+ * when one or both input geometries are large,
+ * or when evaluating many distance computations against
+ * a single geometry.
+ * <p>
+ * This class is thread-safe.
+ *
+ * @author Martin Davis
+ *
+ */
+class IndexedFacetDistance {
+  static final FacetSequenceDistance FACET_SEQ_DIST =
+      new FacetSequenceDistance();
+
+  /**
+   * Computes the distance between facets of two geometries.
+   * <p>
+   * For geometries with many segments or points,
+   * this can be faster than using a simple distance
+   * algorithm.
+   *
+   * @param g1 a geometry
+   * @param g2 a geometry
+   * @return the distance between facets of the geometries
+   */
+
+  static double distance(Geometry g1, Geometry g2) {
+    IndexedFacetDistance dist = new IndexedFacetDistance(g1);
+    return dist.facetDistance(g2);
+  }
+
+  /**
+   * Tests whether the facets of two geometries lie within a given distance.
+   *
+   * @param g1 a geometry
+   * @param g2 a geometry
+   * @param distance the distance limit
+   * @return true if two facets lie with the given distance
+   */
+
+  static bool isWithinDistance(Geometry g1, Geometry g2, double distance) {
+    IndexedFacetDistance dist = new IndexedFacetDistance(g1);
+    return dist.isWithinDistanceGeometry(g2, distance);
+  }
+
+  /**
+   * Computes the nearest points of the facets of two geometries.
+   *
+   * @param g1 a geometry
+   * @param g2 a geometry
+   * @return the nearest points on the facets of the geometries
+   */
+  static List<Coordinate>? nearestPoints(Geometry g1, Geometry g2) {
+    IndexedFacetDistance dist = new IndexedFacetDistance(g1);
+    return dist.nearestPointsToGeometry(g2);
+  }
+
+  STRtree? cachedTree;
+  Geometry baseGeometry;
+
+  /**
+   * Creates a new distance-finding instance for a given target {@link Geometry}.
+   * <p>
+   * Distances will be computed to all facets of the input geometry.
+   * The facets of the geometry are the discrete segments and points
+   * contained in its components.
+   * In the case of {@link Lineal} and {@link Puntal} inputs,
+   * this is equivalent to computing the conventional distance.
+   * In the case of {@link Polygonal} inputs, this is equivalent
+   * to computing the distance to the polygon boundaries.
+   *
+   * @param geom a Geometry, which may be of any type.
+   */
+  IndexedFacetDistance(this.baseGeometry)
+      : cachedTree = FacetSequenceTreeBuilder.build(baseGeometry);
+
+  /**
+   * Computes the distance from the base geometry to
+   * the given geometry.
+   *
+   * @param g the geometry to compute the distance to
+   *
+   * @return the computed distance
+   */
+  double facetDistance(Geometry g) {
+    STRtree tree2 = FacetSequenceTreeBuilder.build(g);
+    List<Object>? obj =
+        cachedTree!.nearestNeighbourWithTree(tree2, FACET_SEQ_DIST);
+    FacetSequence fs1 = obj![0] as FacetSequence;
+    FacetSequence fs2 = obj[1] as FacetSequence;
+    return fs1.distance(fs2);
+  }
+
+  /**
+   * Computes the nearest locations on the base geometry
+   * and the given geometry.
+   *
+   * @param g the geometry to compute the nearest location to
+   * @return the nearest locations
+   */
+  List<GeometryLocation> nearestLocations(Geometry g) {
+    STRtree tree2 = FacetSequenceTreeBuilder.build(g);
+    List<Object>? obj =
+        cachedTree!.nearestNeighbourWithTree(tree2, FACET_SEQ_DIST);
+    FacetSequence fs1 = obj![0] as FacetSequence;
+    FacetSequence fs2 = obj[1] as FacetSequence;
+    return fs1.nearestLocations(fs2);
+  }
+
+  /**
+   * Compute the nearest locations on the target geometry
+   * and the given geometry.
+   *
+   * @param g the geometry to compute the nearest point to
+   * @return the nearest points
+   */
+  List<Coordinate>? nearestPointsToGeometry(Geometry g) {
+    List<GeometryLocation> minDistanceLocation = nearestLocations(g);
+    List<Coordinate>? nearestPts = toPoints(minDistanceLocation);
+    return nearestPts;
+  }
+
+  static List<Coordinate>? toPoints(List<GeometryLocation>? locations) {
+    if (locations == null) return null;
+    List<Coordinate> nearestPts = <Coordinate>[
+      locations[0].getCoordinate(),
+      locations[1].getCoordinate()
+    ];
+    return nearestPts;
+  }
+
+  /**
+   * Tests whether the base geometry lies within
+   * a specified distance of the given geometry.
+   *
+   * @param g the geometry to test
+   * @param maxDistance the maximum distance to test
+   * @return true if the geometry lies with the specified distance
+   */
+  bool isWithinDistanceGeometry(Geometry g, double maxDistance) {
+    // short-ciruit check
+    double envDist =
+        baseGeometry.getEnvelopeInternal().distance(g.getEnvelopeInternal());
+    if (envDist > maxDistance) return false;
+
+    STRtree tree2 = FacetSequenceTreeBuilder.build(g);
+    return cachedTree!
+        .isWithinDistanceWithTree(tree2, FACET_SEQ_DIST, maxDistance);
+  }
+}
+
+class FacetSequenceDistance implements ItemDistance {
+  double distance(ItemBoundable item1, ItemBoundable item2) {
+    FacetSequence fs1 = item1.getItem() as FacetSequence;
+    FacetSequence fs2 = item2.getItem() as FacetSequence;
+    return fs1.distance(fs2);
+  }
+}
+
+class FacetSequenceTreeBuilder {
+  // 6 seems to be a good facet sequence size
+  static final int FACET_SEQUENCE_SIZE = 6;
+
+  // Seems to be better to use a minimum node capacity
+  static final int STR_TREE_NODE_CAPACITY = 4;
+
+  static STRtree build(Geometry g) {
+    STRtree tree = STRtree.withCapacity(STR_TREE_NODE_CAPACITY);
+    List<FacetSequence> sections = computeFacetSequences(g);
+    for (var section in sections) {
+      tree.insert(section.getEnvelope(), section);
+    }
+    tree.build();
+    return tree;
+  }
+
+  /**
+   * Creates facet sequences
+   *
+   * @param g
+   * @return List<GeometryFacetSequence>
+   */
+  static List<FacetSequence> computeFacetSequences(Geometry g) {
+    FacetSequenceTreeFilter filter = FacetSequenceTreeFilter();
+    g.applyGCF(filter);
+    return filter.sections;
+  }
+}
+
+class FacetSequenceTreeFilter extends GeometryComponentFilter {
+  static final int FACET_SEQUENCE_SIZE = 6;
+  List<FacetSequence> sections = List.empty(growable: true);
+  List<FacetSequence> filterSequence(Geometry geom) {
+    filter(geom);
+    return sections;
+  }
+
+  void filter(Geometry geom) {
+    CoordinateSequence seq;
+    if (geom is LineString) {
+      seq = geom.getCoordinateSequence();
+      addFacetSequences(geom, seq, sections);
+    } else if (geom is Point) {
+      seq = geom.getCoordinateSequence();
+      addFacetSequences(geom, seq, sections);
+    }
+  }
+
+  static void addFacetSequences(
+      Geometry geom, CoordinateSequence pts, List sections) {
+    int i = 0;
+    int size = pts.size();
+    while (i <= size - 1) {
+      int end = i + FACET_SEQUENCE_SIZE + 1;
+      // if only one point remains after this section, include it in this
+      // section
+      if (end >= size - 1) end = size;
+      FacetSequence sect = new FacetSequence(geom, pts, i, end);
+      sections.add(sect);
+      i = i + FACET_SEQUENCE_SIZE;
+    }
+  }
+}
+
+class FacetSequence {
+  Geometry? geom;
+  CoordinateSequence pts;
+  int? start;
+  int? end;
+
+  /**
+   * Creates a new sequence of facets based on a {@link CoordinateSequence}
+   * contained in the given {@link Geometry}.
+   *
+   * @param geom the geometry containing the facets
+   * @param pts the sequence containing the facet points
+   * @param start the index of the start point
+   * @param end the index of the end point + 1
+   */
+  FacetSequence(this.geom, this.pts, this.start, this.end);
+
+  /**
+   * Creates a new sequence of facets based on a {@link CoordinateSequence}.
+   *
+   * @param pts the sequence containing the facet points
+   * @param start the index of the start point
+   * @param end the index of the end point + 1
+   */
+  FacetSequence.fromSequence(this.pts, this.start, this.end);
+
+  /**
+   * Creates a new sequence for a single point from a {@link CoordinateSequence}.
+   *
+   * @param pts the sequence containing the facet point
+   * @param start the index of the point
+   */
+  FacetSequence.fromPoint(this.pts, this.start);
+
+  Envelope getEnvelope() {
+    Envelope env = new Envelope.empty();
+    if (start != null && end != null) {
+      for (int? i = start; i! < end!; i++) {
+        env.expandToInclude(pts.getX(i), pts.getY(i));
+      }
+    }
+    return env;
+  }
+
+  int? size() {
+    return end! - start!;
+  }
+
+  Coordinate getCoordinate(int index) {
+    return pts.getCoordinate(start! + index);
+  }
+
+  bool isPoint() {
+    return end! - start! == 1;
+  }
+
+  /**
+   * Computes the distance between this and another
+   * <tt>FacetSequence</tt>.
+   *
+   * @param facetSeq the sequence to compute the distance to
+   * @return the minimum distance between the sequences
+   */
+  double distance(FacetSequence facetSeq) {
+    bool isPoint = this.isPoint();
+    bool isPointOther = facetSeq.isPoint();
+    double distance;
+
+    if (isPoint && isPointOther) {
+      Coordinate pt = pts.getCoordinate(start!);
+      Coordinate seqPt = facetSeq.pts.getCoordinate(facetSeq.start!);
+      distance = pt.distance(seqPt);
+    } else if (isPoint) {
+      Coordinate pt = pts.getCoordinate(start!);
+      distance = computeDistancePointLine(pt, facetSeq, null);
+    } else if (isPointOther) {
+      Coordinate seqPt = facetSeq.pts.getCoordinate(facetSeq.start!);
+      distance = computeDistancePointLine(seqPt, this, null);
+    } else {
+      distance = computeDistanceLineLine(facetSeq, null);
+    }
+    return distance;
+  }
+
+  /**
+   * Computes the locations of the nearest points between this sequence
+   * and another sequence.
+   * The locations are presented in the same order as the input sequences.
+   *
+   * @return a pair of {@link GeometryLocation}s for the nearest points
+   */
+  List<GeometryLocation> nearestLocations(FacetSequence facetSeq) {
+    bool isPoint = this.isPoint();
+    bool isPointOther = facetSeq.isPoint();
+    List<GeometryLocation>? locs = List.empty(growable: true);
+
+    if (isPoint && isPointOther) {
+      Coordinate pt = pts.getCoordinate(start!);
+      Coordinate seqPt = facetSeq.pts.getCoordinate(facetSeq.start!);
+      locs.add(GeometryLocation(geom!, start!, Coordinate.fromCoordinate(pt)));
+      locs.add(GeometryLocation(facetSeq.geom!, facetSeq.start!,
+          new Coordinate.fromCoordinate(seqPt)));
+    } else if (isPoint) {
+      Coordinate pt = pts.getCoordinate(start!);
+      computeDistancePointLine(pt, facetSeq, locs);
+    } else if (isPointOther) {
+      Coordinate seqPt = facetSeq.pts.getCoordinate(facetSeq.start!);
+      computeDistancePointLine(seqPt, this, locs);
+      // unflip the locations
+      GeometryLocation tmp = locs[0];
+      locs[0] = locs[1];
+      locs[1] = tmp;
+    } else {
+      computeDistanceLineLine(facetSeq, locs);
+    }
+    return locs;
+  }
+
+  double computeDistanceLineLine(
+      FacetSequence facetSeq, List<GeometryLocation>? locs) {
+    // both linear - compute minimum segment-segment distance
+    double minDistance = double.maxFinite;
+    if (start != null && end != null) {
+      for (int? i = start!; i! < end! - 1; i++) {
+        Coordinate p0 = pts.getCoordinate(i);
+        Coordinate p1 = pts.getCoordinate(i + 1);
+        if (facetSeq.start != null && facetSeq.end != null) {
+          for (int j = facetSeq.start!; j < facetSeq.end! - 1; j++) {
+            Coordinate q0 = facetSeq.pts.getCoordinate(j);
+            Coordinate q1 = facetSeq.pts.getCoordinate(j + 1);
+
+            double dist = Distance.segmentToSegment(p0, p1, q0, q1);
+            if (dist < minDistance) {
+              minDistance = dist;
+              if (locs != null)
+                updateNearestLocationsLineLine(
+                    i, p0, p1, facetSeq, j, q0, q1, locs);
+              if (minDistance <= 0.0) return minDistance;
+            }
+          }
+        }
+      }
+    }
+    return minDistance;
+  }
+
+  void updateNearestLocationsLineLine(
+      int i,
+      Coordinate p0,
+      Coordinate p1,
+      FacetSequence facetSeq,
+      int j,
+      Coordinate q0,
+      Coordinate q1,
+      List<GeometryLocation> locs) {
+    LineSegment seg0 = LineSegment.fromCoordinates(p0, p1);
+    LineSegment seg1 = new LineSegment.fromCoordinates(q0, q1);
+    List<Coordinate> closestPt = seg0.closestPoints(seg1);
+    locs[0] =
+        GeometryLocation(geom!, i, Coordinate.fromCoordinate(closestPt[0]));
+    locs[1] = GeometryLocation(
+        facetSeq.geom!, j, new Coordinate.fromCoordinate(closestPt[1]));
+  }
+
+  double computeDistancePointLine(
+      Coordinate pt, FacetSequence facetSeq, List<GeometryLocation>? locs) {
+    double minDistance = double.maxFinite;
+
+    for (int i = facetSeq.start!; i < facetSeq.end! - 1; i++) {
+      Coordinate q0 = facetSeq.pts.getCoordinate(i);
+      Coordinate q1 = facetSeq.pts.getCoordinate(i + 1);
+      double dist = Distance.pointToSegment(pt, q0, q1);
+      if (dist < minDistance) {
+        minDistance = dist;
+        if (locs != null)
+          updateNearestLocationsPointLine(pt, facetSeq, i, q0, q1, locs);
+        if (minDistance <= 0.0) return minDistance;
+      }
+    }
+    return minDistance;
+  }
+
+  void updateNearestLocationsPointLine(Coordinate pt, FacetSequence facetSeq,
+      int i, Coordinate q0, Coordinate q1, List<GeometryLocation> locs) {
+    locs[0] = GeometryLocation(geom!, start!, Coordinate.fromCoordinate(pt));
+    LineSegment seg = LineSegment.fromCoordinates(q0, q1);
+    Coordinate segClosestPoint = seg.closestPoint(pt);
+    locs[1] = GeometryLocation(
+        facetSeq.geom!, i, Coordinate.fromCoordinate(segClosestPoint));
+  }
+
+  String toString() {
+    StringBuffer buf = StringBuffer();
+    buf.write("LINESTRING ( ");
+    for (int i = start!; i < end!; i++) {
+      if (i > start!) buf.write(", ");
+      Coordinate p = pts.getCoordinate(i);
+      buf.write(p.x);
+      buf.write(' ');
+      buf.write(p.y);
+    }
+    buf.write(' )');
+    return buf.toString();
+  }
+}
