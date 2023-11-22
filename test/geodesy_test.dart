@@ -7,14 +7,14 @@ import 'package:test/test.dart';
 void main() {
   var geodesy = Geodesy();
 
-  test('distanceBetweenTwoGeoPoints', () async {
+  test('distanceBetweenTwoGeoPoints', ()  {
     final l1 = Coordinate.fromYX(50.06638889, 5.71472222);
     final l2 = Coordinate.fromYX(58.64388889, 3.07000000);
     final distance = geodesy.distanceBetweenTwoGeoPoints(l1, l2);
     expect(distance, 969938.8877266833);
   });
 
-  test('destinationPointByDistanceAndBearing', () async {
+  test('destinationPointByDistanceAndBearing', ()  {
     final l3 = Coordinate.fromYX(51.4778, -0.0015);
     final destinationPoint =
         geodesy.destinationPointByDistanceAndBearing(l3, 7794.0, 300.7);
@@ -22,21 +22,21 @@ void main() {
         Coordinate.fromYX(51.51350573766377, -0.09823692862482858));
   });
 
-  test('bearingBetweenTwoGeoPoints', () async {
+  test('bearingBetweenTwoGeoPoints', ()  {
     final l4 = Coordinate.fromYX(52.205, 0.119);
     final l5 = Coordinate.fromYX(48.857, 2.351);
     final bearing = geodesy.bearingBetweenTwoGeoPoints(l4, l5);
     expect(bearing.toStringAsFixed(6), 156.16658258153166.toStringAsFixed(6));
   });
 
-  test('bearingBetweenTwoGeoPoints', () async {
+  test('bearingBetweenTwoGeoPoints', ()  {
     final l4 = Coordinate.fromYX(52.205, 0.119);
     final l5 = Coordinate.fromYX(48.857, 2.351);
     final finalBearing = geodesy.finalBearingBetweenTwoGeoPoints(l4, l5);
     expect(finalBearing, 157.89044019049243);
   });
 
-  test('midPointBetweenTwoGeoPoints', () async {
+  test('midPointBetweenTwoGeoPoints', ()  {
     final l4 = Coordinate.fromYX(52.205, 0.119);
     final l5 = Coordinate.fromYX(48.857, 2.351);
     final midpoint = geodesy.midPointBetweenTwoGeoPoints(l4, l5);
@@ -47,7 +47,7 @@ void main() {
         true);
   });
 
-  test('midPointBetweenTwoGeoPoints2', () async {
+  test('midPointBetweenTwoGeoPoints2', ()  {
     final l4 = Coordinate.fromYX(52.205, 0.119);
     final l5 = Coordinate.fromYX(48.857, 2.351);
     final midpoint = geodesy.midPointBetweenTwoGeoPoints(l4, l5);
@@ -57,7 +57,7 @@ void main() {
         true);
   });
 
-  test('isGeoPointInBoudingBox', () async {
+  test('isGeoPointInBoudingBox', ()  {
     final l3 = Coordinate.fromYX(51.4778, -0.0015);
     final l4 = Coordinate.fromYX(52.205, 0.119);
     final l5 = Coordinate.fromYX(48.857, 2.351);
@@ -65,7 +65,7 @@ void main() {
     expect(inBoudingBox, false);
   });
 
-  test('intersectionByPaths', () async {
+  test('intersectionByPaths', ()  {
     final l4 = Coordinate.fromYX(52.205, 0.119);
     final l5 = Coordinate.fromYX(48.857, 2.351);
     final b1 = 108.547;
@@ -77,7 +77,7 @@ void main() {
         true);
   });
 
-  test('crossTrackDistanceTo', () async {
+  test('crossTrackDistanceTo', ()  {
     final l4 = Coordinate.fromYX(52.205, 0.119);
     final l5 = Coordinate.fromYX(48.857, 2.351);
     final l6 = Coordinate.fromYX(50.587, 1.231);
@@ -85,7 +85,7 @@ void main() {
     expect(distanceToGreatCircle, 1241.7274005073216);
   });
 
-  test('crossTrackDistanceTo', () async {
+  test('crossTrackDistanceTo', ()  {
     var poly = <Coordinate>[
       Coordinate.fromYX(1.0, 1.0),
       Coordinate.fromYX(1.0, 2.0),
@@ -97,7 +97,7 @@ void main() {
     expect(isGeoPointInPolygon, true);
   });
 
-  test('pointsInRange', () async {
+  test('pointsInRange', ()  {
     final point = Coordinate.fromYX(51.0, 0);
     final distance = 10000;
     final pointNotInRange = geodesy.destinationPointByDistanceAndBearing(
@@ -111,7 +111,7 @@ void main() {
     expect((geofencedPoints.contains(pointNotInRange)), false);
   });
 
-  test('area and length', () async {
+  test('area and length', ()  {
     const world_area = 511207893395811.06;
     const world_perim = 40075016.69;
     const wkt = "POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))";

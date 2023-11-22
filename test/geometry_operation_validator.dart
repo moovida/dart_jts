@@ -58,9 +58,9 @@ class GeometryOperationValidator {
   GeometryOperationValidator testValid() {
     IsValidOp op = IsValidOp(ioGeometry[1]!);
     bool isValid = op.isValid();
-    if(!isValid){
-      print(op.validErr!.getMessage());
-    }
+    // if(!isValid){
+    //   print(op.validErr!.getMessage());
+    // }
     assert(isValid,'Simplified geometry is invalid');
     return this;
   }

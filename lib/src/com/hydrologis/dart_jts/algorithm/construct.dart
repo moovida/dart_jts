@@ -42,7 +42,7 @@ class IndexedDistanceToPoint {
    * @param pt the point to compute the nearest location for
    * @return a pair of locations
    */
-  List<Coordinate>? nearestPoints(Point pt) {
+  List<Coordinate?>? nearestPoints(Point pt) {
     init();
     if (isInArea(pt)) {
       Coordinate? p = pt.getCoordinate();
@@ -372,9 +372,9 @@ class LargestEmptyCircle {
     centerPt = new Coordinate(centerCell.getX(), centerCell.getY());
     centerPoint = factory.createPoint(centerPt);
     // compute radius point
-    List<Coordinate>? nearestPts = obstacleDistance.nearestPoints(centerPoint);
+    List<Coordinate?>? nearestPts = obstacleDistance.nearestPoints(centerPoint);
     if(nearestPts != null) {
-      radiusPt = nearestPts[0].copy();
+      radiusPt = nearestPts[0]!.copy();
       radiusPoint = factory.createPoint(radiusPt);
     }
   }
@@ -650,9 +650,9 @@ class MaximumInscribedCircle {
     centerPt = new Coordinate(centerCell.getX(), centerCell.getY());
     centerPoint = factory.createPoint(centerPt);
     // compute radius point
-    List<Coordinate>? nearestPts = indexedDistance.nearestPointsToGeometry(centerPoint);
+    List<Coordinate?>? nearestPts = indexedDistance.nearestPointsToGeometry(centerPoint);
     if(nearestPts != null) {
-      radiusPt = nearestPts[0].copy();
+      radiusPt = nearestPts[0]!.copy();
       radiusPoint = factory.createPoint(radiusPt);
     }
   }

@@ -2145,7 +2145,7 @@ class GeometryTransformer {
     List<Geometry> holes = [];
     for (int i = 0; i < geom.getNumInteriorRing(); i++) {
       Geometry hole = transformLinearRing(geom.getInteriorRingN(i), geom);
-      if (hole == null || hole.isEmpty()) {
+      if (hole.isEmpty()) {
         continue;
       }
       if (!(hole is LinearRing)) isAllValidLinearRings = false;
@@ -2154,10 +2154,10 @@ class GeometryTransformer {
     }
 
     if (isAllValidLinearRings)
-      return factory.createPolygon(shell as LinearRing, []);
+      return factory.createPolygon(shell as LinearRing, holes.cast<LinearRing>());
     else {
       List<Geometry> components = [];
-      if (shell != null) components.add(shell);
+      components.add(shell);
       components.addAll(holes);
       return factory.buildGeometry(components);
     }

@@ -56,15 +56,16 @@ class VWVertex {
   static buildLine(List<Coordinate> pts) {
     VWVertex? first;
     VWVertex? prev;
-    for (int i = 0; i < pts.length; i++) {
-      var v = VWVertex(pts[i]);
+    for (var pt in pts) {
+      var v = VWVertex(pt);
       if (first == null) {
         first = v;
       }
-      v.setPrev(prev!);
-
-      prev.setNext(v);
-      prev.updateArea();
+      v.setPrev(prev);
+      if (prev != null) {
+        prev.setNext(v);
+        prev.updateArea();
+      }
       prev = v;
     }
     return first;
@@ -78,7 +79,7 @@ class VWVertex {
 
   VWVertex(this.pt);
 
-  void setPrev(VWVertex prev) {
+  void setPrev(VWVertex? prev) {
     this.prev = prev;
   }
 

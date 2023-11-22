@@ -1038,7 +1038,7 @@ class IndexedFacetDistance {
    * @param g2 a geometry
    * @return the nearest points on the facets of the geometries
    */
-  static List<Coordinate>? nearestPoints(Geometry g1, Geometry g2) {
+  static List<Coordinate?>? nearestPoints(Geometry g1, Geometry g2) {
     IndexedFacetDistance dist = new IndexedFacetDistance(g1);
     return dist.nearestPointsToGeometry(g2);
   }
@@ -1086,7 +1086,7 @@ class IndexedFacetDistance {
    * @param g the geometry to compute the nearest location to
    * @return the nearest locations
    */
-  List<GeometryLocation> nearestLocations(Geometry g) {
+  List<GeometryLocation?>? nearestLocations(Geometry g) {
     STRtree tree2 = FacetSequenceTreeBuilder.build(g);
     List<Object>? obj =
         cachedTree!.nearestNeighbourWithTree(tree2, FACET_SEQ_DIST);
@@ -1102,17 +1102,17 @@ class IndexedFacetDistance {
    * @param g the geometry to compute the nearest point to
    * @return the nearest points
    */
-  List<Coordinate>? nearestPointsToGeometry(Geometry g) {
-    List<GeometryLocation> minDistanceLocation = nearestLocations(g);
+  List<Coordinate?>? nearestPointsToGeometry(Geometry g) {
+    List<GeometryLocation?>? minDistanceLocation = nearestLocations(g);
     List<Coordinate>? nearestPts = toPoints(minDistanceLocation);
     return nearestPts;
   }
 
-  static List<Coordinate>? toPoints(List<GeometryLocation>? locations) {
+  static List<Coordinate>? toPoints(List<GeometryLocation?>? locations) {
     if (locations == null) return null;
     List<Coordinate> nearestPts = <Coordinate>[
-      locations[0].getCoordinate(),
-      locations[1].getCoordinate()
+      locations[0]!.getCoordinate(),
+      locations[1]!.getCoordinate()
     ];
     return nearestPts;
   }
@@ -1301,10 +1301,10 @@ class FacetSequence {
    *
    * @return a pair of {@link GeometryLocation}s for the nearest points
    */
-  List<GeometryLocation> nearestLocations(FacetSequence facetSeq) {
+  List<GeometryLocation?>? nearestLocations(FacetSequence facetSeq) {
     bool isPoint = this.isPoint();
     bool isPointOther = facetSeq.isPoint();
-    List<GeometryLocation>? locs = List.empty(growable: true);
+    List<GeometryLocation?>? locs = List.filled(2,null,growable: false);
 
     if (isPoint && isPointOther) {
       Coordinate pt = pts.getCoordinate(start!);
@@ -1319,7 +1319,7 @@ class FacetSequence {
       Coordinate seqPt = facetSeq.pts.getCoordinate(facetSeq.start!);
       computeDistancePointLine(seqPt, this, locs);
       // unflip the locations
-      GeometryLocation tmp = locs[0];
+      GeometryLocation? tmp = locs[0];
       locs[0] = locs[1];
       locs[1] = tmp;
     } else {
@@ -1329,7 +1329,7 @@ class FacetSequence {
   }
 
   double computeDistanceLineLine(
-      FacetSequence facetSeq, List<GeometryLocation>? locs) {
+      FacetSequence facetSeq, List<GeometryLocation?>? locs) {
     // both linear - compute minimum segment-segment distance
     double minDistance = double.maxFinite;
     if (start != null && end != null) {
@@ -1364,18 +1364,20 @@ class FacetSequence {
       int j,
       Coordinate q0,
       Coordinate q1,
-      List<GeometryLocation> locs) {
+      List<GeometryLocation?>? locs) {
     LineSegment seg0 = LineSegment.fromCoordinates(p0, p1);
     LineSegment seg1 = new LineSegment.fromCoordinates(q0, q1);
     List<Coordinate> closestPt = seg0.closestPoints(seg1);
-    locs[0] =
-        GeometryLocation(geom!, i, Coordinate.fromCoordinate(closestPt[0]));
-    locs[1] = GeometryLocation(
-        facetSeq.geom!, j, new Coordinate.fromCoordinate(closestPt[1]));
+    if(locs != null) {
+      locs[0] =
+          GeometryLocation(geom!, i, Coordinate.fromCoordinate(closestPt[0]));
+      locs[1] = GeometryLocation(
+          facetSeq.geom!, j, new Coordinate.fromCoordinate(closestPt[1]));
+    }
   }
 
   double computeDistancePointLine(
-      Coordinate pt, FacetSequence facetSeq, List<GeometryLocation>? locs) {
+      Coordinate pt, FacetSequence facetSeq, List<GeometryLocation?>? locs) {
     double minDistance = double.maxFinite;
 
     for (int i = facetSeq.start!; i < facetSeq.end! - 1; i++) {
@@ -1393,12 +1395,14 @@ class FacetSequence {
   }
 
   void updateNearestLocationsPointLine(Coordinate pt, FacetSequence facetSeq,
-      int i, Coordinate q0, Coordinate q1, List<GeometryLocation> locs) {
-    locs[0] = GeometryLocation(geom!, start!, Coordinate.fromCoordinate(pt));
-    LineSegment seg = LineSegment.fromCoordinates(q0, q1);
-    Coordinate segClosestPoint = seg.closestPoint(pt);
-    locs[1] = GeometryLocation(
-        facetSeq.geom!, i, Coordinate.fromCoordinate(segClosestPoint));
+      int i, Coordinate q0, Coordinate q1, List<GeometryLocation?>? locs) {
+    if(locs != null) {
+      locs[0] = GeometryLocation(geom!, start!, Coordinate.fromCoordinate(pt));
+      LineSegment seg = LineSegment.fromCoordinates(q0, q1);
+      Coordinate segClosestPoint = seg.closestPoint(pt);
+      locs[1] = GeometryLocation(
+          facetSeq.geom!, i, Coordinate.fromCoordinate(segClosestPoint));
+    }
   }
 
   String toString() {
