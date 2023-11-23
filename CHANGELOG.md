@@ -1,3 +1,12 @@
+== Version 0.3.0
+
+This release brings important additions, all thanks to David Barber's (badger3512) contributions. Kudos!
+
+- added simplifiers (Douglas Peucker, Visvalingam-Whyatt and TopologyPreserving)
+- added densifier
+- added quadtree index
+- fixed bug in buffer(0) operations
+
 == Version 0.2.6
 
 - fix for convex hull bug with large points geoms
