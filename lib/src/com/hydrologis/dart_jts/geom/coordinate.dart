@@ -360,4 +360,17 @@ class Coordinate implements Comparable<Coordinate> {
     }
     return false;
   }
+  ///
+  /// Tests if the coordinate has valid X and Y ordinate values.
+  /// An ordinate value is valid iff it is finite.
+  ///
+  /// @return true if the coordinate is valid
+  /// @see Double#isFinite(double)
+  ///
+  bool isValid() {
+    if (! x.isFinite) return false;
+    if (! y.isFinite) return false;
+    return true;
+  }
+
 }

@@ -104,7 +104,7 @@ void main() {
       ];
 
       for (var geomString in geomStrings) {
-        print(geomString);
+//        print(geomString);
         var geom = WKTReader().read(geomString)!;
         var bytes = WKBWriter().write(geom, doSpatialite: true);
         var read = WKBReader().read(bytes, doSpatialite: true);
