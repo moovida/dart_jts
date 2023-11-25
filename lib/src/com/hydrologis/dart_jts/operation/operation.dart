@@ -646,7 +646,7 @@ class IsSimpleOp {
    * Add an endpoint to the map, creating an entry for it if none exists
    */
   void addEndpoint(Map endPoints, Coordinate p, bool isClosed) {
-    EndpointInfo eiInfo = endPoints[p] as EndpointInfo;
+    EndpointInfo? eiInfo = endPoints.containsKey(p) ? endPoints[p] as EndpointInfo : null;
     if (eiInfo == null) {
       eiInfo = new EndpointInfo(p);
       endPoints[p] = eiInfo;
