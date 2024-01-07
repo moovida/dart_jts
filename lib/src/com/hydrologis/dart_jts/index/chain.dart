@@ -177,6 +177,19 @@ class MonotoneChainI {
     return env!;
   }
 
+  Envelope getEnvelopeWithTolerance(double expansionDistance) {
+    if (env == null) {
+      /**
+       * The monotonicity property allows fast envelope determination
+       */
+      Coordinate p0 = pts[start];
+      Coordinate p1 = pts[end];
+      env = new Envelope.fromCoordinates(p0, p1);
+      if (expansionDistance > 0.0) env!.expandByDistance(expansionDistance);
+    }
+    return env!;
+  }
+
   /**
    * Gets the index of the start of the monotone chain
    * in the underlying array of points.

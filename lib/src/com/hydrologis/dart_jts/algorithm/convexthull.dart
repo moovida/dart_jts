@@ -252,7 +252,7 @@ class ConvexHull {
       return null;
     }
     coordList.closeRing();
-    return coordList.toCoordinateArray();
+    return coordList.toCoordinateArray(true);
   }
 
   List<Coordinate> computeOctPts(List<Coordinate> inputPts) {

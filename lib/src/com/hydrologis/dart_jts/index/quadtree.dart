@@ -274,14 +274,12 @@ abstract class NodeBase {
   }
 
   void visit(Envelope? searchEnv, ItemVisitor visitor) {
-    if(searchEnv == null){
-      int stop = 1;
-    }
+    if (searchEnv == null) {}
     if (!isSearchMatch(searchEnv)) return;
 
     // this node may have items as well as subnodes (since items may not
     // be wholely contained in any single subnode
-     visitItems(searchEnv!, visitor);
+    visitItems(searchEnv!, visitor);
 
     for (int i = 0; i < 4; i++) {
       if (subnode[i] != null) {
@@ -408,9 +406,9 @@ class NodeNode extends NodeBase {
   void insertNode(NodeNode node) {
     Assert.isTrue(env == null || env!.containsEnvelope(node.env!));
     int index = NodeBase.getSubnodeIndex(node.env, centrex, centrey);
-if(index == -1){
-  return;
-}
+    if (index == -1) {
+      return;
+    }
     if (node.level == level - 1) {
       subnode[index] = node;
 //System.out.println("inserted");
@@ -491,7 +489,7 @@ class Root extends NodeBase {
     int index = NodeBase.getSubnodeIndex(itemEnv, origin.x, origin.y);
     // if index is -1, itemEnv must cross the X or Y axis.
     if (index == -1) {
-      add(item);
+      this.add(item);
       return;
     }
 
@@ -545,7 +543,7 @@ class Root extends NodeBase {
   }
 
   bool isSearchMatch(Envelope? searchEnv) {
-    if(searchEnv == null){
+    if (searchEnv == null) {
       return false;
     }
     return true;

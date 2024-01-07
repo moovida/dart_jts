@@ -153,7 +153,7 @@ class ConnectedInteriorTester {
 
   bool isInteriorsConnected() {
     // node the edges, in case holes touch the shell
-    List splitEdges = [];
+    List<Edge> splitEdges = [];
     geomGraph.computeSplitEdges(splitEdges);
 
     // form the edges into rings
@@ -237,8 +237,8 @@ class ConnectedInteriorTester {
      * Need special check since the first point may be repeated.
      */
     Coordinate pt1 = findDifferentPoint(pts, pt0)!;
-    Edge e = graph.findEdgeInSameDirection(pt0, pt1)!;
-    DirectedEdge de = graph.findEdgeEnd(e) as DirectedEdge;
+    Edge? e = graph.findEdgeInSameDirection(pt0, pt1);
+    DirectedEdge? de = graph.findEdgeEnd(e!) as DirectedEdge;
     DirectedEdge? intDe = null;
     if (de.getLabel()!.getLocationWithPosIndex(0, Position.RIGHT) ==
         Location.INTERIOR) {

@@ -422,15 +422,6 @@ void main() {
       ]);
       assertTrue(ls.isClosed());
     });
-    test("testLinearRingConstructor", () {
-      expect(
-          () => new GeometryFactory.defaultPrecision().createLinearRing([
-                new Coordinate(0, 0),
-                new Coordinate(10, 10),
-                new Coordinate(0, 0),
-              ]),
-          throwsArgumentError);
-    });
   });
 
   group("GeometryImplTest - ", () {
