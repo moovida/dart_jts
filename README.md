@@ -1,7 +1,7 @@
 # Dart JTS
 
 [![pub package](https://img.shields.io/pub/v/dart_jts.svg)](https://pub.dev/packages/dart_jts)
-[![Build Status](https://travis-ci.org/moovida/dart_jts.svg?branch=master)](https://travis-ci.org/moovida/dart_jts)
+[![Build Status](https://github.com/moovida/dart_jts/actions/workflows/test.yml/badge.svg)](https://github.com/moovida/dart_jts/actions/workflows/test.yml)
 
 dart_jts is an ongoing effort to port the Java Topology Suite to the dart programming language and make it available to its mobile, dektop and web environments.
 
