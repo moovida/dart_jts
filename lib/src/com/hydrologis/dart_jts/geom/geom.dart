@@ -913,7 +913,7 @@ class CoordinateList {
    *
    * @return the coordinates
    */
-  List<Coordinate> toCoordinateArray() {
+  List<Coordinate> toCoordinateArray(bool isForward) {
     return _backingList;
   }
 

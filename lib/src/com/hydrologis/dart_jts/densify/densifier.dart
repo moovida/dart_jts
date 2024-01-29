@@ -79,7 +79,7 @@ class Densifier {
     }
     // this check handles empty sequences
     if (pts.length > 0) coordList.addCoord(pts[pts.length - 1], false);
-    return coordList.toCoordinateArray();
+    return coordList.toCoordinateArray(true);
   }
 
  late Geometry inputGeom;

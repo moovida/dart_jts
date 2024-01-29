@@ -36,6 +36,41 @@ class CGAlgorithmsDD {
         .signum();
   }
 
+  /**
+   * Returns the index of the direction of the point {@code q} relative to
+   * a vector specified by {@code p1-p2}.
+   *
+   * @param p1x the x ordinate of the vector origin point
+   * @param p1y the y ordinate of the vector origin point
+   * @param p2x the x ordinate of the vector final point
+   * @param p2y the y ordinate of the vector final point
+   * @param qx the x ordinate of the query point
+   * @param qy the y ordinate of the query point
+   *
+   * @return 1 if q is counter-clockwise (left) from p1-p2
+   *        -1 if q is clockwise (right) from p1-p2
+   *         0 if q is collinear with p1-p2
+   */
+  static int orientationIndexDouble(
+      double p1x, double p1y, double p2x, double p2y, double qx, double qy) {
+    // fast filter for orientation index
+    // avoids use of slow extended-precision arithmetic in many cases
+    int index = orientationIndexFilterDouble(p1x, p1y, p2x, p2y, qx, qy);
+    if (index <= 1) return index;
+
+    // normalize coordinates
+    DD dx1 = DD.valueOf(p2x).selfAdd(-p1x);
+    DD dy1 = DD.valueOf(p2y).selfAdd(-p1y);
+    DD dx2 = DD.valueOf(qx).selfAdd(-p2x);
+    DD dy2 = DD.valueOf(qy).selfAdd(-p2y);
+
+    // sign of determinant - unrolled for performance
+    return dx1
+        .selfMultiplyDD(dy2)
+        .selfSubtractDD(dy1.selfMultiplyDD(dx2))
+        .signum();
+  }
+
   /// Computes the sign of the determinant of the 2x2 matrix
   /// with the given entries.
   ///
@@ -91,6 +126,61 @@ class CGAlgorithmsDD {
 
     double detleft = (pa.x - pc.x) * (pb.y - pc.y);
     double detright = (pa.y - pc.y) * (pb.x - pc.x);
+    double det = detleft - detright;
+
+    if (detleft > 0.0) {
+      if (detright <= 0.0) {
+        return signum(det);
+      } else {
+        detsum = detleft + detright;
+      }
+    } else if (detleft < 0.0) {
+      if (detright >= 0.0) {
+        return signum(det);
+      } else {
+        detsum = -detleft - detright;
+      }
+    } else {
+      return signum(det);
+    }
+
+    double errbound = DP_SAFE_EPSILON * detsum;
+    if ((det >= errbound) || (-det >= errbound)) {
+      return signum(det);
+    }
+
+    return 2;
+  }
+
+  /**
+   * A filter for computing the orientation index of three coordinates.
+   * <p>
+   * If the orientation can be computed safely using standard DP
+   * arithmetic, this routine returns the orientation index.
+   * Otherwise, a value i > 1 is returned.
+   * In this case the orientation index must
+   * be computed using some other more robust method.
+   * The filter is fast to compute, so can be used to
+   * avoid the use of slower robust methods except when they are really needed,
+   * thus providing better average performance.
+   * <p>
+   * Uses an approach due to Jonathan Shewchuk, which is in the public domain.
+   *
+   * @param pax A coordinate
+   * @param pay A coordinate
+   * @param pbx B coordinate
+   * @param pby B coordinate
+   * @param pcx C coordinate
+   * @param pcy C coordinate
+   * @return the orientation index if it can be computed safely
+   * @return i > 1 if the orientation index cannot be computed safely
+   */
+  static int orientationIndexFilterDouble(
+      double pax, double pay, double pbx, double pby, double pcx, double pcy) {
+    double detsum;
+
+    double detleft = (pax - pcx) * (pby - pcy);
+    double detright = (pay - pcy) * (pbx - pcx);
     double det = detleft - detright;
 
     if (detleft > 0.0) {
@@ -221,22 +311,22 @@ class Orientation {
      * dependent, when computing the orientation of a point very close to a
      * line. This is possibly due to the arithmetic in the translation to the
      * origin.
-     * 
+     *
      * For instance, the following situation produces identical results in spite
      * of the inverse orientation of the line segment:
-     * 
+     *
      * Coordinate p0 = new Coordinate(219.3649559090992, 140.84159161824724);
      * Coordinate p1 = new Coordinate(168.9018919682399, -5.713787599646864);
-     * 
+     *
      * Coordinate p = new Coordinate(186.80814046338352, 46.28973405831556); int
      * orient = orientationIndex(p0, p1, p); int orientInv =
      * orientationIndex(p1, p0, p);
-     * 
+     *
      * A way to force consistent results is to normalize the orientation of the
      * vector using the following code. However, this may make the results of
      * orientationIndex inconsistent through the triangle of points, so it's not
      * clear this is an appropriate patch.
-     * 
+     *
      */
     return CGAlgorithmsDD.orientationIndex(p1, p2, q);
 
@@ -313,7 +403,7 @@ class Orientation {
      * If disc is exactly 0, lines are collinear. There are two possible cases:
      * (1) the lines lie along the x axis in opposite directions (2) the lines
      * lie on top of one another
-     * 
+     *
      * (1) is handled by checking if next is left of prev ==> CCW (2) will never
      * happen if the ring is valid, so don't check for it (Might want to assert
      * this)
@@ -412,10 +502,10 @@ class Orientation {
     }
     return isCCW;
   }
+
   static bool isCCWArea(List<Coordinate> ring) {
     return Area.ofRingSigned(ring) < 0;
   }
-
 }
 
 /// Contains functions to compute intersections between lines.

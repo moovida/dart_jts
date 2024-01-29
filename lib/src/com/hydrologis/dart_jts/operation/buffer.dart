@@ -2680,7 +2680,7 @@ class BufferInputLineSimplifier {
       if (isDeleted[i] != DELETE) coordList.add(inputLine[i]);
     }
 //    if (coordList.size() < inputLine.length)      System.out.println("Simplified " + (inputLine.length - coordList.size()) + " pts");
-    return coordList.toCoordinateArray();
+    return coordList.toCoordinateArray(true);
   }
 
   bool isDeletable(int i0, int i1, int i2, double distanceTol) {

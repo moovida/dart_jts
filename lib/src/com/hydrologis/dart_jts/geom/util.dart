@@ -1151,7 +1151,7 @@ class PrecisionModel implements Comparable {
 
   /// The scale factor which determines the number of decimal places in fixed precision.
   double scale = 0.0;
-
+  double gridSize=1;
   /// Creates a <code>PrecisionModel</code> with a default precision
   /// of FLOATING.
   PrecisionModel() {
@@ -1247,7 +1247,22 @@ class PrecisionModel implements Comparable {
   ///  Sets the multiplying factor used to obtain a precise coordinate.
   /// This method is  because PrecisionModel is an immutable (value) type.
   void setScale(double scale) {
-    this.scale = scale.abs();
+//    this.scale = scale.abs();
+    /**
+     * A negative scale indicates the grid size is being set.
+     * The scale is set as well, as the reciprocal.
+     */
+    if (scale < 0) {
+      gridSize = scale.abs();
+      this.scale = 1.0 / gridSize;
+    }
+    else {
+      this.scale = scale.abs();
+      /**
+       * Leave gridSize as 0, to ensure it is computed using scale
+       */
+      gridSize = 0.0;
+    }
   }
 
   /// Rounds a numeric value to the PrecisionModel grid.
@@ -2067,7 +2082,6 @@ class GeometryTransformer {
     for (int i = 0; i < geom.getNumGeometries(); i++) {
       Geometry transformGeom =
       transformPoint(geom.getGeometryN(i) as Point, geom);
-      if (transformGeom == null) continue;
       if (transformGeom.isEmpty()) continue;
       transGeomList.add(transformGeom);
     }
@@ -2093,7 +2107,7 @@ class GeometryTransformer {
   Geometry transformLinearRing(LinearRing geom, Geometry parent) {
     CoordinateSequence seq =
     transformCoordinates(geom.getCoordinateSequence(), geom);
-    if (seq == null) return factory.createLinearRingEmpty();
+    if (seq.size() == 0) return factory.createLinearRingEmpty();
     int seqSize = seq.size();
     // ensure a valid LinearRing
     if (seqSize > 0 && seqSize < 4 && !preserveType)
@@ -2119,7 +2133,6 @@ class GeometryTransformer {
     for (int i = 0; i < geom.getNumGeometries(); i++) {
       Geometry transformGeom =
       transformLineString(geom.getGeometryN(i) as LineString, geom);
-      if (transformGeom == null) continue;
       if (transformGeom.isEmpty()) continue;
       transGeomList.add(transformGeom);
     }

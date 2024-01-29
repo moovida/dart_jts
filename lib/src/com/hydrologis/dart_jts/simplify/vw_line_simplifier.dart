@@ -124,6 +124,6 @@ class VWVertex {
       coords.add(curr!.pt);
       curr = curr.next;
     } while (curr != null);
-    return coords.toCoordinateArray();
+    return coords.toCoordinateArray(true);
   }
 }

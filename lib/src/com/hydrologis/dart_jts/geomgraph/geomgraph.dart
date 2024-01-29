@@ -452,7 +452,6 @@ class GeometryGraph extends PlanarGraph {
   List<Coordinate> getBoundaryPoints() {
     List coll = getBoundaryNodes();
     List<Coordinate> pts = []; //..length = (coll.length);
-    int i = 0;
     for (Iterator it = coll.iterator; it.moveNext();) {
       Node node = it.current as Node;
       pts.add(node.getCoordinate().copy());
@@ -1602,7 +1601,6 @@ class DirectedEdge extends EdgeEnd {
 //    else
 //      edge.printReverse(out);
 //  }
-
 }
 
 /**
@@ -2763,7 +2761,6 @@ class Edge extends GraphComponent {
 //    }
 //    out.println("");
 //  }
-
 }
 
 /**
@@ -2945,13 +2942,13 @@ class TopologyLocation {
  */
 class Position {
   /** An indicator that a Location is <i>on</i> a GraphComponent */
-  static final int ON = 0;
+  static const int ON = 0;
 
   /** An indicator that a Location is to the <i>left</i> of a GraphComponent */
-  static final int LEFT = 1;
+  static const int LEFT = 1;
 
   /** An indicator that a Location is to the <i>right</i> of a GraphComponent */
-  static final int RIGHT = 2;
+  static const int RIGHT = 2;
 
   /**
    * Returns LEFT if the position is RIGHT, RIGHT if the position is LEFT, or the position
@@ -3327,5 +3324,60 @@ class EdgeList {
 //    }
 //    out.print(")  ");
 //  }
+}
 
+/**
+ * Validates that a collection of {@link Edge}s is correctly noded.
+ * Throws an appropriate exception if an noding error is found.
+ * Uses {@link FastNodingValidator} to perform the validation.
+ *
+ * @version 1.7
+ *
+ * @see FastNodingValidator
+ */
+class EdgeNodingValidator {
+  /**
+   * Checks whether the supplied {@link Edge}s
+   * are correctly noded.
+   * Throws a  {@link TopologyException} if they are not.
+   *
+   * @param edges a collection of Edges.
+   * @throws TopologyException if the SegmentStrings are not correctly noded
+   *
+   */
+  static void checkValidStatic(List edges) {
+    EdgeNodingValidator validator = new EdgeNodingValidator(edges);
+    validator.checkValid();
+  }
+
+  static List<SegmentString> toSegmentStrings(List edges) {
+    // convert Edges to SegmentStrings
+    List<SegmentString> segStrings = List.empty(growable: true);
+    for (var e in edges) {
+      segStrings.add(BasicSegmentString(e.getCoordinates(), e));
+    }
+    return segStrings;
+  }
+
+  late FastNodingValidator nv;
+
+  /**
+   * Creates a new validator for the given collection of {@link Edge}s.
+   *
+   * @param edges a collection of Edges.
+   */
+  EdgeNodingValidator(List edges) {
+    this.nv = new FastNodingValidator(toSegmentStrings(edges));
+  }
+
+  /**
+   * Checks whether the supplied edges
+   * are correctly noded.  Throws an exception if they are not.
+   *
+   * @throws TopologyException if the SegmentStrings are not correctly noded
+   *
+   */
+  void checkValid() {
+    nv.checkValid();
+  }
 }

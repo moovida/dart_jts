@@ -376,8 +376,6 @@ class GeometryGraphOperation {
     arg = []; //..length = (2);
     arg.add(new GeometryGraph.args3(0, g0, boundaryNodeRule));
     arg.add(new GeometryGraph.args3(1, g1, boundaryNodeRule));
-    // arg[0] = new GeometryGraph.args3(0, g0, boundaryNodeRule);
-    // arg[1] = new GeometryGraph.args3(1, g1, boundaryNodeRule);
   }
 
   GeometryGraphOperation.singleGeom(Geometry g0) {
