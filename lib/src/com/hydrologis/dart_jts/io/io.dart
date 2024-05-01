@@ -1284,6 +1284,7 @@ class WKTTokenizer {
       } else {
         _lastReadToken =
             errorToken("unexpected character at <${currentToken()}>");
+        break;
       }
     }
     return _lastReadToken;
