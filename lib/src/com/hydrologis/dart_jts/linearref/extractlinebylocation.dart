@@ -90,7 +90,7 @@ class ExtractLineByLocation {
     if (newCoordinates._backingList.length <= 0)
       newCoordinates.add(start.getCoordinate(line));
 
-    List<Coordinate> newCoordinateArray = newCoordinates.toCoordinateArray();
+    List<Coordinate> newCoordinateArray = newCoordinates.toCoordinateArray(true);
     /**
      * Ensure there is enough coordinates to build a valid line.
      * Make a 2-point line with duplicate coordinates, if necessary.

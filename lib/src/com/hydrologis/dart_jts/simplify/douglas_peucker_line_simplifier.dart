@@ -33,7 +33,7 @@ class DouglasPeuckerLineSimplifier {
       if (usePt[i])
         coordList.add(Coordinate(pts[i].x,pts[i].y));
     }
-    return coordList.toCoordinateArray();
+    return coordList.toCoordinateArray(true);
   }
 
 

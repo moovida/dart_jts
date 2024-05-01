@@ -665,6 +665,7 @@ class CoordinateArrays {
     }
     return coordList;
   }
+
   /**
    * If the coordinate array argument has repeated or invalid points,
    * constructs a new array containing no repeated points.
@@ -683,7 +684,7 @@ class CoordinateArrays {
       if (!coord[i].isValid()) continue;
       coordList.addCoord(coord[i], false);
     }
-    return coordList.toCoordinateArray();
+    return coordList.toCoordinateArray(true);
   }
 
   /**
@@ -702,8 +703,6 @@ class CoordinateArrays {
     }
     return false;
   }
-
-
 }
 
 /**
@@ -753,10 +752,8 @@ class Coordinates {
       return 3;
     } else if (coordinate is CoordinateXYZM) {
       return 4;
-    } else if (coordinate is Coordinate) {
+    } else
       return 3;
-    }
-    return 3;
   }
 
   /**
@@ -772,10 +769,9 @@ class Coordinates {
       return 1;
     } else if (coordinate is CoordinateXYZM) {
       return 1;
-    } else if (coordinate is Coordinate) {
+    } else {
       return 0;
     }
-    return 0;
   }
 }
 
@@ -1480,13 +1476,11 @@ class PackedCoordinateSequenceFactory extends CoordinateSequenceFactory {
   }
 
   /// @see CoordinateSequenceFactory#create(List<Coordinate>)
-  CoordinateSequence create(List<Coordinate> coordinates) {
+  CoordinateSequence create(List<Coordinate>? coordinates) {
     int dimension = DEFAULT_DIMENSION;
     int measures = DEFAULT_MEASURES;
-    if (coordinates != null &&
-        coordinates.length > 0 &&
-        coordinates[0] != null) {
-      Coordinate first = coordinates[0];
+    if (coordinates != null && coordinates.length > 0) {
+      Coordinate? first = coordinates[0];
       dimension = Coordinates.dimension(first);
       measures = Coordinates.measures(first);
     }

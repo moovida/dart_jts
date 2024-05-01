@@ -41,7 +41,7 @@ class LineSegmentIndex {
 ///
 class LineSegmentVisitor implements ItemVisitor {
   LineSegment querySeg;
-  List<dynamic> items = List.empty(growable: true);
+  List<Object> items = List.empty(growable: true);
 
   LineSegmentVisitor(this.querySeg);
 
@@ -53,7 +53,7 @@ class LineSegmentVisitor implements ItemVisitor {
     }
   }
 
-  List<dynamic> getItems() {
+  List<Object> getItems() {
     return items;
   }
 }

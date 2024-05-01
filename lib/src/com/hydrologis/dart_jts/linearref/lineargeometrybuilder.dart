@@ -84,7 +84,7 @@ class LinearGeometryBuilder {
       coordList = null;
       return;
     }
-    List<Coordinate> rawPts = coordList!.toCoordinateArray();
+    List<Coordinate> rawPts = coordList!.toCoordinateArray(true);
     List<Coordinate> pts = rawPts;
     if (fixInvalidLines) pts = validCoordinateSequence(rawPts);
 
